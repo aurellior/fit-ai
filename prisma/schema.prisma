@@ -1,0 +1,134 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ActivitySource {
+  STRAVA
+  MANUAL
+}
+
+enum ActivityType {
+  RUN
+  RIDE
+  SWIM
+  WEIGHT_TRAINING
+  WALK
+  HIKE
+  OTHER
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String?
+  avatarUrl      String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  stravaToken    StravaToken?
+  activities     Activity[]
+  weightLogs     WeightLog[]
+  foodLogs       FoodLog[]
+  aiInsights     AiInsight[]
+
+  @@map("users")
+}
+
+model StravaToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  athleteId    String   @unique
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scope        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("strava_tokens")
+}
+
+model Activity {
+  id               String          @id @default(cuid())
+  userId           String
+  source           ActivitySource  @default(MANUAL)
+  type             ActivityType
+  title            String
+  startTime        DateTime
+
+  // Cardio / General Metrics (from Strava or manual)
+  durationSec      Int             // Total duration in seconds
+  distanceMeters   Float?          // Distance in meters (optional for gym)
+  avgPaceSecPerKm  Float?          // Average pace in sec/km
+  elevationGainM   Float?          // Elevation gain in meters
+  calories         Int?
+
+  // Strava specific
+  stravaActivityId BigInt?         @unique
+  summaryPolyline  String?         @db.Text
+
+  // Gym / Manual notes
+  notes            String?         @db.Text
+  gymSets          Json?           // JSON: [{ exercise: "Bench Press", sets: 3, reps: 10, weightKg: 70 }]
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startTime])
+  @@map("activities")
+}
+
+model WeightLog {
+  id        String   @id @default(cuid())
+  userId    String
+  weightKg  Float
+  loggedAt  DateTime @default(now())
+  notes     String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+  @@map("weight_logs")
+}
+
+model FoodLog {
+  id          String   @id @default(cuid())
+  userId      String
+  foodName    String
+  calories    Float
+  proteinG    Float
+  carbsG      Float
+  fatG        Float
+  imageUrl    String?  @db.Text
+  loggedAt    DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+  @@map("food_logs")
+}
+
+model AiInsight {
+  id              String   @id @default(cuid())
+  userId          String
+  periodStart     DateTime
+  periodEnd       DateTime
+  summary         String   @db.Text
+  strengths       String   @db.Text
+  recommendations String   @db.Text
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_insights")
+}
