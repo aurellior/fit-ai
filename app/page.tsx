@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import DashboardClientView from '@/components/dashboard/DashboardClientView';
 import { ActivitySource, ActivityType } from '@prisma/client';
+import { cookies } from 'next/headers';
 import {
   UserProfile,
   StravaTokenData,
@@ -134,6 +135,23 @@ export default async function HomePage() {
         notes: 'Pagi setelah bangun tidur',
       },
     ];
+  }
+
+  // Fallback to cookie if DB is offline but user successfully authorized Strava
+  try {
+    const cookieStore = await cookies();
+    if (!stravaToken && cookieStore.get('strava_connected')?.value === 'true') {
+      stravaToken = {
+        id: 'cookie_token',
+        userId: user?.id || 'demo_user',
+        athleteId: cookieStore.get('strava_athlete_id')?.value || 'Connected',
+        accessToken: 'authenticated',
+        refreshToken: 'authenticated',
+        expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000),
+      };
+    }
+  } catch {
+    // Ignore cookie read issues
   }
 
   return (
