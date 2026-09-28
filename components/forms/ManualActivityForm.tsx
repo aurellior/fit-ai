@@ -14,9 +14,10 @@ interface GymSetInput {
 
 interface ManualActivityFormProps {
   onSuccess?: () => void;
+  isModal?: boolean;
 }
 
-export default function ManualActivityForm({ onSuccess }: ManualActivityFormProps) {
+export default function ManualActivityForm({ onSuccess, isModal = false }: ManualActivityFormProps) {
   const [activityType, setActivityType] = useState<ActivityType>(ActivityType.RUN);
   const [title, setTitle] = useState('');
   const [startTime, setStartTime] = useState(new Date().toISOString().slice(0, 16));
@@ -82,17 +83,19 @@ export default function ManualActivityForm({ onSuccess }: ManualActivityFormProp
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Catat Aktivitas Manual
-          </h2>
-          <p className="text-xs text-zinc-500">
-            Pencatatan sesi latihan mandiri tanpa sinkronisasi GPS Strava
-          </p>
+    <div className={isModal ? 'space-y-4' : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5'}>
+      {!isModal && (
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Catat Aktivitas Manual
+            </h2>
+            <p className="text-xs text-zinc-500">
+              Pencatatan sesi latihan mandiri tanpa sinkronisasi GPS Strava
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {feedback && (
         <div

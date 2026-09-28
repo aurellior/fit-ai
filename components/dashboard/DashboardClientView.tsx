@@ -5,10 +5,13 @@ import StravaConnectButton from '@/components/dashboard/StravaConnectButton';
 import WeeklyAiInsight from '@/components/dashboard/WeeklyAiInsight';
 import ActivityList from '@/components/dashboard/ActivityList';
 import NutritionSummary from '@/components/dashboard/NutritionSummary';
-import WeightTracker from '@/components/dashboard/WeightTracker';
+import DashboardCharts from '@/components/dashboard/DashboardCharts';
+import Modal from '@/components/ui/Modal';
 import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import FoodScannerModal from '@/components/forms/FoodScannerModal';
+import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
 import { useRouter } from 'next/navigation';
+import { Plus, Camera, Scale } from 'lucide-react';
 import {
   UserProfile,
   StravaTokenData,
@@ -36,19 +39,21 @@ export default function DashboardClientView({
   initialWeightLogs,
 }: DashboardClientViewProps) {
   const router = useRouter();
-  const [activities] = useState(initialActivities);
-  const [foodLogs] = useState(initialFoodLogs);
-  const [weightLogs] = useState(initialWeightLogs);
+
+  // Modal states
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
+  const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
 
   // Core Metrics
-  const totalWorkouts = activities.length;
-  const totalDistanceMeters = activities.reduce(
+  const totalWorkouts = initialActivities.length;
+  const totalDistanceMeters = initialActivities.reduce(
     (acc, act) => acc + (act.distanceMeters || 0),
     0
   );
   const totalDistanceKm = (totalDistanceMeters / 1000).toFixed(1);
-  const totalCalories = activities.reduce((acc, act) => acc + (act.calories || 0), 0);
-  const totalGymSessions = activities.filter((a) => a.type === 'WEIGHT_TRAINING').length;
+  const totalCalories = initialActivities.reduce((acc, act) => acc + (act.calories || 0), 0);
+  const totalGymSessions = initialActivities.filter((a) => a.type === 'WEIGHT_TRAINING').length;
 
   const handleRefresh = () => {
     router.refresh();
@@ -56,67 +61,95 @@ export default function DashboardClientView({
 
   return (
     <div className="space-y-8">
-      {/* Overview & Core Metrics */}
-      <section id="overview" className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Dashboard Kebugaran
-            </h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Profil: {user?.name || user?.email || 'Athlete'}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              Live Sync
-            </span>
+      {/* 1. Header & Dedicated Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Ringkasan Kebugaran
+          </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Atlet: {user?.name || user?.email || 'Demo Athlete'} • Integrasi Strava & Gemini AI
+          </p>
+        </div>
+
+        {/* Quick Action Buttons (Opens Modals) */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsActivityModalOpen(true)}
+            className="text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Catat Latihan</span>
+          </button>
+
+          <button
+            onClick={() => setIsFoodModalOpen(true)}
+            className="text-xs font-medium px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors"
+          >
+            <Camera className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Scan Makanan</span>
+          </button>
+
+          <button
+            onClick={() => setIsWeightModalOpen(true)}
+            className="text-xs font-medium px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors"
+          >
+            <Scale className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Log Berat Badan</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Top Statistic KPI Cards */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Total Sesi Latihan
+          </span>
+          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+            {totalWorkouts} <span className="text-xs font-normal text-zinc-500">sesi</span>
           </div>
         </div>
 
-        {/* Minimalist Metrics Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-              Total Latihan
-            </span>
-            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
-              {totalWorkouts} <span className="text-xs font-normal text-zinc-500">sesi</span>
-            </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Jarak Tempuh
+          </span>
+          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+            {totalDistanceKm} <span className="text-xs font-normal text-zinc-500">km</span>
           </div>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-              Total Jarak
-            </span>
-            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
-              {totalDistanceKm} <span className="text-xs font-normal text-zinc-500">km</span>
-            </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Kalori Latihan
+          </span>
+          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+            {totalCalories} <span className="text-xs font-normal text-zinc-500">kkal</span>
           </div>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-              Estimasi Kalori
-            </span>
-            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
-              {totalCalories} <span className="text-xs font-normal text-zinc-500">kkal</span>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-              Latihan Beban
-            </span>
-            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
-              {totalGymSessions} <span className="text-xs font-normal text-zinc-500">sesi</span>
-            </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Latihan Beban (Gym)
+          </span>
+          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+            {totalGymSessions} <span className="text-xs font-normal text-zinc-500">sesi</span>
           </div>
         </div>
       </section>
 
-      {/* Strava Integration Hub */}
-      <section id="strava-section">
+      {/* 3. Visual Charts (Recharts) */}
+      <section>
+        <DashboardCharts
+          activities={initialActivities}
+          weightLogs={initialWeightLogs}
+          foodLogs={initialFoodLogs}
+        />
+      </section>
+
+      {/* 4. Strava Status Banner */}
+      <section>
         <StravaConnectButton
           isConnected={!!stravaToken}
           athleteId={stravaToken?.athleteId}
@@ -124,45 +157,89 @@ export default function DashboardClientView({
         />
       </section>
 
-      {/* Performance Intelligence */}
+      {/* 5. Weekly AI Performance Intelligence */}
       <section id="insights">
         <WeeklyAiInsight initialInsight={initialInsight} />
       </section>
 
-      {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Input Forms */}
+      {/* 6. Clean Two-Column Feeds: Recent Activities & Nutrition */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-7 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Aktivitas Terbaru
+            </h2>
+            <button
+              onClick={() => setIsActivityModalOpen(true)}
+              className="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+            >
+              + Catat Baru
+            </button>
+          </div>
+          <ActivityList
+            activities={initialActivities}
+            onActivityDeleted={handleRefresh}
+          />
+        </div>
+
         <div className="lg:col-span-5 space-y-6">
-          <section id="manual-input">
-            <ManualActivityForm onSuccess={handleRefresh} />
-          </section>
-
-          <section id="food-scanner">
-            <FoodScannerModal onScanSuccess={handleRefresh} />
-          </section>
+          <NutritionSummary
+            foodLogs={initialFoodLogs}
+            onLogDeleted={handleRefresh}
+          />
         </div>
+      </section>
 
-        {/* Right Column: Feeds & Nutrition Trackers */}
-        <div className="lg:col-span-7 space-y-6">
-          <section id="activities">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Riwayat Aktivitas
-              </h2>
-              <span className="text-xs text-zinc-500">Strava & Manual</span>
-            </div>
-            <ActivityList activities={activities} onActivityDeleted={handleRefresh} />
-          </section>
+      {/* 7. Clean Action Modals (Opens only when requested) */}
+      {/* Activity Input Modal */}
+      <Modal
+        isOpen={isActivityModalOpen}
+        onClose={() => setIsActivityModalOpen(false)}
+        title="Catat Aktivitas Latihan"
+        description="Pilih jenis olahraga lari atau gym untuk mencatat sesi latihan Anda"
+        maxWidth="lg"
+      >
+        <ManualActivityForm
+          isModal
+          onSuccess={() => {
+            setIsActivityModalOpen(false);
+            handleRefresh();
+          }}
+        />
+      </Modal>
 
-          <section id="nutrition">
-            <NutritionSummary foodLogs={foodLogs} onLogDeleted={handleRefresh} />
-          </section>
+      {/* Food Scanner Modal */}
+      <Modal
+        isOpen={isFoodModalOpen}
+        onClose={() => setIsFoodModalOpen(false)}
+        title="AI Food Scanner (Multimodal)"
+        description="Unggah foto makanan untuk ekstraksi nutrisi & kalori instan dengan Gemini Vision"
+        maxWidth="md"
+      >
+        <FoodScannerModal
+          isModal
+          onScanSuccess={() => {
+            setIsFoodModalOpen(false);
+            handleRefresh();
+          }}
+        />
+      </Modal>
 
-          <section id="weight">
-            <WeightTracker logs={weightLogs} onWeightLogged={handleRefresh} />
-          </section>
-        </div>
-      </div>
+      {/* Weight Log Modal */}
+      <Modal
+        isOpen={isWeightModalOpen}
+        onClose={() => setIsWeightModalOpen(false)}
+        title="Catat Berat Badan"
+        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
+        maxWidth="sm"
+      >
+        <LogWeightModalForm
+          onSuccess={() => {
+            setIsWeightModalOpen(false);
+            handleRefresh();
+          }}
+        />
+      </Modal>
     </div>
   );
 }

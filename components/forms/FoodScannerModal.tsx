@@ -6,9 +6,10 @@ import { FoodLogData } from '@/types';
 
 interface FoodScannerModalProps {
   onScanSuccess?: () => void;
+  isModal?: boolean;
 }
 
-export default function FoodScannerModal({ onScanSuccess }: FoodScannerModalProps) {
+export default function FoodScannerModal({ onScanSuccess, isModal = false }: FoodScannerModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,20 +67,22 @@ export default function FoodScannerModal({ onScanSuccess }: FoodScannerModalProp
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5">
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Food Scanner Multimodal
-          </h2>
-          <span className="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-            Vision
-          </span>
+    <div className={isModal ? 'space-y-4' : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5'}>
+      {!isModal && (
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Food Scanner Multimodal
+            </h2>
+            <span className="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+              Vision
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Deteksi otomatis nama hidangan dan estimasi gram makronutrisi dari foto makanan
+          </p>
         </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-          Deteksi otomatis nama hidangan dan estimasi gram makronutrisi dari foto makanan
-        </p>
-      </div>
+      )}
 
       <input
         ref={fileInputRef}
