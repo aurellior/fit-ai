@@ -9,7 +9,6 @@ import WeightTracker from '@/components/dashboard/WeightTracker';
 import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import { useRouter } from 'next/navigation';
-import { Activity, Dumbbell, Flame, TrendingUp } from 'lucide-react';
 import {
   UserProfile,
   StravaTokenData,
@@ -41,7 +40,7 @@ export default function DashboardClientView({
   const [foodLogs] = useState(initialFoodLogs);
   const [weightLogs] = useState(initialWeightLogs);
 
-  // Quick Stats
+  // Core Metrics
   const totalWorkouts = activities.length;
   const totalDistanceMeters = activities.reduce(
     (acc, act) => acc + (act.distanceMeters || 0),
@@ -49,6 +48,7 @@ export default function DashboardClientView({
   );
   const totalDistanceKm = (totalDistanceMeters / 1000).toFixed(1);
   const totalCalories = activities.reduce((acc, act) => acc + (act.calories || 0), 0);
+  const totalGymSessions = activities.filter((a) => a.type === 'WEIGHT_TRAINING').length;
 
   const handleRefresh = () => {
     router.refresh();
@@ -56,69 +56,64 @@ export default function DashboardClientView({
 
   return (
     <div className="space-y-8">
-      {/* Welcome Banner & Summary KPIs */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      {/* Overview & Core Metrics */}
+      <section id="overview" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              Personal Fitness Monolith
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
-              Halo, {user?.name || 'Athlete'} 👋
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              Dashboard Kebugaran
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Pantau seluruh aktivitas Strava, latihan gym, nutrisi, dan evaluasi Gemini AI dalam satu dasbor.
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Profil: {user?.name || user?.email || 'Athlete'}
             </p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Monolith Online
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Live Sync
             </span>
           </div>
         </div>
 
-        {/* Quick KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
-              <Activity className="w-4 h-4 text-emerald-600" /> Total Aktivitas
-            </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {totalWorkouts} <span className="text-xs font-normal text-slate-500">sesi</span>
-            </div>
-          </div>
-
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
-              <TrendingUp className="w-4 h-4 text-blue-600" /> Total Jarak
-            </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {totalDistanceKm} <span className="text-xs font-normal text-slate-500">km</span>
+        {/* Minimalist Metrics Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+              Total Latihan
+            </span>
+            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+              {totalWorkouts} <span className="text-xs font-normal text-zinc-500">sesi</span>
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
-              <Flame className="w-4 h-4 text-amber-500" /> Kalori Terbakar
-            </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {totalCalories} <span className="text-xs font-normal text-slate-500">kkal</span>
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+              Total Jarak
+            </span>
+            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+              {totalDistanceKm} <span className="text-xs font-normal text-zinc-500">km</span>
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
-              <Dumbbell className="w-4 h-4 text-indigo-500" /> Sesi Angkat Beban
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+              Estimasi Kalori
+            </span>
+            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+              {totalCalories} <span className="text-xs font-normal text-zinc-500">kkal</span>
             </div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {activities.filter((a) => a.type === 'WEIGHT_TRAINING').length}{' '}
-              <span className="text-xs font-normal text-slate-500">sesi</span>
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+              Latihan Beban
+            </span>
+            <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+              {totalGymSessions} <span className="text-xs font-normal text-zinc-500">sesi</span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Strava Integration Hub */}
       <section id="strava-section">
@@ -129,15 +124,15 @@ export default function DashboardClientView({
         />
       </section>
 
-      {/* Gemini AI Performance Insights */}
-      <section id="ai-insights">
+      {/* Performance Intelligence */}
+      <section id="insights">
         <WeeklyAiInsight initialInsight={initialInsight} />
       </section>
 
-      {/* Main Grid: Form Inputs & Feeds */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Main Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Input Forms */}
-        <div className="lg:col-span-5 space-y-8">
+        <div className="lg:col-span-5 space-y-6">
           <section id="manual-input">
             <ManualActivityForm onSuccess={handleRefresh} />
           </section>
@@ -147,14 +142,14 @@ export default function DashboardClientView({
           </section>
         </div>
 
-        {/* Right Column: Feeds & Summaries */}
-        <div className="lg:col-span-7 space-y-8">
+        {/* Right Column: Feeds & Nutrition Trackers */}
+        <div className="lg:col-span-7 space-y-6">
           <section id="activities">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                Riwayat Aktivitas Olahraga
-              </h3>
-              <span className="text-xs text-slate-400">Strava & Manual</span>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Riwayat Aktivitas
+              </h2>
+              <span className="text-xs text-zinc-500">Strava & Manual</span>
             </div>
             <ActivityList activities={activities} onActivityDeleted={handleRefresh} />
           </section>

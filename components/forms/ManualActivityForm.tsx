@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { createManualActivity } from '@/actions/activity';
-import { Plus, Trash2, Dumbbell, Activity as RunIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ActivityType } from '@prisma/client';
+import { Trash2, Plus } from 'lucide-react';
 
 interface GymSetInput {
   exercise: string;
@@ -53,7 +53,7 @@ export default function ManualActivityForm({ onSuccess }: ManualActivityFormProp
 
     const payload = {
       type: activityType,
-      title: title || (activityType === ActivityType.RUN ? 'Lari Sesi Pagi' : 'Latihan Beban Gym'),
+      title: title || (activityType === ActivityType.RUN ? 'Sesi Lari' : 'Sesi Latihan Beban'),
       startTime,
       durationMinutes: Number(durationMinutes),
       distanceKm: activityType === ActivityType.RUN && distanceKm !== '' ? Number(distanceKm) : null,
@@ -66,7 +66,7 @@ export default function ManualActivityForm({ onSuccess }: ManualActivityFormProp
     setIsSubmitting(false);
 
     if (res.success) {
-      setFeedback({ type: 'success', message: 'Sesi aktivitas manual berhasil disimpan!' });
+      setFeedback({ type: 'success', message: 'Aktivitas berhasil dicatat.' });
       setTitle('');
       setNotes('');
       setDurationMinutes('');
@@ -76,89 +76,86 @@ export default function ManualActivityForm({ onSuccess }: ManualActivityFormProp
     } else {
       setFeedback({
         type: 'error',
-        message: res.error || 'Terjadi kesalahan saat memvalidasi form.',
+        message: res.error || 'Periksa kembali data input.',
       });
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Input Latihan Manual</h2>
-          <p className="text-xs text-slate-500">Catat sesi lari atau gym tanpa sinkronisasi Strava</p>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Catat Aktivitas Manual
+          </h2>
+          <p className="text-xs text-zinc-500">
+            Pencatatan sesi latihan mandiri tanpa sinkronisasi GPS Strava
+          </p>
         </div>
       </div>
 
       {feedback && (
         <div
-          className={`flex items-center gap-2 p-3 rounded-xl mb-4 text-sm font-medium ${
+          className={`p-3 rounded text-xs font-medium mb-4 ${
             feedback.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-              : 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300'
+              ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900'
+              : 'bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-900'
           }`}
         >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
-          )}
-          <span>{feedback.message}</span>
+          {feedback.message}
         </div>
       )}
 
-      {/* Selector Mode: Lari vs Gym */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl mb-6">
+      {/* Segmented Control */}
+      <div className="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-md mb-4 text-xs font-medium">
         <button
           type="button"
           onClick={() => {
             setActivityType(ActivityType.RUN);
-            if (!title || title.includes('Gym')) setTitle('Lari Rutin 5K');
+            if (!title || title.includes('Beban')) setTitle('Lari Rutin');
           }}
-          className={`flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
+          className={`py-1.5 rounded transition-all ${
             activityType === ActivityType.RUN
-              ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
           }`}
         >
-          <RunIcon className="w-4 h-4" /> Lari / Kardio
+          Lari & Kardio
         </button>
         <button
           type="button"
           onClick={() => {
             setActivityType(ActivityType.WEIGHT_TRAINING);
-            if (!title || title.includes('Lari')) setTitle('Sesi Gym / Latihan Beban');
+            if (!title || title.includes('Lari')) setTitle('Sesi Gym');
           }}
-          className={`flex items-center justify-center gap-2 py-2.5 rounded-lg font-medium text-sm transition-all ${
+          className={`py-1.5 rounded transition-all ${
             activityType === ActivityType.WEIGHT_TRAINING
-              ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900'
           }`}
         >
-          <Dumbbell className="w-4 h-4" /> Gym / Beban
+          Gym & Latihan Beban
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+          <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
             Judul Sesi
           </label>
           <input
             type="text"
             required
-            placeholder={
-              activityType === ActivityType.RUN ? 'Contoh: Lari Pagi GBK 5K' : 'Contoh: Push Day (Chest & Triceps)'
-            }
+            placeholder={activityType === ActivityType.RUN ? 'Misal: Easy Run 5K' : 'Misal: Chest & Triceps'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
               Waktu Mulai
             </label>
             <input
@@ -166,159 +163,147 @@ export default function ManualActivityForm({ onSuccess }: ManualActivityFormProp
               required
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
               Durasi (Menit)
             </label>
             <input
               type="number"
               required
               min="1"
-              placeholder="Contoh: 45"
+              placeholder="45"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
         </div>
 
-        {/* Input Spesifik Lari */}
         {activityType === ActivityType.RUN && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                Jarak Tempuh (km)
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
+                Jarak (km)
               </label>
               <input
                 type="number"
                 step="0.01"
                 min="0.1"
                 required
-                placeholder="Contoh: 5.25"
+                placeholder="5.0"
                 value={distanceKm}
                 onChange={(e) => setDistanceKm(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                Kalori Terbakar (kkal)
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
+                Kalori (kkal)
               </label>
               <input
                 type="number"
-                placeholder="Contoh: 320"
+                placeholder="300"
                 value={calories}
                 onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
               />
             </div>
           </div>
         )}
 
-        {/* Input Spesifik Gym / Workout Sets */}
         {activityType === ActivityType.WEIGHT_TRAINING && (
-          <div className="space-y-3 pt-2">
+          <div className="space-y-2 pt-1">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                Log Gerakan & Beban
-              </label>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+                Log Gerakan Beban
+              </span>
               <button
                 type="button"
                 onClick={handleAddSet}
-                className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1 font-medium"
               >
-                <Plus className="w-3.5 h-3.5" /> Tambah Gerakan
+                <Plus className="w-3 h-3" /> Tambah Gerakan
               </button>
             </div>
 
-            {gymSets.map((set, idx) => (
-              <div
-                key={idx}
-                className="flex gap-2 items-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700"
-              >
-                <div className="flex-1">
+            <div className="space-y-2">
+              {gymSets.map((set, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-2 items-center p-2 rounded-md bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800"
+                >
                   <input
                     type="text"
-                    placeholder="Nama Latihan (misal: Dumbbell Press)"
+                    placeholder="Nama Latihan"
                     value={set.exercise}
                     onChange={(e) => handleSetChange(idx, 'exercise', e.target.value)}
-                    className="w-full px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg"
+                    className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
                     required
                   />
-                </div>
-                <div className="w-16">
                   <input
                     type="number"
                     placeholder="Set"
                     value={set.sets}
                     onChange={(e) => handleSetChange(idx, 'sets', Number(e.target.value))}
-                    className="w-full px-2 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center"
+                    className="w-14 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="1"
-                    title="Set"
+                    title="Sets"
                   />
-                </div>
-                <div className="w-16">
                   <input
                     type="number"
                     placeholder="Reps"
                     value={set.reps}
                     onChange={(e) => handleSetChange(idx, 'reps', Number(e.target.value))}
-                    className="w-full px-2 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center"
+                    className="w-14 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="1"
                     title="Reps"
                   />
-                </div>
-                <div className="w-20">
                   <input
                     type="number"
-                    placeholder="Beban kg"
+                    placeholder="kg"
                     value={set.weightKg}
                     onChange={(e) => handleSetChange(idx, 'weightKg', Number(e.target.value))}
-                    className="w-full px-2 py-1.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center"
+                    className="w-16 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="0"
                     title="Beban (kg)"
                   />
+                  {gymSets.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSet(idx)}
+                      className="p-1 text-zinc-400 hover:text-rose-600 rounded transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
-                {gymSets.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveSet(idx)}
-                    className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-            Catatan Tambahan
+          <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-1">
+            Catatan
           </label>
           <textarea
             rows={2}
-            placeholder="Evaluasi rute, detak jantung, atau kondisi otot setelah latihan..."
+            placeholder="Catatan kelelahan, sensasi latihan, atau beban..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] disabled:opacity-50 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
+          className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? (
-            <span>Menyimpan ke Database...</span>
-          ) : (
-            <span>Simpan Sesi Aktivitas</span>
-          )}
+          {isSubmitting ? 'Menyimpan...' : 'Simpan Aktivitas'}
         </button>
       </form>
     </div>

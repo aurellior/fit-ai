@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Camera, Sparkles, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Camera, Loader2 } from 'lucide-react';
 import { FoodLogData } from '@/types';
 
 interface FoodScannerModalProps {
@@ -50,7 +50,7 @@ export default function FoodScannerModal({ onScanSuccess }: FoodScannerModalProp
       setResult(json.data);
       if (onScanSuccess) onScanSuccess();
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan saat pemindaian foto';
+      const errMsg = err instanceof Error ? err.message : 'Terjadi kesalahan pemindaian';
       setError(errMsg);
     } finally {
       setIsLoading(false);
@@ -66,135 +66,132 @@ export default function FoodScannerModal({ onScanSuccess }: FoodScannerModalProp
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="p-2 bg-purple-100 dark:bg-purple-950/60 rounded-xl text-purple-600 dark:text-purple-400">
-          <Sparkles className="w-5 h-5" />
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5">
+      <div className="mb-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Food Scanner Multimodal
+          </h2>
+          <span className="text-[11px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+            Vision
+          </span>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">AI Food Scanner (Multimodal)</h2>
-          <p className="text-xs text-slate-500">
-            Unggah foto piring makanan Anda untuk estimasi kalori & makronutrisi otomatis
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          Deteksi otomatis nama hidangan dan estimasi gram makronutrisi dari foto makanan
+        </p>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {!previewUrl ? (
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="border border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-md p-6 text-center cursor-pointer transition-colors bg-zinc-50/50 dark:bg-zinc-900/50"
+        >
+          <Camera className="w-5 h-5 mx-auto text-zinc-400 mb-2" />
+          <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            Pilih atau seret foto makanan di sini
           </p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">Mendukung format JPG, PNG, WEBP</p>
         </div>
-      </div>
-
-      <div className="mt-4">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-
-        {!previewUrl ? (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-purple-500 dark:hover:border-purple-400 rounded-2xl p-8 text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-800/30"
-          >
-            <div className="mx-auto w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 mb-3">
-              <Camera className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Klik untuk mengambil foto atau pilih gambar makanan
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Mendukung file JPG, PNG, atau WEBP</p>
+      ) : (
+        <div className="space-y-3">
+          <div className="relative rounded-md overflow-hidden max-h-52 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Preview Makanan"
+              className="max-h-52 object-contain rounded"
+            />
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden max-h-60 bg-black/5 dark:bg-black/40 flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt="Preview Makanan"
-                className="max-h-60 object-contain rounded-xl"
-              />
+
+          {error && (
+            <div className="text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded border border-rose-200 dark:border-rose-900/60">
+              {error}
             </div>
+          )}
 
-            {error && (
-              <div className="flex items-center gap-2 p-3 bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl text-sm">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {!result ? (
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleUploadAndScan}
-                  disabled={isLoading}
-                  className="flex-1 py-2.5 px-4 bg-purple-600 hover:bg-purple-700 active:scale-[0.99] disabled:opacity-50 text-white font-medium rounded-xl shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 transition-all"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Gemini AI Sedang Menganalisis...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>Mulai Scan Nutrisi</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  disabled={isLoading}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium"
-                >
-                  Ganti Foto
-                </button>
-              </div>
-            ) : (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold">
-                    <Check className="w-5 h-5" />
-                    <span>Hasil Deteksi Nutrisi</span>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 rounded-full font-medium">
-                    Tersimpan ke Database
-                  </span>
-                </div>
-
-                <div className="text-base font-semibold text-slate-900 dark:text-white">
+          {!result ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleUploadAndScan}
+                disabled={isLoading}
+                className="flex-1 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Menganalisis nutrisi...</span>
+                  </>
+                ) : (
+                  <span>Analisis Foto</span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={isLoading}
+                className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded text-xs transition-colors"
+              >
+                Ganti
+              </button>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-md bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
                   {result.foodName}
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 text-center pt-1">
-                  <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
-                    <div className="text-xs text-slate-500">Kalori</div>
-                    <div className="text-sm font-bold text-amber-600">{result.calories} kkal</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
-                    <div className="text-xs text-slate-500">Protein</div>
-                    <div className="text-sm font-bold text-rose-600">{result.proteinG}g</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
-                    <div className="text-xs text-slate-500">Karbo</div>
-                    <div className="text-sm font-bold text-sky-600">{result.carbsG}g</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm">
-                    <div className="text-xs text-slate-500">Lemak</div>
-                    <div className="text-sm font-bold text-amber-500">{result.fatG}g</div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="w-full py-2 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-semibold hover:bg-emerald-50 transition-colors"
-                >
-                  Scan Makanan Lain
-                </button>
+                </span>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-900/60">
+                  Tersimpan
+                </span>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              <div className="grid grid-cols-4 gap-2 text-center text-xs tabular-nums">
+                <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[10px] text-zinc-500 uppercase">Kalori</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                    {result.calories} <span className="text-[10px] font-normal text-zinc-500">kkal</span>
+                  </div>
+                </div>
+                <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[10px] text-zinc-500 uppercase">Protein</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                    {result.proteinG}g
+                  </div>
+                </div>
+                <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[10px] text-zinc-500 uppercase">Karbo</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                    {result.carbsG}g
+                  </div>
+                </div>
+                <div className="p-2 rounded bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <div className="text-[10px] text-zinc-500 uppercase">Lemak</div>
+                  <div className="font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                    {result.fatG}g
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="w-full text-center text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 pt-1"
+              >
+                Scan foto makanan lain
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
