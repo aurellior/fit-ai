@@ -137,21 +137,15 @@ export default async function HomePage() {
     ];
   }
 
-  // Fallback to cookie if DB is offline but user successfully authorized Strava
+  // Bersihkan cookie lama jika di database belum ada token Strava riil
   try {
     const cookieStore = await cookies();
-    if (!stravaToken && cookieStore.get('strava_connected')?.value === 'true') {
-      stravaToken = {
-        id: 'cookie_token',
-        userId: user?.id || 'demo_user',
-        athleteId: cookieStore.get('strava_athlete_id')?.value || 'Connected',
-        accessToken: 'authenticated',
-        refreshToken: 'authenticated',
-        expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000),
-      };
+    if (!stravaToken && cookieStore.get('strava_connected')) {
+      cookieStore.delete('strava_connected');
+      cookieStore.delete('strava_athlete_id');
     }
   } catch {
-    // Ignore cookie read issues
+    // Ignore cookie errors
   }
 
   return (

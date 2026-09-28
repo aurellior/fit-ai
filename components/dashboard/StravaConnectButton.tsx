@@ -70,14 +70,23 @@ export default function StravaConnectButton({
 
         <div className="flex items-center gap-2">
           {isConnected ? (
-            <button
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="text-xs font-medium px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Syncing...' : 'Tarik Data'}</span>
-            </button>
+            <>
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="text-xs font-medium px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Syncing...' : 'Tarik Data'}</span>
+              </button>
+              <a
+                href="/api/auth/strava"
+                title="Hubungkan Ulang Strava"
+                className="text-xs font-medium px-2.5 py-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+              >
+                Hubungkan Ulang
+              </a>
+            </>
           ) : (
             <a
               href="/api/auth/strava"
@@ -91,8 +100,16 @@ export default function StravaConnectButton({
       </div>
 
       {message && (
-        <div className="mt-3 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 rounded border border-zinc-200 dark:border-zinc-800">
-          {message}
+        <div className="mt-3 flex items-center justify-between gap-3 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 rounded border border-zinc-200 dark:border-zinc-800">
+          <span>{message}</span>
+          {message.includes('belum terhubung') && (
+            <a
+              href="/api/auth/strava"
+              className="font-medium text-[#FC5200] hover:underline shrink-0"
+            >
+              Otorisasi Ulang Sekarang &rarr;
+            </a>
+          )}
         </div>
       )}
     </div>
