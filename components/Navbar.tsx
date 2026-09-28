@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 
+import ThemeToggle from '@/components/ThemeToggle';
+
 export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
@@ -44,7 +46,8 @@ export default function Navbar() {
           </a>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <a
             href="#manual-input"
             className="text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
