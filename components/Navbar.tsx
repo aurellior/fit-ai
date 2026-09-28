@@ -2,12 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
+    <header className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-orange-600"></div>
@@ -19,7 +18,8 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-6 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+        {/* Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-zinc-600 dark:text-zinc-400">
           <a
             href="#overview"
             className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
@@ -50,7 +50,7 @@ export default function Navbar() {
           <ThemeToggle />
           <a
             href="#manual-input"
-            className="text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+            className="hidden sm:inline-flex text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
           >
             + Catat Latihan
           </a>

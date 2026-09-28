@@ -10,6 +10,7 @@ import Modal from '@/components/ui/Modal';
 import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
+import BottomNav from '@/components/navigation/BottomNav';
 import { useRouter } from 'next/navigation';
 import { Plus, Camera, Scale } from 'lucide-react';
 import {
@@ -60,20 +61,20 @@ export default function DashboardClientView({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 pb-24 md:pb-8">
       {/* 1. Header & Dedicated Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-200 dark:border-zinc-800">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Ringkasan Kebugaran
           </h1>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Atlet: {user?.name || user?.email || 'Demo Athlete'} • Integrasi Strava & Gemini AI
+            {user?.name || user?.email || 'Demo Athlete'} • Integrasi Strava & Gemini AI
           </p>
         </div>
 
-        {/* Quick Action Buttons (Opens Modals) */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Desktop Quick Action Buttons (Opens Modals) */}
+        <div className="hidden sm:flex flex-wrap items-center gap-2">
           <button
             onClick={() => setIsActivityModalOpen(true)}
             className="text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 flex items-center gap-1.5 transition-colors shadow-xs"
@@ -101,46 +102,46 @@ export default function DashboardClientView({
       </div>
 
       {/* 2. Top Statistic KPI Cards */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-            Total Sesi Latihan
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 sm:p-4">
+          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Total Sesi
           </span>
-          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+          <div className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
             {totalWorkouts} <span className="text-xs font-normal text-zinc-500">sesi</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 sm:p-4">
+          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
             Jarak Tempuh
           </span>
-          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+          <div className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
             {totalDistanceKm} <span className="text-xs font-normal text-zinc-500">km</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 sm:p-4">
+          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
             Kalori Latihan
           </span>
-          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+          <div className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
             {totalCalories} <span className="text-xs font-normal text-zinc-500">kkal</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4">
-          <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
-            Latihan Beban (Gym)
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 sm:p-4">
+          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-500 uppercase tracking-wider block">
+            Latihan Beban
           </span>
-          <div className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
+          <div className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums mt-1 font-mono">
             {totalGymSessions} <span className="text-xs font-normal text-zinc-500">sesi</span>
           </div>
         </div>
       </section>
 
       {/* 3. Visual Charts (Recharts) */}
-      <section>
+      <section className="overflow-hidden">
         <DashboardCharts
           activities={initialActivities}
           weightLogs={initialWeightLogs}
@@ -149,7 +150,7 @@ export default function DashboardClientView({
       </section>
 
       {/* 4. Strava Status Banner */}
-      <section>
+      <section id="strava-section">
         <StravaConnectButton
           isConnected={!!stravaToken}
           athleteId={stravaToken?.athleteId}
@@ -164,7 +165,7 @@ export default function DashboardClientView({
 
       {/* 6. Clean Two-Column Feeds: Recent Activities & Nutrition */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 space-y-3">
+        <div id="activities" className="lg:col-span-7 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               Aktivitas Terbaru
@@ -182,7 +183,7 @@ export default function DashboardClientView({
           />
         </div>
 
-        <div className="lg:col-span-5 space-y-6">
+        <div id="nutrition" className="lg:col-span-5 space-y-6">
           <NutritionSummary
             foodLogs={initialFoodLogs}
             onLogDeleted={handleRefresh}
@@ -190,7 +191,7 @@ export default function DashboardClientView({
         </div>
       </section>
 
-      {/* 7. Clean Action Modals (Opens only when requested) */}
+      {/* 7. Action Modals (Opens seamlessly on mobile bottom-sheet & desktop modal) */}
       {/* Activity Input Modal */}
       <Modal
         isOpen={isActivityModalOpen}
@@ -240,6 +241,13 @@ export default function DashboardClientView({
           }}
         />
       </Modal>
+
+      {/* 8. Thumb-friendly Mobile Bottom Navigation Bar & FAB Speed Dial */}
+      <BottomNav
+        onOpenActivityModal={() => setIsActivityModalOpen(true)}
+        onOpenFoodModal={() => setIsFoodModalOpen(true)}
+        onOpenWeightModal={() => setIsWeightModalOpen(true)}
+      />
     </div>
   );
 }

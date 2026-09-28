@@ -48,20 +48,23 @@ export default function Modal({
   }[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Dialog Body */}
+      {/* Dialog Body (Bottom sheet on mobile, centered modal on sm+) */}
       <div
-        className={`relative w-full ${maxWidthClass} bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl z-10 p-6 my-8`}
+        className={`relative w-full ${maxWidthClass} bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-lg shadow-2xl z-10 p-5 sm:p-6 my-0 sm:my-8 max-sm:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200`}
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+        {/* Mobile Swipe / Sheet Handle */}
+        <div className="sm:hidden w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-3 shrink-0" />
+
+        <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
           <div>
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {title}
@@ -74,14 +77,14 @@ export default function Modal({
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded transition-colors -mr-1 -mt-1"
+            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors -mr-1 -mt-1"
             aria-label="Tutup dialog"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="max-h-[75vh] overflow-y-auto pr-1">
+        <div className="overflow-y-auto pr-1 flex-1">
           {children}
         </div>
       </div>
