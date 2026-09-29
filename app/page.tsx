@@ -137,12 +137,21 @@ export default async function HomePage() {
     ];
   }
 
-  // Bersihkan cookie lama jika di database belum ada token Strava riil
+  // Fallback: Jika database belum aktif/terkoneksi, gunakan cookie session untuk status Strava
   try {
     const cookieStore = await cookies();
-    if (!stravaToken && cookieStore.get('strava_connected')) {
-      cookieStore.delete('strava_connected');
-      cookieStore.delete('strava_athlete_id');
+    const isConnectedCookie = cookieStore.get('strava_connected')?.value === 'true';
+    const athleteIdCookie = cookieStore.get('strava_athlete_id')?.value;
+
+    if (!stravaToken && isConnectedCookie) {
+      stravaToken = {
+        id: 'cookie_token',
+        userId: user?.id || 'demo_user',
+        athleteId: athleteIdCookie || 'connected',
+        accessToken: '',
+        refreshToken: '',
+        expiresAt: new Date(Date.now() + 86400000 * 30),
+      };
     }
   } catch {
     // Ignore cookie errors

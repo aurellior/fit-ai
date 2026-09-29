@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const error = searchParams.get('error');
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const rawBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = rawBaseUrl.replace(/\/+$/, '');
 
   if (error || !code) {
     return NextResponse.redirect(`${baseUrl}/dashboard?error=strava_denied`);
@@ -62,13 +63,12 @@ export async function GET(request: NextRequest) {
       }
     } catch (dbErr) {
       console.warn('Database offline, token diterima dan disimpan via cookie session:', dbErr);
-      const res = NextResponse.redirect(`${baseUrl}/dashboard?strava=connected`);
-      res.cookies.set('strava_connected', 'true', { path: '/', maxAge: 60 * 60 * 24 * 30 });
-      res.cookies.set('strava_athlete_id', String(data.athlete.id), { path: '/', maxAge: 60 * 60 * 24 * 30 });
-      return res;
     }
 
-    return NextResponse.redirect(`${baseUrl}/dashboard?strava=connected`);
+    const res = NextResponse.redirect(`${baseUrl}/dashboard?strava=connected`);
+    res.cookies.set('strava_connected', 'true', { path: '/', maxAge: 60 * 60 * 24 * 30 });
+    res.cookies.set('strava_athlete_id', String(data.athlete.id), { path: '/', maxAge: 60 * 60 * 24 * 30 });
+    return res;
   } catch (err: unknown) {
     console.error('Error during Strava callback:', err);
     return NextResponse.redirect(`${baseUrl}/dashboard?error=internal_strava_error`);

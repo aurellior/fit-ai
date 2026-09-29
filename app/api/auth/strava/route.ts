@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const clientId = process.env.STRAVA_CLIENT_ID;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const rawBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = rawBaseUrl.replace(/\/+$/, '');
   const redirectUri = `${baseUrl}/api/auth/strava/callback`;
   const scope = 'read,activity:read_all';
 
