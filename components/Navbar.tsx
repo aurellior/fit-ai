@@ -10,7 +10,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const isOverview = pathname === '/' || pathname === '/dashboard';
-  const isCoach = pathname.startsWith('/coach');
+  const isCoach = pathname.startsWith('/ai-coach') || pathname.startsWith('/coach');
   const isActivities = pathname.startsWith('/activities');
   const isNutrition = pathname.startsWith('/nutrition');
 
@@ -45,7 +45,7 @@ export default function Navbar() {
             Overview
           </Link>
           <Link
-            href="/coach"
+            href="/ai-coach"
             className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
               isCoach
                 ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'

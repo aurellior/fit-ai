@@ -135,7 +135,7 @@ export default function BottomNav({
 
           {/* AI Coach Tab */}
           <Link
-            href="/coach"
+            href="/ai-coach"
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               isCoach
                 ? 'text-[#FC5200] font-bold'

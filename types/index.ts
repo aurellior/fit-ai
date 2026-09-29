@@ -60,24 +60,49 @@ export interface FoodLogData {
   loggedAt: Date | string;
 }
 
+export type ScheduledDayStatus = 'completed' | 'skipped' | 'upcoming' | 'today';
+
 export interface CoachWorkoutDay {
   dayName: 'Senin' | 'Kamis' | 'Sabtu';
   focus: string;
+  originalFocus?: string;
   targetMetric: string;
   details: string;
   intensityBadge: 'Moderate' | 'High' | 'Endurance';
+  status?: ScheduledDayStatus;
+  isAdjusted?: boolean;
+  adjustmentReason?: string | null;
+  completedActivity?: {
+    title: string;
+    distanceKm: number;
+    paceFormatted: string;
+  } | null;
+}
+
+export interface SmartSkipAudit {
+  hasSkippedDays: boolean;
+  skippedDayNames: string[];
+  activeAdjustmentNote: string | null;
+  auditDetails: {
+    monday: { status: ScheduledDayStatus; dateLabel: string };
+    thursday: { status: ScheduledDayStatus; dateLabel: string };
+    saturday: { status: ScheduledDayStatus; dateLabel: string };
+  };
 }
 
 export interface CoachPlanData {
   coachGreeting: string;
   intensityVerdict: 'Kurang (Under-training)' | 'Pas (Balanced)' | 'Terlalu Berat (Over-training)';
   lastWeekAnalysis: string;
+  smartSkipAudit: SmartSkipAudit;
   nextWorkoutDay: {
     dayName: string;
     label: string;
     focus: string;
     summary: string;
     targetMetric: string;
+    isAdjusted: boolean;
+    adjustmentBadge?: string | null;
   };
   schedule: {
     monday: CoachWorkoutDay;
