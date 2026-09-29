@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { ActivityType, ActivitySource, Prisma } from '@prisma/client';
+import { estimateActivityCalories } from '@/lib/services/strava';
 
 const gymSetSchema = z.object({
   exercise: z.string().min(1, 'Nama gerakan wajib diisi'),
@@ -47,6 +48,22 @@ export async function createManualActivity(input: unknown) {
       avgPaceSecPerKm = durationSec / data.distanceKm;
     }
 
+    let calories = data.calories || null;
+    if (!calories) {
+      // Ambil berat badan terakhir pengguna
+      const latestWeight = await prisma.weightLog.findFirst({
+        where: { userId: user.id },
+        orderBy: { loggedAt: 'desc' },
+        select: { weightKg: true },
+      });
+      calories = estimateActivityCalories({
+        type: data.type,
+        distanceMeters,
+        durationSec,
+        weightKg: latestWeight?.weightKg || 68,
+      });
+    }
+
     const activity = await prisma.activity.create({
       data: {
         userId: user.id,
@@ -57,7 +74,7 @@ export async function createManualActivity(input: unknown) {
         durationSec,
         distanceMeters,
         avgPaceSecPerKm,
-        calories: data.calories || null,
+        calories,
         notes: data.notes || null,
         gymSets: data.gymSets && data.gymSets.length > 0 ? JSON.parse(JSON.stringify(data.gymSets)) : undefined,
       },
