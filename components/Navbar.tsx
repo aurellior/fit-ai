@@ -10,6 +10,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const isOverview = pathname === '/' || pathname === '/dashboard';
+  const isCoach = pathname.startsWith('/coach');
   const isActivities = pathname.startsWith('/activities');
   const isNutrition = pathname.startsWith('/nutrition');
 
@@ -44,6 +45,17 @@ export default function Navbar() {
             Overview
           </Link>
           <Link
+            href="/coach"
+            className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+              isCoach
+                ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'
+                : 'hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/40'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FC5200]"></span>
+            <span>AI Coach</span>
+          </Link>
+          <Link
             href="/activities"
             className={`px-3 py-1.5 rounded-md transition-colors ${
               isActivities
@@ -62,12 +74,6 @@ export default function Navbar() {
             }`}
           >
             Nutrisi
-          </Link>
-          <Link
-            href="/#insights"
-            className="px-3 py-1.5 rounded-md transition-colors hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
-          >
-            Intelligence
           </Link>
         </nav>
 

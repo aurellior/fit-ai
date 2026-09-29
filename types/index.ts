@@ -60,6 +60,37 @@ export interface FoodLogData {
   loggedAt: Date | string;
 }
 
+export interface CoachWorkoutDay {
+  dayName: 'Senin' | 'Kamis' | 'Sabtu';
+  focus: string;
+  targetMetric: string;
+  details: string;
+  intensityBadge: 'Moderate' | 'High' | 'Endurance';
+}
+
+export interface CoachPlanData {
+  coachGreeting: string;
+  intensityVerdict: 'Kurang (Under-training)' | 'Pas (Balanced)' | 'Terlalu Berat (Over-training)';
+  lastWeekAnalysis: string;
+  nextWorkoutDay: {
+    dayName: string;
+    label: string;
+    focus: string;
+    summary: string;
+    targetMetric: string;
+  };
+  schedule: {
+    monday: CoachWorkoutDay;
+    thursday: CoachWorkoutDay;
+    saturday: CoachWorkoutDay;
+  };
+  recoveryAdvice: {
+    nutrition: string;
+    restAndGym: string;
+    proteinRecommendation: string;
+  };
+}
+
 export interface AiInsightData {
   id: string;
   periodStart: Date | string;
@@ -68,4 +99,6 @@ export interface AiInsightData {
   strengths: string;
   recommendations: string;
   createdAt: Date | string;
+  coachPlan?: CoachPlanData | null;
 }
+

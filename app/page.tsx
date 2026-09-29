@@ -13,6 +13,7 @@ import {
   WeightLogData,
   GymSet,
 } from '@/types';
+import { parseCoachPlanFromInsight } from '@/lib/services/performance-insights';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,10 +55,12 @@ export default async function HomePage() {
       gymSets: (act.gymSets as unknown as GymSet[]) || null,
     }));
 
-    latestInsight = await prisma.aiInsight.findFirst({
+    const rawInsight = await prisma.aiInsight.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
     });
+
+    latestInsight = rawInsight ? parseCoachPlanFromInsight(rawInsight) : null;
 
     foodLogs = await prisma.foodLog.findMany({
       where: { userId: user.id },
@@ -104,7 +107,7 @@ export default async function HomePage() {
         ],
       },
     ];
-    latestInsight = {
+    latestInsight = parseCoachPlanFromInsight({
       id: 'ins-1',
       summary:
         'Volume latihan kardio dan latihan beban seimbang. Pace pada lari pagi menunjukkan efisiensi aerobik yang konsisten pada zona 2-3.',
@@ -115,7 +118,7 @@ export default async function HomePage() {
       periodStart: MOCK_START_GYM,
       periodEnd: BASE_MOCK_DATE,
       createdAt: BASE_MOCK_DATE,
-    };
+    });
     foodLogs = [
       {
         id: 'fd-1',

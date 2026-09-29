@@ -30,6 +30,7 @@ export default function BottomNav({
 
   const isOverview = pathname === '/' || pathname === '/dashboard';
   const isActivities = pathname.startsWith('/activities');
+  const isCoach = pathname.startsWith('/coach');
   const isNutrition = pathname.startsWith('/nutrition');
 
   const handleAction = (callback: () => void) => {
@@ -132,17 +133,20 @@ export default function BottomNav({
             <span className="text-[10px] mt-1">Overview</span>
           </Link>
 
-          {/* Activities Tab */}
+          {/* AI Coach Tab */}
           <Link
-            href="/activities"
+            href="/coach"
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              isActivities
+              isCoach
                 ? 'text-[#FC5200] font-bold'
                 : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
             }`}
           >
-            <Activity className="w-4 h-4" />
-            <span className="text-[10px] mt-1">Aktivitas</span>
+            <div className="relative">
+              <Activity className="w-4 h-4" />
+              <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#FC5200]"></span>
+            </div>
+            <span className="text-[10px] mt-1">AI Coach</span>
           </Link>
 
           {/* Central Elevated FAB Trigger */}
@@ -157,14 +161,18 @@ export default function BottomNav({
             </button>
           </div>
 
-          {/* Food Scanner Quick Link */}
-          <button
-            onClick={onOpenFoodModal}
-            className="flex flex-col items-center justify-center flex-1 py-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+          {/* Activities Tab */}
+          <Link
+            href="/activities"
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              isActivities
+                ? 'text-[#FC5200] font-bold'
+                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            }`}
           >
-            <Camera className="w-4 h-4" />
-            <span className="text-[10px] mt-1">Scan AI</span>
-          </button>
+            <Activity className="w-4 h-4" />
+            <span className="text-[10px] mt-1">Aktivitas</span>
+          </Link>
 
           {/* Nutrition Tab */}
           <Link

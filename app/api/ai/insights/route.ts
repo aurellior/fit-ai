@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { generateWeeklyPerformanceInsight } from '@/lib/services/performance-insights';
+import {
+  generateWeeklyPerformanceInsight,
+  parseCoachPlanFromInsight,
+} from '@/lib/services/performance-insights';
 import { prisma } from '@/lib/db/prisma';
 
 export async function GET() {
@@ -11,7 +14,12 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ success: true, data: latestInsight });
+    if (!latestInsight) {
+      return NextResponse.json({ success: true, data: null });
+    }
+
+    const parsed = parseCoachPlanFromInsight(latestInsight);
+    return NextResponse.json({ success: true, data: parsed });
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Terjadi kesalahan server';
     return NextResponse.json({ success: false, error: errorMsg }, { status: 500 });
