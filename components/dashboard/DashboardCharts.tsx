@@ -5,12 +5,12 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
+  Area,
+  AreaChart,
 } from 'recharts';
 import { ActivityData, WeightLogData, FoodLogData } from '@/types';
 
@@ -31,23 +31,29 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-function MinimalTooltip({ active, payload, label }: CustomTooltipProps) {
+function StravaTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded shadow-sm text-xs tabular-nums">
-        <p className="font-medium text-zinc-500 mb-1">{label}</p>
-        {payload.map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="text-zinc-600 dark:text-zinc-400">{item.name}:</span>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100 font-mono">
-              {item.value}
-            </span>
-          </div>
-        ))}
+      <div className="bg-white/95 dark:bg-[#121214]/95 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-lg shadow-sm text-xs tabular-nums">
+        <p className="font-semibold text-zinc-500 dark:text-zinc-400 text-[11px] mb-1.5 uppercase font-mono tracking-wider">
+          {label}
+        </p>
+        <div className="space-y-1">
+          {payload.map((item, index) => (
+            <div key={index} className="flex items-center justify-between gap-3 text-xs">
+              <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                {item.name}:
+              </span>
+              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -79,7 +85,9 @@ export default function DashboardCharts({
     }
   });
 
-  // 2. Process Weight & Calorie Trend Data
+  const totalWeekKm = last7Days.reduce((acc, d) => acc + d.distanceKm, 0).toFixed(1);
+
+  // 2. Process Weight Trend Data
   const last7DaysWeight = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -88,7 +96,6 @@ export default function DashboardCharts({
     return { date: dayStr, label, weightKg: null as number | null, calories: 0 };
   });
 
-  // Map food logs
   foodLogs.forEach((food) => {
     const fDate = new Date(food.loggedAt).toISOString().split('T')[0];
     const target = last7DaysWeight.find((d) => d.date === fDate);
@@ -97,7 +104,6 @@ export default function DashboardCharts({
     }
   });
 
-  // Map latest weight logs (or propagate latest available)
   let lastKnownWeight = weightLogs[0]?.weightKg || 68.0;
   last7DaysWeight.forEach((day) => {
     const log = weightLogs.find(
@@ -112,31 +118,38 @@ export default function DashboardCharts({
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 min-w-0">
-      {/* Chart 1: Volume Latihan (Jarak & Durasi) */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 sm:p-5 min-w-0">
-        <div className="flex items-center justify-between mb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Chart 1: Volume Latihan Mingguan (Strava Signature Orange) */}
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Tren Jarak & Volume Latihan
-            </h3>
-            <p className="text-xs text-zinc-500">Total kilometer harian 7 hari terakhir</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#FC5200]" />
+              <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Volume Latihan Mingguan
+              </h3>
+            </div>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Total jarak tempuh harian (7 hari terakhir)
+            </p>
           </div>
-          <div className="flex items-center gap-3 text-[11px] font-mono">
-            <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-              <span className="w-2.5 h-2.5 rounded-xs bg-[#FC5200]"></span> Jarak (km)
+
+          <div className="text-right">
+            <span className="text-[10px] uppercase font-mono text-zinc-400 block">Akumulasi 7 Hari</span>
+            <span className="text-base font-bold font-mono text-[#FC5200]">
+              {totalWeekKm} <span className="text-xs font-normal text-zinc-500">km</span>
             </span>
           </div>
         </div>
 
-        <div className="h-60 w-full">
+        <div className="h-56 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last7Days} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={last7Days} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
               <CartesianGrid
-                strokeDasharray="3 3"
+                strokeDasharray="2 2"
                 vertical={false}
-                stroke="#e4e4e7"
-                className="dark:stroke-zinc-800/80"
+                stroke="#71717a"
+                strokeOpacity={0.15}
               />
               <XAxis
                 dataKey="label"
@@ -150,46 +163,59 @@ export default function DashboardCharts({
                 tick={{ fontSize: 11, fill: '#71717a' }}
                 unit="k"
               />
-              <Tooltip content={<MinimalTooltip />} cursor={{ fill: 'transparent' }} />
+              <Tooltip
+                content={<StravaTooltip />}
+                cursor={{ fill: 'rgba(252, 82, 0, 0.06)' }}
+              />
               <Bar
                 dataKey="distanceKm"
-                name="Jarak"
+                name="Jarak (km)"
                 fill="#FC5200"
                 radius={[4, 4, 0, 0]}
-                maxBarSize={36}
+                maxBarSize={32}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Chart 2: Tren Berat Badan & Kalori */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 sm:p-5 min-w-0">
-        <div className="flex items-center justify-between mb-4">
+      {/* Chart 2: Tren Massa Tubuh (Emerald Health Curve) */}
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+        <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Tren Berat Badan & Asupan Kalori
-            </h3>
-            <p className="text-xs text-zinc-500">Massa tubuh (kg) dan kalori masuk harian</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Tren Massa Tubuh
+              </h3>
+            </div>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Fluktuasi berat badan (kg) 7 hari terakhir
+            </p>
           </div>
-          <div className="flex items-center gap-3 text-[11px] font-mono">
-            <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Berat (kg)
+
+          <div className="text-right">
+            <span className="text-[10px] uppercase font-mono text-zinc-400 block">Status Terakhir</span>
+            <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">
+              {lastKnownWeight} <span className="text-xs font-normal text-zinc-500">kg</span>
             </span>
           </div>
         </div>
 
-        <div className="h-60 w-full">
+        <div className="h-56 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={last7DaysWeight}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-            >
+            <AreaChart data={last7DaysWeight} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
-                strokeDasharray="3 3"
+                strokeDasharray="2 2"
                 vertical={false}
-                stroke="#e4e4e7"
-                className="dark:stroke-zinc-800/80"
+                stroke="#71717a"
+                strokeOpacity={0.15}
               />
               <XAxis
                 dataKey="label"
@@ -204,17 +230,19 @@ export default function DashboardCharts({
                 domain={['dataMin - 1', 'dataMax + 1']}
                 unit="kg"
               />
-              <Tooltip content={<MinimalTooltip />} />
-              <Line
+              <Tooltip content={<StravaTooltip />} />
+              <Area
                 type="monotone"
                 dataKey="weightKg"
-                name="Berat Badan (kg)"
-                stroke="#059669"
+                name="Berat (kg)"
+                stroke="#10B981"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#059669' }}
+                fillOpacity={1}
+                fill="url(#weightGrad)"
+                dot={{ r: 3, fill: '#10B981', strokeWidth: 1 }}
                 activeDot={{ r: 5 }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
