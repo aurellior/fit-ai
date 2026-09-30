@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FoodLogData } from '@/types';
+import { FoodLogData, DailyNutritionAuditData } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { deleteFoodLog } from '@/actions/nutrition';
 import Pagination from '@/components/ui/Pagination';
@@ -12,6 +12,7 @@ import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
 import BottomNav from '@/components/navigation/BottomNav';
+import DailyNutritionAuditHistory from '@/components/nutrition/DailyNutritionAuditHistory';
 import {
   Camera,
   Trash2,
@@ -21,11 +22,13 @@ import {
 
 interface NutritionClientViewProps {
   initialFoodLogs: FoodLogData[];
+  initialAuditHistory?: DailyNutritionAuditData[];
   itemsPerPage?: number;
 }
 
 export default function NutritionClientView({
   initialFoodLogs,
+  initialAuditHistory,
   itemsPerPage = 8,
 }: NutritionClientViewProps) {
   const router = useRouter();
@@ -107,7 +110,14 @@ export default function NutritionClientView({
         </div>
       </div>
 
-      {/* 2. Macronutrient Cards Grid */}
+      {/* 2. Daily Nutrition Audit & Energy Balance History (7-Day Overview & AI Evaluation) */}
+      {initialAuditHistory && initialAuditHistory.length > 0 && (
+        <section>
+          <DailyNutritionAuditHistory initialHistory={initialAuditHistory} />
+        </section>
+      )}
+
+      {/* 3. Macronutrient Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
           <span className="text-[11px] text-zinc-400 uppercase font-mono font-semibold block">Total Energi</span>

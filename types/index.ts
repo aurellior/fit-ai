@@ -127,3 +127,38 @@ export interface AiInsightData {
   coachPlan?: CoachPlanData | null;
 }
 
+export type EnergyBalanceStatus = 'Surplus' | 'Defisit' | 'Balanced';
+
+export interface DailyNutritionAuditData {
+  date: string; // 'YYYY-MM-DD'
+  dateFormatted: string; // e.g. "Rabu, 30 September 2026"
+  dayName: string; // e.g. "Senin", "Kamis", "Sabtu", dll.
+  dayScheduleFocus: string; // e.g. "Tempo / Speed Run", "Interval", "Long Run", "Active Recovery / Rest"
+  isTrainingDay: boolean;
+
+  // Energy & Calories
+  caloriesIn: number;
+  caloriesOut: number;
+  activityCalories: number;
+  bmrCalories: number;
+  netCalories: number;
+  status: EnergyBalanceStatus;
+  calorieProgressPercent: number; // (caloriesIn / caloriesOut) * 100
+
+  // Macronutrients
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  targetProteinG: number;
+  proteinProgressPercent: number;
+
+  // AI Sports Nutritionist Analysis
+  evaluationMessage: string;
+  proteinStatus: string;
+  actionableTip?: string;
+
+  // Item counts
+  foodCount: number;
+  activityCount: number;
+}
+

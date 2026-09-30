@@ -12,8 +12,10 @@ import {
   FoodLogData,
   WeightLogData,
   GymSet,
+  DailyNutritionAuditData,
 } from '@/types';
 import { parseCoachPlanFromInsight } from '@/lib/services/performance-insights';
+import { getDailyNutritionAudit } from '@/lib/services/nutrition-audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +31,7 @@ export default async function HomePage() {
   let latestInsight: AiInsightData | null = null;
   let foodLogs: FoodLogData[] = [];
   let weightLogs: WeightLogData[] = [];
+  let nutritionAudit: DailyNutritionAuditData | null = null;
 
   try {
     const dbUser = await getCurrentUser();
@@ -160,6 +163,14 @@ export default async function HomePage() {
     // Ignore cookie errors
   }
 
+  try {
+    nutritionAudit = await getDailyNutritionAudit({
+      userId: user?.id || 'demo_user',
+    });
+  } catch (err) {
+    console.warn('Failed to load initial nutrition audit:', err);
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <DashboardClientView
@@ -169,6 +180,7 @@ export default async function HomePage() {
         initialInsight={latestInsight}
         initialFoodLogs={foodLogs}
         initialWeightLogs={weightLogs}
+        initialNutritionAudit={nutritionAudit || undefined}
       />
     </div>
   );

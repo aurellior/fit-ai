@@ -3,6 +3,7 @@
 import React, { useEffect, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 
 interface ModalProps {
   isOpen: boolean;
@@ -29,17 +30,17 @@ export default function Modal({
     () => false
   );
 
+  // Kunci scroll body dengan pencegahan layout shift & ref-counting
+  useBodyScrollLock(isOpen);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
 
     if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
       return () => {
-        document.body.style.overflow = originalOverflow;
         window.removeEventListener('keydown', handleKeyDown);
       };
     }
@@ -56,16 +57,17 @@ export default function Modal({
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 overflow-hidden pointer-events-auto isolate">
-      {/* Backdrop: Clean high-contrast dimming on mobile (avoids Chromium sub-pixel edge double-image bug), elegant blur on desktop */}
+      {/* Backdrop: Mencegah touchmove agar layar belakang tidak bisa di-scroll di mobile */}
       <div
         className="absolute inset-0 bg-black/60 dark:bg-black/80 sm:backdrop-blur-sm transition-opacity"
         onClick={onClose}
+        onTouchMove={(e) => e.preventDefault()}
         aria-hidden="true"
       />
 
-      {/* Dialog Body: Menempel rapat ke bottom di mobile (bottom-sheet), centered di desktop (sm+) */}
+      {/* Dialog Body: overscroll-contain mencegah scroll chaining ke latar belakang */}
       <div
-        className={`relative w-full max-w-full ${maxWidthClass} bg-white dark:bg-zinc-900 border-t sm:border border-x-0 sm:border-x border-b-0 sm:border-b border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-xl rounded-b-none sm:rounded-b-xl shadow-2xl z-10 p-5 pb-8 sm:p-6 max-h-[85dvh] sm:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom duration-200`}
+        className={`relative w-full max-w-full ${maxWidthClass} bg-white dark:bg-zinc-900 border-t sm:border border-x-0 sm:border-x border-b-0 sm:border-b border-zinc-200 dark:border-zinc-800 rounded-t-2xl sm:rounded-xl rounded-b-none sm:rounded-b-xl shadow-2xl z-10 p-5 pb-8 sm:p-6 max-h-[85dvh] sm:max-h-[90vh] flex flex-col overscroll-contain animate-in slide-in-from-bottom duration-200`}
         role="dialog"
         aria-modal="true"
       >
@@ -92,7 +94,7 @@ export default function Modal({
           </button>
         </div>
 
-        <div className="overflow-y-auto pr-1 flex-1">
+        <div className="overflow-y-auto overscroll-contain pr-1 flex-1">
           {children}
         </div>
       </div>
@@ -101,4 +103,5 @@ export default function Modal({
 
   return createPortal(modalContent, document.body);
 }
+
 

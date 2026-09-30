@@ -97,3 +97,22 @@ export async function deleteFoodLog(id: string) {
   revalidatePath('/nutrition');
   return { success: true };
 }
+
+export async function getDailyNutritionAuditAction(dateStr?: string, forceRefresh = false) {
+  const user = await getCurrentUser();
+  const { getDailyNutritionAudit } = await import('@/lib/services/nutrition-audit');
+  return await getDailyNutritionAudit({
+    userId: user.id,
+    targetDate: dateStr ? new Date(dateStr) : new Date(),
+    forceAiRefresh: forceRefresh,
+  });
+}
+
+export async function getNutritionAuditHistoryAction(days = 7) {
+  const user = await getCurrentUser();
+  const { getNutritionAuditHistory } = await import('@/lib/services/nutrition-audit');
+  return await getNutritionAuditHistory({
+    userId: user.id,
+    days,
+  });
+}

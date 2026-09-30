@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useBodyScrollLock } from '@/lib/hooks/useBodyScrollLock';
 import {
   LayoutDashboard,
   Activity,
@@ -20,6 +22,8 @@ interface BottomNavProps {
   onOpenWeightModal: () => void;
 }
 
+const emptySubscribe = () => () => {};
+
 export default function BottomNav({
   onOpenActivityModal,
   onOpenFoodModal,
@@ -27,6 +31,28 @@ export default function BottomNav({
 }: BottomNavProps) {
   const pathname = usePathname();
   const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
+
+  const isClient = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  // Kunci scroll body saat bottom sheet menu aksi cepat terbuka
+  useBodyScrollLock(isFabMenuOpen);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFabMenuOpen(false);
+    };
+
+    if (isFabMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isFabMenuOpen]);
 
   const isOverview = pathname === '/' || pathname === '/dashboard';
   const isActivities = pathname.startsWith('/activities');
@@ -38,87 +64,96 @@ export default function BottomNav({
     callback();
   };
 
+  const sheetContent = isFabMenuOpen ? (
+    <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end overflow-hidden isolate m-0 p-0">
+      <div
+        className="absolute inset-0 bg-black/60 dark:bg-black/80 transition-opacity"
+        onClick={() => setIsFabMenuOpen(false)}
+        onTouchMove={(e) => e.preventDefault()}
+      />
+
+      <div className="relative w-full bg-white dark:bg-[#121214] border-t border-zinc-200 dark:border-zinc-800 rounded-t-2xl rounded-b-none p-5 pb-8 pb-[max(2rem,env(safe-area-inset-bottom))] space-y-3 z-10 shadow-2xl overscroll-contain max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom duration-200 m-0">
+        {/* Sheet Handle */}
+        <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-2 shrink-0" />
+
+        <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 font-mono">
+            Aksi Cepat Atlet
+          </span>
+          <button
+            onClick={() => setIsFabMenuOpen(false)}
+            className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+            aria-label="Tutup menu aksi"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 pt-1">
+          <button
+            onClick={() => handleAction(onOpenActivityModal)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-lg bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Dumbbell className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                Catat Latihan (Lari & Gym)
+              </div>
+              <div className="text-[11px] text-zinc-500">
+                Input durasi, pace lari, atau repetisi beban
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleAction(onOpenFoodModal)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0 shadow-xs">
+              <Camera className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                Scan Makanan AI
+              </div>
+              <div className="text-[11px] text-zinc-500">
+                Foto makanan untuk ekstraksi kalori & makro
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleAction(onOpenWeightModal)}
+            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Scale className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                Catat Berat Badan
+              </div>
+              <div className="text-[11px] text-zinc-500">
+                Pantau tren massa tubuh harian
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
-      {/* Mobile Speed Dial / Action Sheet Overlay */}
-      {isFabMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end overflow-hidden isolate">
-          <div
-            className="absolute inset-0 bg-black/60 dark:bg-black/80 transition-opacity"
-            onClick={() => setIsFabMenuOpen(false)}
-          />
-
-          <div className="relative bg-white dark:bg-[#121214] border-t border-zinc-200 dark:border-zinc-800 rounded-t-2xl p-5 pb-8 space-y-3 z-10 shadow-2xl animate-in slide-in-from-bottom duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 font-mono">
-                Aksi Cepat Atlet
-              </span>
-              <button
-                onClick={() => setIsFabMenuOpen(false)}
-                className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 pt-1">
-              <button
-                onClick={() => handleAction(onOpenActivityModal)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Dumbbell className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                    Catat Latihan (Lari & Gym)
-                  </div>
-                  <div className="text-[11px] text-zinc-500">
-                    Input durasi, pace lari, atau repetisi beban
-                  </div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleAction(onOpenFoodModal)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0 shadow-xs">
-                  <Camera className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                    Scan Makanan AI
-                  </div>
-                  <div className="text-[11px] text-zinc-500">
-                    Foto makanan untuk ekstraksi kalori & makro
-                  </div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleAction(onOpenWeightModal)}
-                className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Scale className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                    Catat Berat Badan
-                  </div>
-                  <div className="text-[11px] text-zinc-500">
-                    Pantau tren massa tubuh harian
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile Speed Dial / Action Sheet Overlay Portaled to document.body */}
+      {isClient && isFabMenuOpen && typeof document !== 'undefined'
+        ? createPortal(sheetContent, document.body)
+        : null}
 
       {/* Thumb-friendly Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0">
         <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
           {/* Dashboard Tab */}
           <Link

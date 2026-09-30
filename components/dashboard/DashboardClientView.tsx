@@ -34,8 +34,10 @@ import {
   AiInsightData,
   FoodLogData,
   WeightLogData,
+  DailyNutritionAuditData,
 } from '@/types';
 import { cn, formatDuration } from '@/lib/utils';
+import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
 
 interface DashboardClientViewProps {
   user: UserProfile | null;
@@ -44,6 +46,7 @@ interface DashboardClientViewProps {
   initialInsight: AiInsightData | null;
   initialFoodLogs: FoodLogData[];
   initialWeightLogs: WeightLogData[];
+  initialNutritionAudit?: DailyNutritionAuditData;
 }
 
 export default function DashboardClientView({
@@ -53,6 +56,7 @@ export default function DashboardClientView({
   initialInsight,
   initialFoodLogs,
   initialWeightLogs,
+  initialNutritionAudit,
 }: DashboardClientViewProps) {
   const router = useRouter();
 
@@ -176,33 +180,6 @@ export default function DashboardClientView({
           <p className="text-xs text-zinc-500 mt-0.5">
             {user?.name || user?.email || 'Demo Athlete'} • Sinkronisasi Strava & Gemini AI
           </p>
-        </div>
-
-        {/* Quick Action Buttons (Full width di mobile: Catat Aktivitas full, Scan Makanan & Log Berat bagi dua) */}
-        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-2 min-w-0">
-          <button
-            onClick={() => setIsActivityModalOpen(true)}
-            className="col-span-2 sm:col-auto w-full sm:w-auto text-xs font-semibold px-3.5 py-2.5 sm:py-2 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-98 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Catat Aktivitas</span>
-          </button>
-
-          <button
-            onClick={() => setIsFoodModalOpen(true)}
-            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-2.5 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer min-w-0"
-          >
-            <Camera className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <span className="truncate">Scan Makanan</span>
-          </button>
-
-          <button
-            onClick={() => setIsWeightModalOpen(true)}
-            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-2.5 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer min-w-0"
-          >
-            <Scale className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <span className="truncate">Log Berat</span>
-          </button>
         </div>
       </div>
 
@@ -626,8 +603,15 @@ export default function DashboardClientView({
           />
         </div>
 
-        {/* Right Column: Ringkasan Nutrisi Harian */}
+        {/* Right Column: Ringkasan Nutrisi Harian & Energy Balance */}
         <div id="nutrition" className="lg:col-span-5 space-y-6">
+          {initialNutritionAudit && (
+            <DailyNutritionAuditCard
+              initialAudit={initialNutritionAudit}
+              isOverview={true}
+              onRefreshSuccess={handleRefresh}
+            />
+          )}
           <NutritionSummary
             foodLogs={initialFoodLogs}
             onLogDeleted={handleRefresh}
