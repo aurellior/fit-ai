@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -13,6 +13,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { ActivityData, WeightLogData, FoodLogData } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface DashboardChartsProps {
   activities: ActivityData[];
@@ -65,18 +66,37 @@ export default function DashboardCharts({
   weightLogs,
   foodLogs,
 }: DashboardChartsProps) {
-  // 1. Process 7-day Activity Data (Distance & Duration)
-  const last7Days = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
+  const [chartPeriod, setChartPeriod] = useState<'7d' | '30d'>('7d');
+
+  // Waktu referensi (mendukung mock data & live data)
+  const now = new Date();
+  const latestActivityTimestamp =
+    activities.length > 0
+      ? Math.max(...activities.map((a) => new Date(a.startTime).getTime()))
+      : now.getTime();
+
+  const refTime =
+    Math.abs(now.getTime() - latestActivityTimestamp) < 30 * 24 * 60 * 60 * 1000
+      ? now.getTime()
+      : latestActivityTimestamp;
+
+  const numDays = chartPeriod === '7d' ? 7 : 30;
+
+  // 1. Process Activity Data (Distance & Duration)
+  const activityDays = Array.from({ length: numDays }).map((_, i) => {
+    const d = new Date(refTime);
+    d.setDate(d.getDate() - (numDays - 1 - i));
     const dayStr = d.toISOString().split('T')[0];
-    const label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+    const label =
+      numDays === 7
+        ? d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
+        : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     return { date: dayStr, label, distanceKm: 0, durationMin: 0 };
   });
 
   activities.forEach((act) => {
     const actDate = new Date(act.startTime).toISOString().split('T')[0];
-    const target = last7Days.find((d) => d.date === actDate);
+    const target = activityDays.find((d) => d.date === actDate);
     if (target) {
       if (act.distanceMeters) {
         target.distanceKm = Number((target.distanceKm + act.distanceMeters / 1000).toFixed(2));
@@ -85,27 +105,30 @@ export default function DashboardCharts({
     }
   });
 
-  const totalWeekKm = last7Days.reduce((acc, d) => acc + d.distanceKm, 0).toFixed(1);
+  const totalPeriodKm = activityDays.reduce((acc, d) => acc + d.distanceKm, 0).toFixed(1);
 
   // 2. Process Weight Trend Data
-  const last7DaysWeight = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
+  const weightDays = Array.from({ length: numDays }).map((_, i) => {
+    const d = new Date(refTime);
+    d.setDate(d.getDate() - (numDays - 1 - i));
     const dayStr = d.toISOString().split('T')[0];
-    const label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+    const label =
+      numDays === 7
+        ? d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
+        : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     return { date: dayStr, label, weightKg: null as number | null, calories: 0 };
   });
 
   foodLogs.forEach((food) => {
     const fDate = new Date(food.loggedAt).toISOString().split('T')[0];
-    const target = last7DaysWeight.find((d) => d.date === fDate);
+    const target = weightDays.find((d) => d.date === fDate);
     if (target) {
       target.calories += Math.round(food.calories);
     }
   });
 
   let lastKnownWeight = weightLogs[0]?.weightKg || 68.0;
-  last7DaysWeight.forEach((day) => {
+  weightDays.forEach((day) => {
     const log = weightLogs.find(
       (w) => new Date(w.loggedAt).toISOString().split('T')[0] === day.date
     );
@@ -119,32 +142,66 @@ export default function DashboardCharts({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* Chart 1: Volume Latihan Mingguan (Strava Signature Orange) */}
+      {/* Chart 1: Volume Latihan Mingguan / Bulanan (Strava Signature Orange) */}
       <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#FC5200]" />
               <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                Volume Latihan Mingguan
+                Volume Latihan
               </h3>
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Total jarak tempuh harian (7 hari terakhir)
+              {chartPeriod === '7d'
+                ? 'Jarak tempuh harian (7 hari terakhir)'
+                : 'Tren jarak tempuh 30 hari terakhir'}
             </p>
           </div>
 
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-mono text-zinc-400 block">Akumulasi 7 Hari</span>
-            <span className="text-base font-bold font-mono text-[#FC5200]">
-              {totalWeekKm} <span className="text-xs font-normal text-zinc-500">km</span>
-            </span>
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            {/* Quick Chart Filter */}
+            <div className="inline-flex p-0.5 bg-zinc-100 dark:bg-zinc-800/90 rounded-md border border-zinc-200/80 dark:border-zinc-700/80 text-[11px] font-medium">
+              <button
+                type="button"
+                onClick={() => setChartPeriod('7d')}
+                className={cn(
+                  'px-2.5 py-1 rounded transition-all cursor-pointer',
+                  chartPeriod === '7d'
+                    ? 'bg-white dark:bg-zinc-900 text-[#FC5200] font-semibold shadow-xs'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                )}
+              >
+                7 Hari
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartPeriod('30d')}
+                className={cn(
+                  'px-2.5 py-1 rounded transition-all cursor-pointer',
+                  chartPeriod === '30d'
+                    ? 'bg-white dark:bg-zinc-900 text-[#FC5200] font-semibold shadow-xs'
+                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                )}
+              >
+                30 Hari
+              </button>
+            </div>
+
+            <div className="text-right pl-2 border-l border-zinc-200 dark:border-zinc-800">
+              <span className="text-[10px] uppercase font-mono text-zinc-400 block">
+                {chartPeriod === '7d' ? 'Total 7H' : 'Total 30H'}
+              </span>
+              <span className="text-base font-bold font-mono text-[#FC5200] tabular-nums">
+                {totalPeriodKm} <span className="text-xs font-normal text-zinc-500">km</span>
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="h-56 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last7Days} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <BarChart data={activityDays} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
               <CartesianGrid
                 strokeDasharray="2 2"
                 vertical={false}
@@ -156,6 +213,7 @@ export default function DashboardCharts({
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 11, fill: '#71717a' }}
+                interval={chartPeriod === '30d' ? 4 : 0}
               />
               <YAxis
                 tickLine={false}
@@ -172,7 +230,7 @@ export default function DashboardCharts({
                 name="Jarak (km)"
                 fill="#FC5200"
                 radius={[4, 4, 0, 0]}
-                maxBarSize={32}
+                maxBarSize={chartPeriod === '30d' ? 12 : 32}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -190,13 +248,15 @@ export default function DashboardCharts({
               </h3>
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
-              Fluktuasi berat badan (kg) 7 hari terakhir
+              {chartPeriod === '7d'
+                ? 'Fluktuasi berat badan (kg) 7 hari terakhir'
+                : 'Fluktuasi berat badan (kg) 30 hari terakhir'}
             </p>
           </div>
 
           <div className="text-right">
             <span className="text-[10px] uppercase font-mono text-zinc-400 block">Status Terakhir</span>
-            <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
               {lastKnownWeight} <span className="text-xs font-normal text-zinc-500">kg</span>
             </span>
           </div>
@@ -204,7 +264,7 @@ export default function DashboardCharts({
 
         <div className="h-56 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={last7DaysWeight} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+            <AreaChart data={weightDays} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.2} />
@@ -222,6 +282,7 @@ export default function DashboardCharts({
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 11, fill: '#71717a' }}
+                interval={chartPeriod === '30d' ? 4 : 0}
               />
               <YAxis
                 tickLine={false}
@@ -239,7 +300,7 @@ export default function DashboardCharts({
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#weightGrad)"
-                dot={{ r: 3, fill: '#10B981', strokeWidth: 1 }}
+                dot={{ r: chartPeriod === '30d' ? 2 : 3, fill: '#10B981', strokeWidth: 1 }}
                 activeDot={{ r: 5 }}
               />
             </AreaChart>
