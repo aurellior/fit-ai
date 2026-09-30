@@ -4,18 +4,8 @@ import Skeleton from '@/components/ui/Skeleton';
 export default function DashboardLoading() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12 animate-in fade-in duration-150">
-      {/* 1. Athlete Hero Header Skeleton */}
-      <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
-        <div className="space-y-2 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0"></span>
-            <Skeleton className="h-3 w-40" />
-          </div>
-          <Skeleton className="h-7 sm:h-8 w-56 sm:w-72" />
-          <Skeleton className="h-4 w-48 sm:w-64" />
-        </div>
-
-        {/* Strava Connect Button Skeleton */}
+      {/* 1. Strava Sync Action Bar Skeleton */}
+      <div className="flex items-center justify-end">
         <Skeleton className="h-9 w-32 rounded-lg shrink-0" />
       </div>
 

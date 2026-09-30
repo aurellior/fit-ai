@@ -165,24 +165,8 @@ export default function DashboardClientView({
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
-      {/* 1. Athlete Hero Header & Quick Action Trigger Bar */}
-      <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0"></span>
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold truncate">
-              Athlete Dashboard Overview
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
-            Ringkasan Performa
-          </h1>
-          <p className="text-xs text-zinc-500 mt-0.5 truncate">
-            {user?.name || user?.email || 'Demo Athlete'} • Sinkronisasi Strava & Gemini AI
-          </p>
-        </div>
-
-        {/* Simple Strava Sync Button */}
+      {/* 1. Strava Sync Action Bar */}
+      <div className="flex items-center justify-end">
         <StravaConnectButton
           isConnected={!!stravaToken}
           athleteId={stravaToken?.athleteId}
