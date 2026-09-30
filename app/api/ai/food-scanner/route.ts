@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     4. carbsG: estimasi karbohidrat dalam gram (angka saja)
     5. fatG: estimasi lemak dalam gram (angka saja)`;
 
-    // Coba model terbaru gemini-3.8-flash dengan fallback ke gemini-1.5-flash
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-1.5-flash'];
+    // Coba model terbaru gemini-3.8-flash dengan fallback ke gemini-3.5-flash-lite dan gemini-flash-lite-latest
+    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
     let responseText: string | undefined;
     let lastError: unknown;
 
@@ -98,7 +98,8 @@ export async function POST(req: NextRequest) {
       throw lastError || new Error('Tidak ada respon teks yang diterima dari Gemini');
     }
 
-    const nutrition = JSON.parse(responseText);
+    const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const nutrition = JSON.parse(cleanedJson);
 
     // 3. Simpan ke database PostgreSQL
     const savedLog = await prisma.foodLog.create({

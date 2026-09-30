@@ -468,7 +468,7 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       }
     `;
 
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-1.5-flash'];
+    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
     for (const modelName of modelsToTry) {
       try {
         const response = await ai.models.generateContent({
@@ -495,7 +495,8 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
 
         const rawJson = response.text?.trim() || '';
         if (rawJson) {
-          const geminiPlan = JSON.parse(rawJson);
+          const cleanedJson = rawJson.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+          const geminiPlan = JSON.parse(cleanedJson);
           // Pastikan audit details terisi dengan benar
           geminiPlan.smartSkipAudit = {
             ...auditResult.smartSkipAudit,
