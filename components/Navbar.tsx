@@ -36,6 +36,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
           <Link
             href="/"
+            prefetch={true}
             className={`px-3 py-1.5 rounded-md transition-colors ${
               isOverview
                 ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'
@@ -46,6 +47,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/ai-coach"
+            prefetch={true}
             className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
               isCoach
                 ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'
@@ -57,6 +59,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/activities"
+            prefetch={true}
             className={`px-3 py-1.5 rounded-md transition-colors ${
               isActivities
                 ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'
@@ -67,6 +70,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/nutrition"
+            prefetch={true}
             className={`px-3 py-1.5 rounded-md transition-colors ${
               isNutrition
                 ? 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-semibold'

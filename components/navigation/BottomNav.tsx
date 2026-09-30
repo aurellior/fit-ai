@@ -158,6 +158,7 @@ export default function BottomNav({
           {/* Dashboard Tab */}
           <Link
             href="/"
+            prefetch={true}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               isOverview
                 ? 'text-[#FC5200] font-bold'
@@ -171,6 +172,7 @@ export default function BottomNav({
           {/* AI Coach Tab */}
           <Link
             href="/ai-coach"
+            prefetch={true}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               isCoach
                 ? 'text-[#FC5200] font-bold'
@@ -199,6 +201,7 @@ export default function BottomNav({
           {/* Activities Tab */}
           <Link
             href="/activities"
+            prefetch={true}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               isActivities
                 ? 'text-[#FC5200] font-bold'
@@ -212,6 +215,7 @@ export default function BottomNav({
           {/* Nutrition Tab */}
           <Link
             href="/nutrition"
+            prefetch={true}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               isNutrition
                 ? 'text-[#FC5200] font-bold'
