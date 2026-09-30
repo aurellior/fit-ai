@@ -166,21 +166,28 @@ export default function DashboardClientView({
   return (
     <div className="space-y-6 sm:space-y-8 pb-24 md:pb-12">
       {/* 1. Athlete Hero Header & Quick Action Trigger Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
-        <div>
+      <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#FC5200]"></span>
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0"></span>
+            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 font-semibold truncate">
               Athlete Dashboard Overview
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
             Ringkasan Performa
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-500 mt-0.5 truncate">
             {user?.name || user?.email || 'Demo Athlete'} • Sinkronisasi Strava & Gemini AI
           </p>
         </div>
+
+        {/* Simple Strava Sync Button */}
+        <StravaConnectButton
+          isConnected={!!stravaToken}
+          athleteId={stravaToken?.athleteId}
+          onSyncComplete={handleRefresh}
+        />
       </div>
 
       {/* 2. Top Stats Bar: Clean Strava Dual-Hierarchy (This Week Overview & All-Time Cumulative) */}
@@ -559,16 +566,7 @@ export default function DashboardClientView({
         />
       </section>
 
-      {/* 4. Strava Status Banner */}
-      <section id="strava-section">
-        <StravaConnectButton
-          isConnected={!!stravaToken}
-          athleteId={stravaToken?.athleteId}
-          onSyncComplete={handleRefresh}
-        />
-      </section>
-
-      {/* 5. Weekly AI Performance Intelligence */}
+      {/* 4. Weekly AI Performance Intelligence */}
       <section id="insights">
         <WeeklyAiInsight initialInsight={initialInsight} />
       </section>
