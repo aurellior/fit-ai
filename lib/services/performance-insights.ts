@@ -468,7 +468,7 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       }
     `;
 
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+    const modelsToTry = ['gemini-3.8-flash', 'gemini-1.5-flash'];
     for (const modelName of modelsToTry) {
       try {
         const response = await ai.models.generateContent({

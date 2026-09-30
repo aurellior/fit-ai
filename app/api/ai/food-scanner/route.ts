@@ -50,41 +50,55 @@ export async function POST(req: NextRequest) {
     4. carbsG: estimasi karbohidrat dalam gram (angka saja)
     5. fatG: estimasi lemak dalam gram (angka saja)`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType,
-              },
-            },
-            { text: prompt },
-          ],
-        },
-      ],
-      config: {
-        systemInstruction: `Anda adalah AI Ahli Nutrisi profesional. Kembalikan estimasi nilai gizi HANYA dalam format JSON strictly valid dengan skema:
-        {
-          "foodName": "string",
-          "calories": number,
-          "proteinG": number,
-          "carbsG": number,
-          "fatG": number
-        }`,
-        responseMimeType: 'application/json',
-      },
-    });
+    // Coba model terbaru gemini-3.8-flash dengan fallback ke gemini-1.5-flash
+    const modelsToTry = ['gemini-3.8-flash', 'gemini-1.5-flash'];
+    let responseText: string | undefined;
+    let lastError: unknown;
 
-    const resultText = response.text?.trim();
-    if (!resultText) {
-      throw new Error('Tidak ada respon teks yang diterima dari Gemini');
+    for (const modelName of modelsToTry) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  inlineData: {
+                    data: base64Data,
+                    mimeType,
+                  },
+                },
+                { text: prompt },
+              ],
+            },
+          ],
+          config: {
+            systemInstruction: `Anda adalah AI Ahli Nutrisi profesional. Kembalikan estimasi nilai gizi HANYA dalam format JSON strictly valid dengan skema:
+            {
+              "foodName": "string",
+              "calories": number,
+              "proteinG": number,
+              "carbsG": number,
+              "fatG": number
+            }`,
+            responseMimeType: 'application/json',
+          },
+        });
+
+        responseText = response.text?.trim();
+        if (responseText) break;
+      } catch (err) {
+        console.warn(`Model ${modelName} gagal dipanggil di food-scanner:`, err);
+        lastError = err;
+      }
     }
 
-    const nutrition = JSON.parse(resultText);
+    if (!responseText) {
+      throw lastError || new Error('Tidak ada respon teks yang diterima dari Gemini');
+    }
+
+    const nutrition = JSON.parse(responseText);
 
     // 3. Simpan ke database PostgreSQL
     const savedLog = await prisma.foodLog.create({
