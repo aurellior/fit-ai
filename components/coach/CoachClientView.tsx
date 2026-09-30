@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   RefreshCw,
   Flame,
@@ -21,6 +22,11 @@ import {
 } from 'lucide-react';
 import { AiInsightData, UserProfile } from '@/types';
 import { formatDate } from '@/lib/utils';
+import Modal from '@/components/ui/Modal';
+import ManualActivityForm from '@/components/forms/ManualActivityForm';
+import FoodScannerModal from '@/components/forms/FoodScannerModal';
+import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
+import BottomNav from '@/components/navigation/BottomNav';
 
 interface CoachClientViewProps {
   user: UserProfile | null;
@@ -28,9 +34,22 @@ interface CoachClientViewProps {
 }
 
 export default function CoachClientView({ initialInsight }: CoachClientViewProps) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Quick Action Modals state for Mobile Bottom Navigation
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
+  const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+
+  const handleRefreshData = () => {
+    startTransition(() => {
+      router.refresh();
+    });
+  };
 
   const handleRefresh = async () => {
     setIsLoading(true);
@@ -483,6 +502,60 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           <span>FitAI Smart Engine • Gemini API</span>
         </div>
       </section>
+
+      {/* Quick Action Modals */}
+      <Modal
+        isOpen={isActivityModalOpen}
+        onClose={() => setIsActivityModalOpen(false)}
+        title="Catat Latihan Baru"
+        description="Masukkan data lari manual atau repetisi sesi gym atlet Anda"
+        maxWidth="lg"
+      >
+        <ManualActivityForm
+          onSuccess={() => {
+            setIsActivityModalOpen(false);
+            handleRefreshData();
+          }}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isFoodModalOpen}
+        onClose={() => setIsFoodModalOpen(false)}
+        title="AI Food Scanner (Multimodal)"
+        description="Ambil foto atau unggah gambar makanan untuk deteksi kalori & makro"
+        maxWidth="md"
+      >
+        <FoodScannerModal
+          isModal
+          onScanSuccess={() => {
+            setIsFoodModalOpen(false);
+            handleRefreshData();
+          }}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isWeightModalOpen}
+        onClose={() => setIsWeightModalOpen(false)}
+        title="Catat Berat Badan"
+        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
+        maxWidth="sm"
+      >
+        <LogWeightModalForm
+          onSuccess={() => {
+            setIsWeightModalOpen(false);
+            handleRefreshData();
+          }}
+        />
+      </Modal>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <BottomNav
+        onOpenActivityModal={() => setIsActivityModalOpen(true)}
+        onOpenFoodModal={() => setIsFoodModalOpen(true)}
+        onOpenWeightModal={() => setIsWeightModalOpen(true)}
+      />
     </div>
   );
 }
