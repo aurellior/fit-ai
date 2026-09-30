@@ -231,7 +231,7 @@ export async function getDailyNutritionAudit({
   const apiKey = process.env.GEMINI_API_KEY;
   const isKeyValid = apiKey && apiKey !== 'your_gemini_api_key' && apiKey !== 'mock_gemini_api_key';
 
-  if (isKeyValid && (forceAiRefresh || caloriesIn > 0 || activityCalories > 0)) {
+  if (isKeyValid && forceAiRefresh && (caloriesIn > 0 || activityCalories > 0)) {
     const prompt = `Anda adalah Ahli Gizi Olahraga (Sports Nutritionist) bersertifikat internasional untuk pelari jalan raya dengan jadwal latihan mingguan terstruktur:
 - Senin: Tempo / Speed Run
 - Kamis: Interval Training (VO2Max)
@@ -340,7 +340,7 @@ Kembalikan HANYA strictly valid JSON:
 }
 
 /**
- * Mengambil ringkasan audit nutrisi beberapa hari terakhir (untuk halaman /nutrition)
+ * Mengambil ringkasan audit nutrisi beberapa hari terakhir (untuk halaman /nutrition) secara cepat (Batch Query)
  */
 export async function getNutritionAuditHistory({
   userId,
@@ -352,17 +352,137 @@ export async function getNutritionAuditHistory({
   const result: DailyNutritionAuditData[] = [];
   const today = new Date();
 
-  // Ambil data untuk n hari ke belakang
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(today);
+  endDate.setHours(23, 59, 59, 999);
+
+  let allFoodLogs: Array<{ loggedAt: Date | string; calories: number; proteinG: number; carbsG: number; fatG: number; foodName: string }> = [];
+  let allActivities: Array<{ startTime: Date | string; calories?: number | null; title: string; type: string; durationSec: number }> = [];
+  let userWeightKg = 68;
+
+  try {
+    const [foodLogs, activities, latestWeight] = await Promise.all([
+      prisma.foodLog.findMany({
+        where: {
+          userId,
+          loggedAt: { gte: startDate, lte: endDate },
+        },
+        orderBy: { loggedAt: 'desc' },
+      }),
+      prisma.activity.findMany({
+        where: {
+          userId,
+          startTime: { gte: startDate, lte: endDate },
+        },
+        orderBy: { startTime: 'desc' },
+      }),
+      prisma.weightLog.findFirst({
+        where: { userId },
+        orderBy: { loggedAt: 'desc' },
+      }),
+    ]);
+
+    allFoodLogs = foodLogs;
+    allActivities = activities;
+    if (latestWeight?.weightKg) {
+      userWeightKg = latestWeight.weightKg;
+    }
+
+    if (allFoodLogs.length === 0 && allActivities.length === 0) {
+      const { MOCK_FOOD_LOGS, MOCK_ACTIVITIES } = await import('@/lib/mockData');
+      allFoodLogs = MOCK_FOOD_LOGS;
+      allActivities = MOCK_ACTIVITIES;
+    }
+  } catch (err) {
+    console.warn('Database fallback in getNutritionAuditHistory:', err);
+    const { MOCK_FOOD_LOGS, MOCK_ACTIVITIES } = await import('@/lib/mockData');
+    allFoodLogs = MOCK_FOOD_LOGS;
+    allActivities = MOCK_ACTIVITIES;
+  }
+
+  // Pre-calculate target protein & BMR based on weight
+  const targetProteinG = Math.round(userWeightKg * 1.6);
+  const bmrCalories = Math.round(userWeightKg * 24);
+
+  // Group by date string YYYY-MM-DD
   for (let i = 0; i < days; i++) {
-    const target = new Date(today);
-    target.setDate(today.getDate() - i);
-    // Untuk historical overview, jangan panggil Gemini setiap hari jika offline (gunakan evaluasi cepat)
-    const audit = await getDailyNutritionAudit({
-      userId,
-      targetDate: target,
-      forceAiRefresh: i === 0, // Hanya refresh AI untuk hari ini
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() - i);
+    const dateStr = toIsoDateString(targetDate);
+    const dateFormatted = formatDateIndonesian(targetDate);
+    const { dayName, dayScheduleFocus, isTrainingDay } = getScheduleMeta(targetDate);
+
+    // Filter food logs & activities for this date
+    const dayFoods = allFoodLogs.filter((f) => {
+      const d = new Date(f.loggedAt);
+      return toIsoDateString(d) === dateStr;
     });
-    result.push(audit);
+
+    const dayActivities = allActivities.filter((a) => {
+      const d = new Date(a.startTime);
+      return toIsoDateString(d) === dateStr;
+    });
+
+    const caloriesIn = Math.round(dayFoods.reduce((acc, f) => acc + (f.calories || 0), 0));
+    const totalProtein = Math.round(dayFoods.reduce((acc, f) => acc + (f.proteinG || 0), 0));
+    const totalCarbs = Math.round(dayFoods.reduce((acc, f) => acc + (f.carbsG || 0), 0));
+    const totalFat = Math.round(dayFoods.reduce((acc, f) => acc + (f.fatG || 0), 0));
+
+    const activityCalories = Math.round(
+      dayActivities.reduce((acc, a) => acc + (a.calories || 0), 0)
+    );
+    const caloriesOut = activityCalories + bmrCalories;
+    const netCalories = caloriesIn - caloriesOut;
+
+    let status: EnergyBalanceStatus = 'Balanced';
+    if (netCalories > 150) {
+      status = 'Surplus';
+    } else if (netCalories < -250) {
+      status = 'Defisit';
+    }
+
+    const calorieProgressPercent = caloriesOut > 0 ? Math.min(Math.round((caloriesIn / caloriesOut) * 100), 200) : 0;
+    const proteinProgressPercent = targetProteinG > 0 ? Math.min(Math.round((totalProtein / targetProteinG) * 100), 200) : 0;
+
+    const heuristic = generateHeuristicEvaluation({
+      dayScheduleFocus,
+      isTrainingDay,
+      caloriesIn,
+      caloriesOut,
+      netCalories,
+      status,
+      totalProtein,
+      targetProteinG,
+      totalCarbs,
+    });
+
+    result.push({
+      date: dateStr,
+      dateFormatted,
+      dayName,
+      dayScheduleFocus,
+      isTrainingDay,
+      caloriesIn,
+      caloriesOut,
+      activityCalories,
+      bmrCalories,
+      netCalories,
+      status,
+      calorieProgressPercent,
+      totalProtein,
+      totalCarbs,
+      totalFat,
+      targetProteinG,
+      proteinProgressPercent,
+      evaluationMessage: heuristic.evaluationMessage,
+      proteinStatus: heuristic.proteinStatus,
+      actionableTip: heuristic.actionableTip,
+      foodCount: dayFoods.length,
+      activityCount: dayActivities.length,
+    });
   }
 
   return result;
