@@ -152,8 +152,8 @@ export default function BottomNav({
         ? createPortal(sheetContent, document.body)
         : null}
 
-      {/* Thumb-friendly Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0">
+      {/* Thumb-friendly Bottom Navigation Bar with iOS Safe Area support */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0 pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg">
         <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
           {/* Dashboard Tab */}
           <Link

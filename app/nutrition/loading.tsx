@@ -3,7 +3,7 @@ import Skeleton from '@/components/ui/Skeleton';
 
 export default function NutritionLoading() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 pb-24 md:pb-12 animate-in fade-in duration-150">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12 animate-in fade-in duration-150">
       {/* 1. Breadcrumbs & Header Skeleton */}
       <div>
         <div className="flex items-center gap-2 mb-2">

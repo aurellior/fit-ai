@@ -69,7 +69,7 @@ export default function NutritionClientView({
   };
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12">
+    <div className="space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
       {/* 1. Breadcrumbs & Header */}
       <div>
         <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">

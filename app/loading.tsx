@@ -3,7 +3,7 @@ import Skeleton from '@/components/ui/Skeleton';
 
 export default function DashboardLoading() {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6 sm:space-y-8 pb-24 md:pb-12 animate-in fade-in duration-150">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12 animate-in fade-in duration-150">
       {/* 1. Athlete Hero Header Skeleton */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div className="space-y-2 min-w-0">

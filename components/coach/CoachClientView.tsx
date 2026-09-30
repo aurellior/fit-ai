@@ -73,7 +73,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
   const audit = plan?.smartSkipAudit;
 
   return (
-    <div className="space-y-8 pb-24">
+    <div className="space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
       {/* Top Header & Breadcrumb */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
         <div>

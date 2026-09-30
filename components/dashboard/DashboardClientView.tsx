@@ -164,7 +164,7 @@ export default function DashboardClientView({
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-24 md:pb-12">
+    <div className="space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
       {/* 1. Athlete Hero Header & Quick Action Trigger Bar */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div className="min-w-0">
