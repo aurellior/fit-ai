@@ -152,7 +152,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
             placeholder={activityType === ActivityType.RUN ? 'Misal: Easy Run 5K' : 'Misal: Chest & Triceps'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 
@@ -166,7 +166,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
               required
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
           <div>
@@ -180,7 +180,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
               placeholder="45"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                 placeholder="5.0"
                 value={distanceKm}
                 onChange={(e) => setDistanceKm(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
               />
             </div>
             <div>
@@ -211,7 +211,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                 placeholder="300"
                 value={calories}
                 onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                     placeholder="Nama Latihan"
                     value={set.exercise}
                     onChange={(e) => handleSetChange(idx, 'exercise', e.target.value)}
-                    className="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
+                    className="flex-1 px-2.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
                     required
                   />
                   <input
@@ -251,7 +251,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                     placeholder="Set"
                     value={set.sets}
                     onChange={(e) => handleSetChange(idx, 'sets', Number(e.target.value))}
-                    className="w-14 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                    className="w-14 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="1"
                     title="Sets"
                   />
@@ -260,7 +260,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                     placeholder="Reps"
                     value={set.reps}
                     onChange={(e) => handleSetChange(idx, 'reps', Number(e.target.value))}
-                    className="w-14 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                    className="w-14 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="1"
                     title="Reps"
                   />
@@ -269,7 +269,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                     placeholder="kg"
                     value={set.weightKg}
                     onChange={(e) => handleSetChange(idx, 'weightKg', Number(e.target.value))}
-                    className="w-16 px-1.5 py-1 text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                    className="w-16 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
                     min="0"
                     title="Beban (kg)"
                   />
@@ -297,7 +297,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
             placeholder="Catatan kelelahan, sensasi latihan, atau beban..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </div>
 

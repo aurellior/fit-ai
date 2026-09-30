@@ -19,6 +19,12 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -30,3 +36,19 @@ body {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Prevent unwanted mobile auto-zoom on form focus */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+

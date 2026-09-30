@@ -27,7 +27,7 @@ interface CoachClientViewProps {
   initialInsight: AiInsightData | null;
 }
 
-export default function CoachClientView({ user, initialInsight }: CoachClientViewProps) {
+export default function CoachClientView({ initialInsight }: CoachClientViewProps) {
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

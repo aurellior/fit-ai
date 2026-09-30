@@ -154,7 +154,7 @@ export default function NutritionClientView({
               setPage(1);
             }}
             placeholder="Cari nama makanan (misal: telur, dada ayam, salmon)..."
-            className="w-full text-xs pl-8 pr-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+            className="w-full text-base sm:text-xs pl-8 pr-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
           />
         </div>
       </div>

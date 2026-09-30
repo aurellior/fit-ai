@@ -219,7 +219,7 @@ export default function ActivitiesClientView({
                 setPage(1);
               }}
               placeholder="Cari nama aktivitas, catatan rute, atau gerakan gym..."
-              className="w-full text-xs pl-8 pr-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              className="w-full text-base sm:text-xs pl-8 pr-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
             />
           </div>
 
@@ -230,7 +230,7 @@ export default function ActivitiesClientView({
             <select
               value={selectedSource}
               onChange={(e) => handleSourceChange(e.target.value)}
-              className="text-xs py-1.5 px-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 focus:outline-none"
+              className="text-base sm:text-xs py-1.5 px-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 focus:outline-none"
             >
               <option value="ALL">Semua Sumber</option>
               <option value="STRAVA">Strava API</option>

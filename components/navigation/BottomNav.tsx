@@ -42,9 +42,9 @@ export default function BottomNav({
     <>
       {/* Mobile Speed Dial / Action Sheet Overlay */}
       {isFabMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end overflow-hidden isolate">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            className="absolute inset-0 bg-black/60 dark:bg-black/80 transition-opacity"
             onClick={() => setIsFabMenuOpen(false)}
           />
 

@@ -63,14 +63,14 @@ export default function WeightTracker({ logs, onWeightLogged }: WeightTrackerPro
           placeholder="kg"
           value={weightKg}
           onChange={(e) => setWeightKg(e.target.value === '' ? '' : Number(e.target.value))}
-          className="w-20 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-xs tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+          className="w-20 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-base sm:text-xs tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
         />
         <input
           type="text"
           placeholder="Catatan (misal: pagi sebelum sarapan)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="flex-1 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+          className="flex-1 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
         />
         <button
           type="submit"

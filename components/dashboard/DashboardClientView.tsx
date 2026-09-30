@@ -179,7 +179,7 @@ export default function DashboardClientView({
         </div>
 
         {/* Quick Action Buttons (Full width di mobile: Catat Aktivitas full, Scan Makanan & Log Berat bagi dua) */}
-        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-2">
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-2 min-w-0">
           <button
             onClick={() => setIsActivityModalOpen(true)}
             className="col-span-2 sm:col-auto w-full sm:w-auto text-xs font-semibold px-3.5 py-2.5 sm:py-2 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-98 cursor-pointer"
@@ -190,18 +190,18 @@ export default function DashboardClientView({
 
           <button
             onClick={() => setIsFoodModalOpen(true)}
-            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-3 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer"
+            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-2.5 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer min-w-0"
           >
-            <Camera className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Scan Makanan</span>
+            <Camera className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+            <span className="truncate">Scan Makanan</span>
           </button>
 
           <button
             onClick={() => setIsWeightModalOpen(true)}
-            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-3 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer"
+            className="col-span-1 sm:col-auto w-full sm:w-auto text-xs font-medium px-2.5 py-2.5 sm:py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center gap-1.5 transition-colors bg-white dark:bg-zinc-900 shadow-xs cursor-pointer min-w-0"
           >
-            <Scale className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Log Berat</span>
+            <Scale className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+            <span className="truncate">Log Berat</span>
           </button>
         </div>
       </div>
@@ -210,31 +210,31 @@ export default function DashboardClientView({
       <section className="space-y-3.5">
         {/* Tier Header & Tab Segmen Switcher */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#FC5200]"></span>
-            <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0"></span>
+            <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
               {viewMode === 'week' ? 'Ringkasan Performa Minggu Ini' : 'Pencapaian Sepanjang Waktu'}
             </h2>
-            <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/60">
+            <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 shrink-0">
               {viewMode === 'week' ? weekDateRange : 'Kumulatif Akun'}
             </span>
           </div>
 
           {/* Segmented Control Switcher (Full Width 50/50 di mobile, inline di desktop) */}
-          <div className="w-full sm:w-auto grid grid-cols-2 sm:flex p-1 bg-zinc-100 dark:bg-[#18181b] rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-xs font-medium">
+          <div className="w-full sm:w-auto grid grid-cols-2 sm:flex p-1 bg-zinc-100 dark:bg-[#18181b] rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-xs font-medium min-w-0">
             <button
               type="button"
               onClick={() => setViewMode('week')}
               className={cn(
-                'w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center',
+                'w-full sm:w-auto px-2 sm:px-3.5 py-2 sm:py-1.5 rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center min-w-0',
                 viewMode === 'week'
                   ? 'bg-white dark:bg-zinc-900 text-[#FC5200] font-semibold shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               )}
             >
               <Calendar className="w-3.5 h-3.5 shrink-0" />
-              <span>This Week</span>
-              <span className="text-[10px] px-1 py-0.2 bg-[#FC5200]/10 text-[#FC5200] rounded font-mono font-bold shrink-0">
+              <span className="truncate">This Week</span>
+              <span className="text-[10px] px-1 py-0.2 bg-[#FC5200]/10 text-[#FC5200] rounded font-mono font-bold shrink-0 hidden min-[360px]:inline">
                 Pekan Ini
               </span>
             </button>
@@ -243,15 +243,15 @@ export default function DashboardClientView({
               type="button"
               onClick={() => setViewMode('all')}
               className={cn(
-                'w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center',
+                'w-full sm:w-auto px-2 sm:px-3.5 py-2 sm:py-1.5 rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center min-w-0',
                 viewMode === 'all'
                   ? 'bg-white dark:bg-zinc-900 text-[#FC5200] font-semibold shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               )}
             >
               <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>All-Time</span>
-              <span className="text-[10px] px-1 py-0.2 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded font-mono shrink-0">
+              <span className="truncate">All-Time</span>
+              <span className="text-[10px] px-1 py-0.2 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded font-mono shrink-0 hidden min-[360px]:inline">
                 Kumulatif
               </span>
             </button>
@@ -369,7 +369,7 @@ export default function DashboardClientView({
                 </div>
                 <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1">
                   <span className="text-xl sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                    {weekCalories.toLocaleString()}
+                    {Math.round(weekCalories).toLocaleString('id-ID')}
                   </span>
                   <span className="text-[10px] sm:text-xs font-semibold text-zinc-500 uppercase font-mono">kkal</span>
                 </div>
@@ -483,7 +483,7 @@ export default function DashboardClientView({
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-mono text-zinc-400 block">Total Kalori</span>
-                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{allCalories.toLocaleString()} kkal</span>
+                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{Math.round(allCalories).toLocaleString('id-ID')} kkal</span>
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-mono text-zinc-400 block">Berat Terkini</span>
@@ -541,7 +541,7 @@ export default function DashboardClientView({
                 </div>
                 <div className="mt-1.5 sm:mt-2 flex items-baseline gap-1">
                   <span className="text-xl sm:text-2xl lg:text-3xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                    {allCalories.toLocaleString()}
+                    {Math.round(allCalories).toLocaleString('id-ID')}
                   </span>
                   <span className="text-[10px] sm:text-xs font-semibold text-zinc-500 uppercase font-mono">kkal</span>
                 </div>

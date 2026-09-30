@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   title: 'FitAI - Sports & Fitness Intelligence',
   description:
     'Modern minimalist fitness dashboard with Strava integration, manual workout logging, and Gemini AI performance analysis.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

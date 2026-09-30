@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   RefreshCw,
   ArrowRight,
-  Sparkles,
   AlertCircle,
   CheckCircle2,
   XCircle,

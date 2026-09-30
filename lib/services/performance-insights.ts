@@ -98,7 +98,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   const hasSkippedDays = skippedDayNames.length > 0;
 
   // Bangun Workout Days dasar
-  let mondayWorkout: CoachWorkoutDay = {
+  const mondayWorkout: CoachWorkoutDay = {
     dayName: 'Senin',
     focus: 'Tempo / Speed Run',
     originalFocus: 'Tempo / Speed Run',
@@ -122,7 +122,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
       : null,
   };
 
-  let thursdayWorkout: CoachWorkoutDay = {
+  const thursdayWorkout: CoachWorkoutDay = {
     dayName: 'Kamis',
     focus: 'Interval / Mid-Week Endurance',
     originalFocus: 'Interval / Mid-Week Endurance',
@@ -146,7 +146,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
       : null,
   };
 
-  let saturdayWorkout: CoachWorkoutDay = {
+  const saturdayWorkout: CoachWorkoutDay = {
     dayName: 'Sabtu',
     focus: 'Safe Progressive Long Run',
     originalFocus: 'Safe Progressive Long Run',

@@ -141,9 +141,9 @@ export default function DashboardCharts({
   });
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
       {/* Chart 1: Volume Latihan Mingguan / Bulanan (Strava Signature Orange) */}
-      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
           <div>
             <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function DashboardCharts({
       </div>
 
       {/* Chart 2: Tren Massa Tubuh (Emerald Health Curve) */}
-      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden">
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="flex items-center gap-2">
