@@ -1,18 +1,21 @@
 'use server';
 
+import { z } from 'zod';
 import { db } from '@/lib/db/prisma';
-import { GoogleGenAI, Type, Schema } from '@google/genai';
+import { ai } from '@/lib/services/gemini';
+import { Type, Schema } from '@google/genai';
 import { revalidatePath } from 'next/cache';
+import { ActionResult } from '@/types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+export const rescheduleInputSchema = z.object({
+  userId: z.string().min(1, 'User ID wajib disertakan'),
+  originalDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD'),
+  activityType: z.string().min(1, 'Jenis aktivitas wajib disertakan'),
+  originalWorkoutPlan: z.string().min(1, 'Rencana latihan wajib disertakan'),
+  userReason: z.string().min(1, 'Alasan kendala wajib disertakan'),
+});
 
-export interface RescheduleInput {
-  userId: string;
-  originalDate: string; // Format 'YYYY-MM-DD'
-  activityType: string;
-  originalWorkoutPlan: string;
-  userReason: string;
-}
+export type RescheduleInput = z.infer<typeof rescheduleInputSchema>;
 
 export interface RescheduleOutput {
   adjustedAction: string;
@@ -21,11 +24,19 @@ export interface RescheduleOutput {
   safeToTrain: boolean;
 }
 
-export async function processAndSaveWorkoutReschedule(input: RescheduleInput): Promise<{
-  success: boolean;
-  data?: RescheduleOutput;
-  error?: string;
-}> {
+export async function processAndSaveWorkoutReschedule(
+  rawInput: unknown
+): Promise<ActionResult<RescheduleOutput>> {
+  const parsed = rescheduleInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Data input reschedule tidak valid',
+      errors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const input = parsed.data;
   try {
     // 1. Prompt terstruktur untuk Gemini AI sebagai Sports Scientist & Adaptive Running Coach
     const prompt = `

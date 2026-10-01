@@ -99,19 +99,33 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanedJson = responseText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-    const nutrition = JSON.parse(cleanedJson);
+    let rawNutrition: unknown;
+    try {
+      rawNutrition = JSON.parse(cleanedJson);
+    } catch {
+      throw new Error('Format output JSON dari Gemini AI tidak valid');
+    }
 
-    // 3. Simpan ke database PostgreSQL
-    const savedLog = await prisma.foodLog.create({
-      data: {
-        userId: user.id,
-        foodName: nutrition.foodName || 'Makanan Terdeteksi',
-        calories: Number(nutrition.calories) || 0,
-        proteinG: Number(nutrition.proteinG) || 0,
-        carbsG: Number(nutrition.carbsG) || 0,
-        fatG: Number(nutrition.fatG) || 0,
-      },
+    const { foodNutritionSchema, saveFoodLogFromNutrition } = await import(
+      '@/lib/services/food-text-parser'
+    );
+    const validatedNutrition = foodNutritionSchema.parse({
+      foodName: typeof (rawNutrition as Record<string, unknown>)?.foodName === 'string'
+        ? (rawNutrition as Record<string, unknown>).foodName
+        : 'Makanan Terdeteksi',
+      calories: Number((rawNutrition as Record<string, unknown>)?.calories) || 0,
+      proteinG: Number((rawNutrition as Record<string, unknown>)?.proteinG) || 0,
+      carbsG: Number((rawNutrition as Record<string, unknown>)?.carbsG) || 0,
+      fatG: Number((rawNutrition as Record<string, unknown>)?.fatG) || 0,
     });
+
+    // 3. Simpan ke database PostgreSQL via service
+    const savedLog = await saveFoodLogFromNutrition(user.id, validatedNutrition);
+
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/nutrition');
+    revalidatePath('/dashboard');
+    revalidatePath('/activities');
 
     return NextResponse.json({
       success: true,

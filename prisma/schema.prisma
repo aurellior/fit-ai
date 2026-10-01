@@ -149,7 +149,6 @@ model StepLog {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dateStr])
-  @@index([userId, dateStr])
   @@map("step_logs")
 }
 
@@ -167,7 +166,7 @@ model WorkoutReschedule {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, originalDate])
-  @@index([userId, originalDate])
+  @@index([userId, rescheduledDate])
   @@map("workout_reschedules")
 }
 

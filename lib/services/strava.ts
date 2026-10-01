@@ -222,8 +222,11 @@ export async function backfillMissingCalories(userId?: string): Promise<number> 
     where: whereClause,
   });
 
-  let updatedCount = 0;
-  for (const act of uncaloriedActivities) {
+  if (uncaloriedActivities.length === 0) {
+    return 0;
+  }
+
+  const updates = uncaloriedActivities.map((act) => {
     const estimated = estimateActivityCalories({
       type: act.type,
       distanceMeters: act.distanceMeters,
@@ -231,14 +234,14 @@ export async function backfillMissingCalories(userId?: string): Promise<number> 
       weightKg: userWeightKg,
     });
 
-    await prisma.activity.update({
+    return prisma.activity.update({
       where: { id: act.id },
       data: { calories: estimated },
     });
-    updatedCount++;
-  }
+  });
 
-  return updatedCount;
+  await prisma.$transaction(updates);
+  return updates.length;
 }
 
 /**
@@ -255,9 +258,11 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
   const userWeightKg = latestWeight?.weightKg || 68;
 
   const stravaActivities = await fetchAthleteActivities(userId, 1, 30);
-  let count = 0;
+  if (stravaActivities.length === 0) {
+    return { syncedCount: 0, backfilledCount: 0 };
+  }
 
-  for (const item of stravaActivities) {
+  const upsertOps = stravaActivities.map((item) => {
     const activityIdBigInt = BigInt(item.id);
     const durationSec = item.moving_time || item.elapsed_time;
     let avgPaceSecPerKm: number | null = null;
@@ -280,7 +285,7 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
             weightKg: userWeightKg,
           });
 
-    await prisma.activity.upsert({
+    return prisma.activity.upsert({
       where: {
         stravaActivityId: activityIdBigInt,
       },
@@ -310,12 +315,12 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
         calories: finalCalories,
       },
     });
+  });
 
-    count++;
-  }
+  await prisma.$transaction(upsertOps);
 
   // Backfill otomatis setiap record aktivitas lain yang mungkin masih kosong kalorinya
   const backfilledCount = await backfillMissingCalories(userId);
 
-  return { syncedCount: count, backfilledCount };
+  return { syncedCount: upsertOps.length, backfilledCount };
 }

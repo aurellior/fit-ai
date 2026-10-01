@@ -1,13 +1,43 @@
 'use server';
 
-import { rescheduleWorkoutWithAI, RescheduleRequestPayload } from '@/lib/services/workout-rescheduler';
+import { z } from 'zod';
+import { rescheduleWorkoutWithAI, RescheduledWorkoutResult } from '@/lib/services/workout-rescheduler';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db/prisma';
 import { parseCoachPlanFromInsight, generateWeeklyPerformanceInsight } from '@/lib/services/performance-insights';
 import { CoachPlanData } from '@/types';
 import { revalidatePath } from 'next/cache';
 
-export async function rescheduleWorkoutAction(payload: RescheduleRequestPayload) {
+const reschedulePayloadSchema = z.object({
+  dayName: z.string().min(1, 'Nama hari wajib diisi'),
+  originalFocus: z.string().min(1, 'Fokus latihan wajib diisi'),
+  originalTarget: z.string().default(''),
+  obstacleType: z.string().min(1, 'Jenis kendala wajib diisi'),
+  customNotes: z.string().optional(),
+});
+
+export type RescheduleWorkoutInput = z.infer<typeof reschedulePayloadSchema>;
+
+export interface RescheduleActionResult {
+  success: boolean;
+  data?: RescheduledWorkoutResult;
+  coachPlan?: CoachPlanData | null;
+  error?: string;
+  errors?: Record<string, string[]>;
+}
+
+export async function rescheduleWorkoutAction(input: unknown): Promise<RescheduleActionResult> {
+  const parseResult = reschedulePayloadSchema.safeParse(input);
+  if (!parseResult.success) {
+    return {
+      success: false,
+      error: 'Data penyesuaian jadwal latihan tidak valid',
+      errors: parseResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const payload = parseResult.data;
+
   try {
     const result = await rescheduleWorkoutWithAI(payload);
     let updatedCoachPlan: CoachPlanData | null = null;

@@ -4,14 +4,17 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { ActionResult, WeightLogData } from '@/types';
 
 const weightLogSchema = z.object({
   weightKg: z.coerce.number().positive('Berat badan harus lebih dari 0 kg'),
   loggedAt: z.string().optional().transform((val) => (val ? new Date(val) : new Date())),
-  notes: z.string().optional(),
+  notes: z.string().optional().nullable(),
 });
 
-export async function logWeight(input: unknown) {
+export type WeightLogInput = z.input<typeof weightLogSchema>;
+
+export async function logWeight(input: unknown): Promise<ActionResult<WeightLogData>> {
   try {
     const user = await getCurrentUser();
     const parsed = weightLogSchema.safeParse(input);
@@ -19,6 +22,7 @@ export async function logWeight(input: unknown) {
     if (!parsed.success) {
       return {
         success: false,
+        error: 'Data berat badan tidak valid',
         errors: parsed.error.flatten().fieldErrors,
       };
     }
@@ -28,7 +32,7 @@ export async function logWeight(input: unknown) {
         userId: user.id,
         weightKg: parsed.data.weightKg,
         loggedAt: parsed.data.loggedAt,
-        notes: parsed.data.notes,
+        notes: parsed.data.notes || null,
       },
     });
 
@@ -40,11 +44,16 @@ export async function logWeight(input: unknown) {
   }
 }
 
-export async function getWeightLogs(limit = 14) {
-  const user = await getCurrentUser();
-  return prisma.weightLog.findMany({
-    where: { userId: user.id },
-    orderBy: { loggedAt: 'desc' },
-    take: limit,
-  });
+export async function getWeightLogs(limit = 14): Promise<WeightLogData[]> {
+  try {
+    const user = await getCurrentUser();
+    return await prisma.weightLog.findMany({
+      where: { userId: user.id },
+      orderBy: { loggedAt: 'desc' },
+      take: limit,
+    });
+  } catch (err) {
+    console.warn('Error fetching weight logs:', err);
+    return [];
+  }
 }

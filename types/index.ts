@@ -1,5 +1,9 @@
 import { ActivitySource, ActivityType } from '@prisma/client';
 
+export type ActionResult<T> =
+  | { success: true; data: T; message?: string }
+  | { success: false; error?: string; errors?: Record<string, string[]> };
+
 export interface UserProfile {
   id: string;
   email: string;

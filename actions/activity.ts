@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { ActivityType, ActivitySource, Prisma } from '@prisma/client';
 import { estimateActivityCalories } from '@/lib/services/strava';
+import { ActionResult, ActivityData, GymSet } from '@/types';
 
 const gymSetSchema = z.object({
   exercise: z.string().min(1, 'Nama gerakan wajib diisi'),
@@ -27,7 +28,9 @@ const manualActivitySchema = z.object({
 
 export type ManualActivityInput = z.input<typeof manualActivitySchema>;
 
-export async function createManualActivity(input: unknown) {
+export async function createManualActivity(
+  input: unknown
+): Promise<ActionResult<ActivityData>> {
   try {
     const user = await getCurrentUser();
     const parseResult = manualActivitySchema.safeParse(input);
@@ -88,6 +91,7 @@ export async function createManualActivity(input: unknown) {
       data: {
         ...activity,
         stravaActivityId: activity.stravaActivityId ? activity.stravaActivityId.toString() : null,
+        gymSets: (activity.gymSets as unknown as GymSet[]) || null,
       },
     };
   } catch (error: unknown) {
@@ -112,7 +116,7 @@ export async function getActivities(limit = 30) {
     return activities.map((item) => ({
       ...item,
       stravaActivityId: item.stravaActivityId ? item.stravaActivityId.toString() : null,
-      gymSets: (item.gymSets as unknown as import('@/types').GymSet[]) || null,
+      gymSets: (item.gymSets as unknown as GymSet[]) || null,
     }));
   } catch (err) {
     console.warn('Error fetching activities:', err);
@@ -166,7 +170,7 @@ export async function getPaginatedActivities({
     const activities = rawActivities.map((item) => ({
       ...item,
       stravaActivityId: item.stravaActivityId ? item.stravaActivityId.toString() : null,
-      gymSets: (item.gymSets as unknown as import('@/types').GymSet[]) || null,
+      gymSets: (item.gymSets as unknown as GymSet[]) || null,
     }));
 
     return {
@@ -208,18 +212,20 @@ export async function getPaginatedActivities({
   }
 }
 
-export async function getActivityById(id: string) {
+export async function getActivityById(id: string): Promise<ActivityData | null> {
+  if (!id || typeof id !== 'string') return null;
+
   try {
     const user = await getCurrentUser();
-    const activity = await prisma.activity.findFirst({
-      where: { id, userId: user.id },
+    const activity = await prisma.activity.findUnique({
+      where: { id },
     });
 
-    if (activity) {
+    if (activity && activity.userId === user.id) {
       return {
         ...activity,
         stravaActivityId: activity.stravaActivityId ? activity.stravaActivityId.toString() : null,
-        gymSets: (activity.gymSets as unknown as import('@/types').GymSet[]) || null,
+        gymSets: (activity.gymSets as unknown as GymSet[]) || null,
       };
     }
   } catch (err) {
@@ -231,20 +237,30 @@ export async function getActivityById(id: string) {
   return MOCK_ACTIVITIES.find((a) => a.id === id) || null;
 }
 
-export async function deleteActivity(id: string) {
-  const user = await getCurrentUser();
+const deleteActivitySchema = z.object({
+  id: z.string().min(1, 'ID aktivitas wajib disertakan'),
+});
+
+export async function deleteActivity(id: string): Promise<ActionResult<{ id: string }>> {
+  const parsed = deleteActivitySchema.safeParse({ id });
+  if (!parsed.success) {
+    return { success: false, error: 'ID aktivitas tidak valid' };
+  }
+
   try {
+    const user = await getCurrentUser();
     await prisma.activity.deleteMany({
       where: {
-        id,
+        id: parsed.data.id,
         userId: user.id,
       },
     });
+
+    revalidatePath('/dashboard');
+    revalidatePath('/activities');
+    return { success: true, data: { id: parsed.data.id } };
   } catch (err) {
     console.warn('Could not delete activity from DB:', err);
+    return { success: false, error: 'Gagal menghapus aktivitas dari database' };
   }
-
-  revalidatePath('/dashboard');
-  revalidatePath('/activities');
-  return { success: true };
 }

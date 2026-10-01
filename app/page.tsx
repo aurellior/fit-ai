@@ -42,40 +42,54 @@ export default async function HomePage() {
       avatarUrl: dbUser.avatarUrl,
     };
 
-    stravaToken = await prisma.stravaToken.findUnique({
-      where: { userId: user.id },
-    });
+    const [
+      dbStravaToken,
+      rawActivities,
+      rawInsight,
+      dbFoodLogs,
+      dbWeightLogs,
+      dbNutritionAudit,
+    ] = await Promise.all([
+      prisma.stravaToken.findUnique({
+        where: { userId: user.id },
+      }),
+      prisma.activity.findMany({
+        where: { userId: user.id },
+        orderBy: { startTime: 'desc' },
+        take: 20,
+      }),
+      prisma.aiInsight.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.foodLog.findMany({
+        where: { userId: user.id },
+        orderBy: { loggedAt: 'desc' },
+        take: 10,
+      }),
+      prisma.weightLog.findMany({
+        where: { userId: user.id },
+        orderBy: { loggedAt: 'desc' },
+        take: 10,
+      }),
+      getDailyNutritionAudit({
+        userId: user.id,
+      }).catch((auditErr) => {
+        console.warn('Initial nutrition audit query warning:', auditErr);
+        return null;
+      }),
+    ]);
 
-    const rawActivities = await prisma.activity.findMany({
-      where: { userId: user.id },
-      orderBy: { startTime: 'desc' },
-      take: 20,
-    });
-
+    stravaToken = dbStravaToken;
     activities = rawActivities.map((act) => ({
       ...act,
       stravaActivityId: act.stravaActivityId ? act.stravaActivityId.toString() : null,
       gymSets: (act.gymSets as unknown as GymSet[]) || null,
     }));
-
-    const rawInsight = await prisma.aiInsight.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
-
     latestInsight = rawInsight ? parseCoachPlanFromInsight(rawInsight) : null;
-
-    foodLogs = await prisma.foodLog.findMany({
-      where: { userId: user.id },
-      orderBy: { loggedAt: 'desc' },
-      take: 10,
-    });
-
-    weightLogs = await prisma.weightLog.findMany({
-      where: { userId: user.id },
-      orderBy: { loggedAt: 'desc' },
-      take: 10,
-    });
+    foodLogs = dbFoodLogs;
+    weightLogs = dbWeightLogs;
+    nutritionAudit = dbNutritionAudit;
   } catch (error) {
     console.warn('Database query fallback (PostgreSQL server mungkin belum aktif):', error);
 
@@ -163,12 +177,14 @@ export default async function HomePage() {
     // Ignore cookie errors
   }
 
-  try {
-    nutritionAudit = await getDailyNutritionAudit({
-      userId: user?.id || 'demo_user',
-    });
-  } catch (err) {
-    console.warn('Failed to load initial nutrition audit:', err);
+  if (!nutritionAudit) {
+    try {
+      nutritionAudit = await getDailyNutritionAudit({
+        userId: user?.id || 'demo_user',
+      });
+    } catch (err) {
+      console.warn('Failed to load fallback nutrition audit:', err);
+    }
   }
 
   return (

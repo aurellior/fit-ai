@@ -454,6 +454,12 @@ export async function getNutritionAuditHistory({
   }> = [];
   let allStepLogs: Array<{ dateStr: string; stepCount: number; source: string }> = [];
   let userWeightKg = 68;
+  const dateStrings: string[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    dateStrings.push(getWibDateString(d));
+  }
 
   try {
     const [foodLogs, activities, latestWeight, stepLogs] = await Promise.all([
@@ -478,6 +484,7 @@ export async function getNutritionAuditHistory({
       prisma.stepLog.findMany({
         where: {
           userId,
+          dateStr: { in: dateStrings },
         },
       }),
     ]);

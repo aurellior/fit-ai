@@ -1,11 +1,13 @@
 'use server';
 
+import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
+import { ActionResult, FoodLogData } from '@/types';
 
-export async function getFoodLogs(limit = 10) {
+export async function getFoodLogs(limit = 10): Promise<FoodLogData[]> {
   try {
     const user = await getCurrentUser();
     return await prisma.foodLog.findMany({
@@ -80,22 +82,32 @@ export async function getPaginatedFoodLogs({
   }
 }
 
-export async function deleteFoodLog(id: string) {
-  const user = await getCurrentUser();
+const deleteFoodLogSchema = z.object({
+  id: z.string().min(1, 'ID log makanan wajib disertakan'),
+});
+
+export async function deleteFoodLog(id: string): Promise<ActionResult<{ id: string }>> {
+  const parsed = deleteFoodLogSchema.safeParse({ id });
+  if (!parsed.success) {
+    return { success: false, error: 'ID log makanan tidak valid' };
+  }
+
   try {
+    const user = await getCurrentUser();
     await prisma.foodLog.deleteMany({
       where: {
-        id,
+        id: parsed.data.id,
         userId: user.id,
       },
     });
+
+    revalidatePath('/dashboard');
+    revalidatePath('/nutrition');
+    return { success: true, data: { id: parsed.data.id } };
   } catch (err) {
     console.warn('Error deleting food log:', err);
+    return { success: false, error: 'Gagal menghapus catatan makanan dari database' };
   }
-
-  revalidatePath('/dashboard');
-  revalidatePath('/nutrition');
-  return { success: true };
 }
 
 export async function getDailyNutritionAuditAction(dateStr?: string, forceRefresh = false) {
@@ -117,35 +129,48 @@ export async function getNutritionAuditHistoryAction(days = 7) {
   });
 }
 
-export async function logDailyStepsAction({
-  dateStr,
-  stepCount,
-  source = 'MANUAL',
-  notes,
-}: {
-  dateStr: string;
-  stepCount: number;
-  source?: string;
-  notes?: string;
-}) {
+export async function logDailyStepsAction(input: unknown) {
   const { logDailyStepsAction: logSteps } = await import('@/actions/steps');
-  return await logSteps({ dateStr, stepCount, source, notes });
+  return await logSteps(input);
 }
 
-export async function logFoodFromTextAction(description: string) {
-  const user = await getCurrentUser();
-  const { parseFoodTextWithAI, saveFoodLogFromNutrition } = await import('@/lib/services/food-text-parser');
-  
-  const nutrition = await parseFoodTextWithAI(description);
-  const savedLog = await saveFoodLogFromNutrition(user.id, nutrition);
+const logFoodTextSchema = z.object({
+  description: z.string().trim().min(2, 'Deskripsi makanan minimal 2 karakter'),
+});
 
-  revalidatePath('/nutrition');
-  revalidatePath('/dashboard');
-  revalidatePath('/activities');
+export async function logFoodFromTextAction(
+  description: string
+): Promise<ActionResult<FoodLogData>> {
+  const parsed = logFoodTextSchema.safeParse({ description });
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Deskripsi makanan tidak valid',
+      errors: parsed.error.flatten().fieldErrors,
+    };
+  }
 
-  return {
-    success: true,
-    data: savedLog,
-  };
+  try {
+    const user = await getCurrentUser();
+    const { parseFoodTextWithAI, saveFoodLogFromNutrition } = await import(
+      '@/lib/services/food-text-parser'
+    );
+
+    const nutrition = await parseFoodTextWithAI(parsed.data.description);
+    const savedLog = await saveFoodLogFromNutrition(user.id, nutrition);
+
+    revalidatePath('/nutrition');
+    revalidatePath('/dashboard');
+    revalidatePath('/activities');
+
+    return {
+      success: true,
+      data: savedLog,
+    };
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal memproses catatan teks makanan';
+    console.error('Error logging food from text:', error);
+    return { success: false, error: msg };
+  }
 }
 

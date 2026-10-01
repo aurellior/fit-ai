@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useTransition, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 function NavigationProgressBarContent() {
@@ -11,30 +11,32 @@ function NavigationProgressBarContent() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // When path or search parameters finish changing, complete the progress bar
-    if (isNavigating) {
+    // When path or search parameters finish changing, complete the progress bar asynchronously
+    if (!isNavigating) return;
+
+    const timer = setTimeout(() => {
       setProgress(100);
-      const timer = setTimeout(() => {
+      const hideTimer = setTimeout(() => {
         setIsVisible(false);
         setIsNavigating(false);
         setProgress(0);
       }, 250);
-      return () => clearTimeout(timer);
-    }
-  }, [pathname, searchParams]);
+      return () => clearTimeout(hideTimer);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [pathname, searchParams, isNavigating]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isNavigating) {
-      setIsVisible(true);
-      setProgress((prev) => (prev === 0 ? 25 : prev));
-      interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 85) return prev;
-          return prev + Math.floor(Math.random() * 10 + 5);
-        });
-      }, 150);
-    }
+    if (!isNavigating) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 85) return prev;
+        return prev + Math.floor(Math.random() * 10 + 5);
+      });
+    }, 150);
+
     return () => clearInterval(interval);
   }, [isNavigating]);
 

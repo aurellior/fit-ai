@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw,
@@ -21,12 +21,12 @@ interface WeeklyAiInsightProps {
 
 export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps) {
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight || null);
+  const [prevInitialInsight, setPrevInitialInsight] = useState<AiInsightData | null>(initialInsight || null);
 
-  useEffect(() => {
-    if (initialInsight) {
-      setInsight(initialInsight);
-    }
-  }, [initialInsight]);
+  if (initialInsight !== prevInitialInsight) {
+    setPrevInitialInsight(initialInsight || null);
+    setInsight(initialInsight || null);
+  }
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

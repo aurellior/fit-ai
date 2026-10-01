@@ -39,12 +39,12 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight);
+  const [prevInitialInsight, setPrevInitialInsight] = useState<AiInsightData | null>(initialInsight);
 
-  React.useEffect(() => {
-    if (initialInsight) {
-      setInsight(initialInsight);
-    }
-  }, [initialInsight]);
+  if (initialInsight !== prevInitialInsight) {
+    setPrevInitialInsight(initialInsight);
+    setInsight(initialInsight);
+  }
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
