@@ -388,7 +388,7 @@ export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
               onChange={(e) => setCustomNotes(e.target.value)}
               placeholder="Contoh: Sedang sedikit demam ringan, atau hanya punya waktu 20 menit sebelum meeting..."
               disabled={isRescheduling}
-              className="w-full text-xs p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] resize-none"
+              className="w-full text-base sm:text-xs p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] resize-none"
             />
           </div>
 
@@ -405,7 +405,7 @@ export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
               type="button"
               onClick={handleExecuteReschedule}
               disabled={isRescheduling}
-              className="flex-1 py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
+              className="flex-1 py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-sm cursor-pointer min-h-[44px] active:scale-98"
             >
               {isRescheduling ? (
                 <>
@@ -423,7 +423,7 @@ export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
               type="button"
               onClick={() => setIsModalOpen(false)}
               disabled={isRescheduling}
-              className="py-2.5 px-3.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs transition-colors cursor-pointer"
+              className="py-2.5 px-3.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-medium transition-colors cursor-pointer min-h-[44px]"
             >
               Batal
             </button>

@@ -224,7 +224,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                     type="button"
                     onClick={handleUploadAndScan}
                     disabled={isLoading}
-                    className="flex-1 py-2 px-3 bg-[#FC5200] hover:bg-[#E04800] text-white rounded text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm"
+                    className="flex-1 py-2.5 px-3.5 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm min-h-[44px] cursor-pointer active:scale-98"
                   >
                     {isLoading ? (
                       <>
@@ -242,7 +242,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                     type="button"
                     onClick={handleReset}
                     disabled={isLoading}
-                    className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded text-xs transition-colors"
+                    className="px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs transition-colors min-h-[44px] cursor-pointer"
                   >
                     Ganti
                   </button>
@@ -270,7 +270,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                     onKeyDown={handleKeyDown}
                     placeholder="Contoh: 1 porsi nasi goreng spesial ditambah telur mata sapi dan 1 gelas es teh manis..."
                     disabled={isLoading}
-                    className="w-full text-xs p-3 rounded-md bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors resize-none"
+                    className="w-full text-base sm:text-xs p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors resize-none"
                   />
                   <div className="flex items-center justify-between text-[10px] text-zinc-400 px-1 mt-1">
                     <span>💡 Tip: Sebutkan jumlah/porsi untuk akurasi terbaik</span>
@@ -291,7 +291,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                       type="button"
                       onClick={() => setTextContent(promptText)}
                       disabled={isLoading}
-                      className="text-[11px] text-left px-2.5 py-1 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200/60 dark:border-zinc-700/60"
+                      className="text-[11px] text-left px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors border border-zinc-200/60 dark:border-zinc-700/60 cursor-pointer"
                     >
                       {promptText}
                     </button>
@@ -304,7 +304,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                   type="button"
                   onClick={handleTextQuickLog}
                   disabled={isLoading || !textContent.trim()}
-                  className="flex-1 py-2 px-3 bg-[#FC5200] hover:bg-[#E04800] text-white rounded text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm"
+                  className="flex-1 py-2.5 px-3.5 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm min-h-[44px] cursor-pointer active:scale-98"
                 >
                   {isLoading ? (
                     <>
@@ -323,7 +323,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                     type="button"
                     onClick={handleReset}
                     disabled={isLoading}
-                    className="px-3 py-2 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded text-xs transition-colors"
+                    className="px-3.5 py-2.5 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs transition-colors min-h-[44px] cursor-pointer"
                   >
                     Hapus
                   </button>

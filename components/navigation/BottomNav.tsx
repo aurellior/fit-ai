@@ -65,14 +65,14 @@ export default function BottomNav({
   };
 
   const sheetContent = isFabMenuOpen ? (
-    <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end overflow-hidden isolate m-0 p-0">
+    <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end p-3 overflow-hidden isolate m-0">
       <div
         className="absolute inset-0 bg-black/60 dark:bg-black/80 transition-opacity"
         onClick={() => setIsFabMenuOpen(false)}
         onTouchMove={(e) => e.preventDefault()}
       />
 
-      <div className="relative w-full bg-white dark:bg-[#121214] border-t border-zinc-200 dark:border-zinc-800 rounded-t-2xl rounded-b-none p-5 pb-8 pb-[max(2rem,env(safe-area-inset-bottom))] space-y-3 z-10 shadow-2xl overscroll-contain max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom duration-200 m-0">
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 pb-[max(1.75rem,calc(1rem+env(safe-area-inset-bottom)))] mb-[max(0.5rem,env(safe-area-inset-bottom))] space-y-3 z-10 shadow-2xl overscroll-contain max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
         {/* Sheet Handle */}
         <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-2 shrink-0" />
 
@@ -82,7 +82,7 @@ export default function BottomNav({
           </span>
           <button
             onClick={() => setIsFabMenuOpen(false)}
-            className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
             aria-label="Tutup menu aksi"
           >
             <X className="w-4 h-4" />
@@ -153,8 +153,8 @@ export default function BottomNav({
         : null}
 
       {/* Thumb-friendly Bottom Navigation Bar with iOS Safe Area support */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0 pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg">
-        <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0 pt-1.5 pb-[max(0.85rem,env(safe-area-inset-bottom))] shadow-lg touch-manipulation">
+        <div className="max-w-md mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
           {/* Dashboard Tab */}
           <Link
             href="/"
@@ -190,7 +190,7 @@ export default function BottomNav({
           <div className="flex items-center justify-center px-2">
             <button
               onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
-              className="w-11 h-11 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              className="w-12 h-12 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform touch-manipulation cursor-pointer shrink-0"
               title="Aksi Cepat"
               aria-label="Aksi Cepat"
             >

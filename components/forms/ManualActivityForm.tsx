@@ -236,52 +236,63 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
               {gymSets.map((set, idx) => (
                 <div
                   key={idx}
-                  className="flex gap-2 items-center p-2 rounded-md bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800"
+                  className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800"
                 >
                   <input
                     type="text"
-                    placeholder="Nama Latihan"
+                    placeholder="Nama Latihan (misal: Bench Press)"
                     value={set.exercise}
                     onChange={(e) => handleSetChange(idx, 'exercise', e.target.value)}
-                    className="flex-1 px-2.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
+                    className="flex-1 min-w-0 px-2.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
                     required
                   />
-                  <input
-                    type="number"
-                    placeholder="Set"
-                    value={set.sets}
-                    onChange={(e) => handleSetChange(idx, 'sets', Number(e.target.value))}
-                    className="w-14 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
-                    min="1"
-                    title="Sets"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Reps"
-                    value={set.reps}
-                    onChange={(e) => handleSetChange(idx, 'reps', Number(e.target.value))}
-                    className="w-14 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
-                    min="1"
-                    title="Reps"
-                  />
-                  <input
-                    type="number"
-                    placeholder="kg"
-                    value={set.weightKg}
-                    onChange={(e) => handleSetChange(idx, 'weightKg', Number(e.target.value))}
-                    className="w-16 px-1.5 py-1 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
-                    min="0"
-                    title="Beban (kg)"
-                  />
-                  {gymSets.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSet(idx)}
-                      className="p-1 text-zinc-400 hover:text-rose-600 rounded transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="relative flex-1 sm:w-14">
+                      <input
+                        type="number"
+                        placeholder="Set"
+                        value={set.sets}
+                        onChange={(e) => handleSetChange(idx, 'sets', Number(e.target.value))}
+                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        min="1"
+                        title="Sets"
+                      />
+                    </div>
+                    <span className="text-zinc-400 text-xs font-mono">×</span>
+                    <div className="relative flex-1 sm:w-14">
+                      <input
+                        type="number"
+                        placeholder="Reps"
+                        value={set.reps}
+                        onChange={(e) => handleSetChange(idx, 'reps', Number(e.target.value))}
+                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        min="1"
+                        title="Reps"
+                      />
+                    </div>
+                    <span className="text-zinc-400 text-xs font-mono">@</span>
+                    <div className="relative flex-1 sm:w-16">
+                      <input
+                        type="number"
+                        placeholder="kg"
+                        value={set.weightKg}
+                        onChange={(e) => handleSetChange(idx, 'weightKg', Number(e.target.value))}
+                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        min="0"
+                        title="Beban (kg)"
+                      />
+                    </div>
+                    {gymSets.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSet(idx)}
+                        className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-rose-600 rounded transition-colors"
+                        aria-label="Hapus gerakan"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -304,7 +315,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
+          className="w-full py-2.5 sm:py-2 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-xs min-h-[44px] active:scale-98"
         >
           {isSubmitting ? 'Menyimpan...' : 'Simpan Aktivitas'}
         </button>

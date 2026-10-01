@@ -15,7 +15,7 @@ export default function Navbar() {
   const isNutrition = pathname.startsWith('/nutrition');
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 transition-colors">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 transition-colors pt-[env(safe-area-inset-top)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand Logo (Strava-inspired athletic minimalism) */}
         <Link href="/" className="flex items-center gap-2.5 group">
