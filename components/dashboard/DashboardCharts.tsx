@@ -82,10 +82,25 @@ export default function DashboardCharts({
 
   const numDays = chartPeriod === '7d' ? 7 : 30;
 
+  const refDate = new Date(refTime);
+  const currentDayOfWeek = refDate.getDay();
+  const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
+  const mondayOfCurrentWeek = new Date(refDate);
+  mondayOfCurrentWeek.setDate(refDate.getDate() + distanceToMonday);
+  mondayOfCurrentWeek.setHours(0, 0, 0, 0);
+
   // 1. Process Activity Data (Distance & Duration)
   const activityDays = Array.from({ length: numDays }).map((_, i) => {
-    const d = new Date(refTime);
-    d.setDate(d.getDate() - (numDays - 1 - i));
+    let d: Date;
+    if (chartPeriod === '7d') {
+      // Senin (i=0) sampai Minggu (i=6)
+      d = new Date(mondayOfCurrentWeek);
+      d.setDate(mondayOfCurrentWeek.getDate() + i);
+    } else {
+      // 30 hari terakhir
+      d = new Date(refTime);
+      d.setDate(d.getDate() - (numDays - 1 - i));
+    }
     const dayStr = d.toISOString().split('T')[0];
     const label =
       numDays === 7
@@ -109,8 +124,14 @@ export default function DashboardCharts({
 
   // 2. Process Weight Trend Data
   const weightDays = Array.from({ length: numDays }).map((_, i) => {
-    const d = new Date(refTime);
-    d.setDate(d.getDate() - (numDays - 1 - i));
+    let d: Date;
+    if (chartPeriod === '7d') {
+      d = new Date(mondayOfCurrentWeek);
+      d.setDate(mondayOfCurrentWeek.getDate() + i);
+    } else {
+      d = new Date(refTime);
+      d.setDate(d.getDate() - (numDays - 1 - i));
+    }
     const dayStr = d.toISOString().split('T')[0];
     const label =
       numDays === 7
@@ -154,7 +175,7 @@ export default function DashboardCharts({
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
               {chartPeriod === '7d'
-                ? 'Jarak tempuh harian (7 hari terakhir)'
+                ? 'Jarak tempuh harian pekan ini (Senin – Minggu)'
                 : 'Tren jarak tempuh 30 hari terakhir'}
             </p>
           </div>
@@ -172,7 +193,7 @@ export default function DashboardCharts({
                     : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
                 )}
               >
-                7 Hari
+                Pekan Ini
               </button>
               <button
                 type="button"
@@ -190,7 +211,7 @@ export default function DashboardCharts({
 
             <div className="text-right pl-2 border-l border-zinc-200 dark:border-zinc-800">
               <span className="text-[10px] uppercase font-mono text-zinc-400 block">
-                {chartPeriod === '7d' ? 'Total 7H' : 'Total 30H'}
+                {chartPeriod === '7d' ? 'Total Pekan Ini' : 'Total 30H'}
               </span>
               <span className="text-base font-bold font-mono text-[#FC5200] tabular-nums">
                 {totalPeriodKm} <span className="text-xs font-normal text-zinc-500">km</span>
@@ -249,7 +270,7 @@ export default function DashboardCharts({
             </div>
             <p className="text-xs text-zinc-500 mt-0.5">
               {chartPeriod === '7d'
-                ? 'Fluktuasi berat badan (kg) 7 hari terakhir'
+                ? 'Fluktuasi berat badan (kg) pekan ini (Senin – Minggu)'
                 : 'Fluktuasi berat badan (kg) 30 hari terakhir'}
             </p>
           </div>

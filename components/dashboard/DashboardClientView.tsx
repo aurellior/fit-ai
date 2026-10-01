@@ -80,12 +80,25 @@ export default function DashboardClientView({
       ? now.getTime()
       : latestActivityTimestamp;
 
-  const sevenDaysAgo = new Date(refTime - 7 * 24 * 60 * 60 * 1000);
+  const refDate = new Date(refTime);
+  const currentDayOfWeek = refDate.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+  const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
 
-  // A. This Week Data & Metrics
-  const weekActivities = initialActivities.filter(
-    (act) => new Date(act.startTime).getTime() >= sevenDaysAgo.getTime()
-  );
+  // Awal minggu: Senin 00:00:00
+  const startOfWeek = new Date(refDate);
+  startOfWeek.setDate(refDate.getDate() + distanceToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  // Akhir minggu: Minggu 23:59:59.999
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  // A. This Week Data & Metrics (Senin s/d Minggu)
+  const weekActivities = initialActivities.filter((act) => {
+    const actTime = new Date(act.startTime).getTime();
+    return actTime >= startOfWeek.getTime() && actTime <= endOfWeek.getTime();
+  });
 
   const weekDistanceMeters = weekActivities.reduce(
     (acc, act) => acc + (act.distanceMeters || 0),
@@ -154,10 +167,10 @@ export default function DashboardClientView({
 
   const latestWeight = initialWeightLogs[0]?.weightKg || 68.0;
 
-  // Date Range label
+  // Date Range label: Senin s/d Minggu
   const formatDateShort = (d: Date) =>
     d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-  const weekDateRange = `${formatDateShort(sevenDaysAgo)} - ${formatDateShort(new Date(refTime))}`;
+  const weekDateRange = `${formatDateShort(startOfWeek)} - ${formatDateShort(endOfWeek)}`;
 
   const handleRefresh = () => {
     router.refresh();
@@ -184,7 +197,7 @@ export default function DashboardClientView({
               {viewMode === 'week' ? 'Ringkasan Performa Minggu Ini' : 'Pencapaian Sepanjang Waktu'}
             </h2>
             <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 shrink-0">
-              {viewMode === 'week' ? weekDateRange : 'Kumulatif Akun'}
+              {viewMode === 'week' ? `Sen – Min (${weekDateRange})` : 'Kumulatif Akun'}
             </span>
           </div>
 
@@ -246,7 +259,7 @@ export default function DashboardClientView({
                       </span>
                     </div>
                     <p className="text-[11px] text-zinc-500 mt-0.5">
-                      Pekan {weekDateRange} • Sasaran: {weeklyGoalKm.toFixed(1)} km
+                      Pekan {weekDateRange} (Senin – Minggu) • Sasaran: {weeklyGoalKm.toFixed(1)} km
                     </p>
                   </div>
                 </div>
