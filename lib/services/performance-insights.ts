@@ -25,9 +25,12 @@ interface ScheduleAuditResult {
 
 /**
  * Memeriksa kecocokan jadwal lari (Senin, Kamis, Sabtu) terhadap data aktivitas riil di database.
- * Jika suatu jadwal terlewat, fungsi ini secara cerdas menyesuaikan target lari berikutnya.
+ * Jika suatu jadwal terlewat atau di-reschedule manual oleh atlet, fungsi ini mempertahankan adaptasi cerdas.
  */
-function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAuditResult {
+function auditScheduleAndAdaptivePlan(
+  activities: ActivityData[],
+  existingPlan?: CoachPlanData | null
+): ScheduleAuditResult {
   const now = new Date();
   const currentDayOfWeek = getWibDayIndex(now); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
 
@@ -50,10 +53,20 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   const thursdayRun = runActivities.find((act) => isSameWibDate(act.startTime, thursdayDateStr));
   const saturdayRun = runActivities.find((act) => isSameWibDate(act.startTime, saturdayDateStr));
 
+  // Cek apakah ada sesi yang telah di-reschedule secara manual oleh user pada minggu ini
+  const isMondayRescheduled =
+    existingPlan?.schedule?.monday?.status === 'rescheduled' && !mondayRun;
+  const isThursdayRescheduled =
+    existingPlan?.schedule?.thursday?.status === 'rescheduled' && !thursdayRun;
+  const isSaturdayRescheduled =
+    existingPlan?.schedule?.saturday?.status === 'rescheduled' && !saturdayRun;
+
   // Status Senin
   let mondayStatus: ScheduledDayStatus = 'upcoming';
   if (mondayRun) {
     mondayStatus = 'completed';
+  } else if (isMondayRescheduled) {
+    mondayStatus = 'rescheduled';
   } else if (currentDayOfWeek === 1) {
     mondayStatus = 'today';
   } else if (currentDayOfWeek > 1 || currentDayOfWeek === 0) {
@@ -64,6 +77,8 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   let thursdayStatus: ScheduledDayStatus = 'upcoming';
   if (thursdayRun) {
     thursdayStatus = 'completed';
+  } else if (isThursdayRescheduled) {
+    thursdayStatus = 'rescheduled';
   } else if (currentDayOfWeek === 4) {
     thursdayStatus = 'today';
   } else if (currentDayOfWeek > 4 || currentDayOfWeek === 0) {
@@ -74,6 +89,8 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   let saturdayStatus: ScheduledDayStatus = 'upcoming';
   if (saturdayRun) {
     saturdayStatus = 'completed';
+  } else if (isSaturdayRescheduled) {
+    saturdayStatus = 'rescheduled';
   } else if (currentDayOfWeek === 6) {
     saturdayStatus = 'today';
   } else if (currentDayOfWeek === 0) {
@@ -86,20 +103,21 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   if (thursdayStatus === 'skipped') skippedDayNames.push('Kamis');
   if (saturdayStatus === 'skipped') skippedDayNames.push('Sabtu');
 
-  const hasSkippedDays = skippedDayNames.length > 0;
+  const hasSkippedDays = skippedDayNames.length > 0 || isMondayRescheduled || isThursdayRescheduled || isSaturdayRescheduled;
 
-  // Bangun Workout Days dasar
+  // Bangun Workout Days dasar (dengan preservasi data reschedule jika ada)
   const mondayWorkout: CoachWorkoutDay = {
     dayName: 'Senin',
-    focus: 'Tempo / Speed Run',
+    focus: isMondayRescheduled ? existingPlan!.schedule.monday.focus : 'Tempo / Speed Run',
     originalFocus: 'Tempo / Speed Run',
-    targetMetric: '4.5 km - 5.0 km • Pace 7:15 - 7:30/km',
-    details:
-      '1 km pemanasan santai (Pace 8:30), 2.5 km Tempo Run terkunci di Pace 7:15-7:30/km, ditutup 1 km pendinginan jalan aktif.',
+    targetMetric: isMondayRescheduled ? existingPlan!.schedule.monday.targetMetric : '4.5 km - 5.0 km • Pace 7:15 - 7:30/km',
+    details: isMondayRescheduled
+      ? existingPlan!.schedule.monday.details
+      : '1 km pemanasan santai (Pace 8:30), 2.5 km Tempo Run terkunci di Pace 7:15-7:30/km, ditutup 1 km pendinginan jalan aktif.',
     intensityBadge: 'High',
     status: mondayStatus,
-    isAdjusted: false,
-    adjustmentReason: null,
+    isAdjusted: isMondayRescheduled ? true : false,
+    adjustmentReason: isMondayRescheduled ? existingPlan!.schedule.monday.adjustmentReason : null,
     completedActivity: mondayRun
       ? {
           title: mondayRun.title,
@@ -115,15 +133,16 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
 
   const thursdayWorkout: CoachWorkoutDay = {
     dayName: 'Kamis',
-    focus: 'Interval / Mid-Week Endurance',
+    focus: isThursdayRescheduled ? existingPlan!.schedule.thursday.focus : 'Interval / Mid-Week Endurance',
     originalFocus: 'Interval / Mid-Week Endurance',
-    targetMetric: '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)',
-    details:
-      '1 km jogging ringan dinamis. 5 set lari 400m cepat dengan istirahat jalan 90 detik tiap set. Jangan duduk saat jeda rest.',
+    targetMetric: isThursdayRescheduled ? existingPlan!.schedule.thursday.targetMetric : '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)',
+    details: isThursdayRescheduled
+      ? existingPlan!.schedule.thursday.details
+      : '1 km jogging ringan dinamis. 5 set lari 400m cepat dengan istirahat jalan 90 detik tiap set. Jangan duduk saat jeda rest.',
     intensityBadge: 'High',
     status: thursdayStatus,
-    isAdjusted: false,
-    adjustmentReason: null,
+    isAdjusted: isThursdayRescheduled ? true : false,
+    adjustmentReason: isThursdayRescheduled ? existingPlan!.schedule.thursday.adjustmentReason : null,
     completedActivity: thursdayRun
       ? {
           title: thursdayRun.title,
@@ -139,15 +158,16 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
 
   const saturdayWorkout: CoachWorkoutDay = {
     dayName: 'Sabtu',
-    focus: 'Safe Progressive Long Run',
+    focus: isSaturdayRescheduled ? existingPlan!.schedule.saturday.focus : 'Safe Progressive Long Run',
     originalFocus: 'Safe Progressive Long Run',
-    targetMetric: '6.5 km - 7.0 km • Pace 8:15 - 8:40/km',
-    details:
-      'Lari jarak jauh murni di Zona 2 (conversational pace). Kenaikan jarak +15% aman dari risiko cedera sendi dan tulang kering.',
+    targetMetric: isSaturdayRescheduled ? existingPlan!.schedule.saturday.targetMetric : '6.5 km - 7.0 km • Pace 8:15 - 8:40/km',
+    details: isSaturdayRescheduled
+      ? existingPlan!.schedule.saturday.details
+      : 'Lari jarak jauh murni di Zona 2 (conversational pace). Kenaikan jarak +15% aman dari risiko cedera sendi dan tulang kering.',
     intensityBadge: 'Endurance',
     status: saturdayStatus,
-    isAdjusted: false,
-    adjustmentReason: null,
+    isAdjusted: isSaturdayRescheduled ? true : false,
+    adjustmentReason: isSaturdayRescheduled ? existingPlan!.schedule.saturday.adjustmentReason : null,
     completedActivity: saturdayRun
       ? {
           title: saturdayRun.title,
@@ -164,7 +184,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   let activeAdjustmentNote: string | null = null;
 
   // ADAPTIVE LOGIC 1: Jika Senin terlewat, dan Kamis belum selesai (upcoming/today)
-  if (mondayStatus === 'skipped' && thursdayStatus !== 'completed') {
+  if (mondayStatus === 'skipped' && thursdayStatus !== 'completed' && !isThursdayRescheduled) {
     thursdayWorkout.isAdjusted = true;
     thursdayWorkout.focus = 'Aerobic Interval & Cruise Tempo (Penyesuaian Adaptif)';
     thursdayWorkout.targetMetric = '5.5 km • 4x 400m Interval + 1.5 km Cruise Tempo';
@@ -177,7 +197,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   }
 
   // ADAPTIVE LOGIC 2: Jika Kamis terlewat, dan Sabtu belum selesai (upcoming/today)
-  if (thursdayStatus === 'skipped' && saturdayStatus !== 'completed') {
+  if (thursdayStatus === 'skipped' && saturdayStatus !== 'completed' && !isSaturdayRescheduled) {
     saturdayWorkout.isAdjusted = true;
     saturdayWorkout.focus = 'Progressive Long Run (Penyesuaian Adaptif)';
     saturdayWorkout.targetMetric = '7.0 km • 5 km Zone 2 + 2 km Tempo Finish';
@@ -190,7 +210,7 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
   }
 
   // ADAPTIVE LOGIC 3: Jika Senin DAN Kamis terlewat
-  if (mondayStatus === 'skipped' && thursdayStatus === 'skipped' && saturdayStatus !== 'completed') {
+  if (mondayStatus === 'skipped' && thursdayStatus === 'skipped' && saturdayStatus !== 'completed' && !isSaturdayRescheduled) {
     saturdayWorkout.isAdjusted = true;
     saturdayWorkout.focus = 'Reset & Recovery Long Run (Penyesuaian Aman)';
     saturdayWorkout.targetMetric = '6.0 km - 6.5 km • Zona 2 Murni (Pace 8:30/km)';
@@ -202,38 +222,81 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
       'Dua jadwal terlewat minggu ini. Sabtu difokuskan pada lari Zona 2 aman untuk reset ritme tanpa risiko cedera.';
   }
 
+  // Prioritas Catatan Reschedule Manual
+  if (isMondayRescheduled || isThursdayRescheduled || isSaturdayRescheduled) {
+    activeAdjustmentNote =
+      existingPlan?.smartSkipAudit?.activeAdjustmentNote ||
+      'Penyesuaian Adaptif Aktif: Sesi latihan telah dialihkan sesuai kendala atlet.';
+  }
+
   // Tentukan Next Workout Day
   let nextWorkoutDay: CoachPlanData['nextWorkoutDay'];
   if (currentDayOfWeek === 1) {
-    nextWorkoutDay = {
-      dayName: 'Senin',
-      label: mondayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini',
-      focus: mondayWorkout.focus,
-      summary: mondayWorkout.details,
-      targetMetric: mondayWorkout.targetMetric,
-      isAdjusted: !!mondayWorkout.isAdjusted,
-      adjustmentBadge: mondayWorkout.isAdjusted ? 'Penyesuaian Adaptif' : null,
-    };
+    if (isMondayRescheduled) {
+      nextWorkoutDay = {
+        dayName: existingPlan?.nextWorkoutDay?.dayName || 'Selasa',
+        label: 'AI Rescheduled',
+        focus: mondayWorkout.focus,
+        summary: mondayWorkout.details,
+        targetMetric: mondayWorkout.targetMetric,
+        isAdjusted: true,
+        adjustmentBadge: existingPlan?.nextWorkoutDay?.adjustmentBadge || 'AI Rescheduled',
+      };
+    } else {
+      nextWorkoutDay = {
+        dayName: 'Senin',
+        label: mondayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini',
+        focus: mondayWorkout.focus,
+        summary: mondayWorkout.details,
+        targetMetric: mondayWorkout.targetMetric,
+        isAdjusted: !!mondayWorkout.isAdjusted,
+        adjustmentBadge: mondayWorkout.isAdjusted ? 'Penyesuaian Adaptif' : null,
+      };
+    }
   } else if (currentDayOfWeek >= 2 && currentDayOfWeek <= 4) {
-    nextWorkoutDay = {
-      dayName: 'Kamis',
-      label: currentDayOfWeek === 4 ? (thursdayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini') : 'Sesi Terdekat',
-      focus: thursdayWorkout.focus,
-      summary: thursdayWorkout.details,
-      targetMetric: thursdayWorkout.targetMetric,
-      isAdjusted: !!thursdayWorkout.isAdjusted,
-      adjustmentBadge: thursdayWorkout.isAdjusted ? 'Penyesuaian (Senin Terlewat)' : null,
-    };
+    if (currentDayOfWeek === 4 && isThursdayRescheduled) {
+      nextWorkoutDay = {
+        dayName: existingPlan?.nextWorkoutDay?.dayName || 'Jumat',
+        label: 'AI Rescheduled',
+        focus: thursdayWorkout.focus,
+        summary: thursdayWorkout.details,
+        targetMetric: thursdayWorkout.targetMetric,
+        isAdjusted: true,
+        adjustmentBadge: existingPlan?.nextWorkoutDay?.adjustmentBadge || 'AI Rescheduled',
+      };
+    } else {
+      nextWorkoutDay = {
+        dayName: 'Kamis',
+        label: currentDayOfWeek === 4 ? (thursdayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini') : 'Sesi Terdekat',
+        focus: thursdayWorkout.focus,
+        summary: thursdayWorkout.details,
+        targetMetric: thursdayWorkout.targetMetric,
+        isAdjusted: !!thursdayWorkout.isAdjusted,
+        adjustmentBadge: thursdayWorkout.isAdjusted ? 'Penyesuaian (Senin Terlewat)' : null,
+      };
+    }
   } else if (currentDayOfWeek === 5 || currentDayOfWeek === 6) {
-    nextWorkoutDay = {
-      dayName: 'Sabtu',
-      label: currentDayOfWeek === 6 ? (saturdayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini') : 'Sesi Terdekat',
-      focus: saturdayWorkout.focus,
-      summary: saturdayWorkout.details,
-      targetMetric: saturdayWorkout.targetMetric,
-      isAdjusted: !!saturdayWorkout.isAdjusted,
-      adjustmentBadge: saturdayWorkout.isAdjusted ? 'Penyesuaian Adaptif' : null,
-    };
+    if (currentDayOfWeek === 6 && isSaturdayRescheduled) {
+      nextWorkoutDay = {
+        dayName: existingPlan?.nextWorkoutDay?.dayName || 'Minggu',
+        label: 'AI Rescheduled',
+        focus: saturdayWorkout.focus,
+        summary: saturdayWorkout.details,
+        targetMetric: saturdayWorkout.targetMetric,
+        isAdjusted: true,
+        adjustmentBadge: existingPlan?.nextWorkoutDay?.adjustmentBadge || 'AI Rescheduled',
+      };
+    } else {
+      nextWorkoutDay = {
+        dayName: 'Sabtu',
+        label: currentDayOfWeek === 6 ? (saturdayStatus === 'completed' ? 'Tuntas Hari Ini' : 'Hari Ini') : 'Sesi Terdekat',
+        focus: saturdayWorkout.focus,
+        summary: saturdayWorkout.details,
+        targetMetric: saturdayWorkout.targetMetric,
+        isAdjusted: !!saturdayWorkout.isAdjusted,
+        adjustmentBadge: saturdayWorkout.isAdjusted ? 'Penyesuaian Adaptif' : null,
+      };
+    }
   } else {
     // Sunday (0)
     nextWorkoutDay = {
@@ -331,14 +394,29 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
   let activities: ActivityData[] = [];
   let weightLogs: WeightLogData[] = [];
 
+  let existingPlan: CoachPlanData | null = null;
+
   try {
-    const rawActs = await prisma.activity.findMany({
-      where: {
-        userId,
-        startTime: { gte: oneWeekAgo },
-      },
-      orderBy: { startTime: 'asc' },
-    });
+    const [rawActs, rawWeights, latestInsight] = await Promise.all([
+      prisma.activity.findMany({
+        where: {
+          userId,
+          startTime: { gte: oneWeekAgo },
+        },
+        orderBy: { startTime: 'asc' },
+      }),
+      prisma.weightLog.findMany({
+        where: {
+          userId,
+          loggedAt: { gte: oneWeekAgo },
+        },
+        orderBy: { loggedAt: 'asc' },
+      }),
+      prisma.aiInsight.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     activities = rawActs.map((a) => ({
       ...a,
@@ -346,19 +424,17 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       gymSets: (a.gymSets as unknown as GymSet[]) || null,
     }));
 
-    weightLogs = await prisma.weightLog.findMany({
-      where: {
-        userId,
-        loggedAt: { gte: oneWeekAgo },
-      },
-      orderBy: { loggedAt: 'asc' },
-    });
+    weightLogs = rawWeights;
+
+    if (latestInsight) {
+      existingPlan = parseCoachPlanFromInsight(latestInsight).coachPlan || null;
+    }
   } catch (dbErr) {
     console.warn('Prisma DB query fallback in insights service:', dbErr);
   }
 
-  // Hitung audit jadwal dan penyesuaian cerdas (Smart Skip Handling)
-  const auditResult = auditScheduleAndAdaptivePlan(activities);
+  // Hitung audit jadwal dan penyesuaian cerdas (Smart Skip Handling) dengan preservasi reschedule
+  const auditResult = auditScheduleAndAdaptivePlan(activities, existingPlan);
 
   const promptData = {
     fixedRunningDays: ['SENIN (Speed/Tempo)', 'KAMIS (Interval/Endurance)', 'SABTU (Long Run)'],
@@ -392,6 +468,7 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       - Jika ada hari yang terlewat (misal: hari Kamis tidak ada aktivitas lari yang tercatat), Anda WAJIB menyesuaikan (adjust) intensitas atau menu latihan hari berikutnya secara cerdas agar aman dan tidak membebani tubuh.
       - Jika Kamis diskip, sesi Sabtu disesuaikan (misal menjadi Progressive Long Run dengan akselerasi akhir terukur).
       - Jika 2 sesi terlewat, jangan izinkan atlet menggandakan jarak (bahaya cedera), tapi arahkan ke lari reset Zona 2 yang aman.
+      - ATURAN RESCHEDULE MANUAL (SANGAT KRUSIAL): Jika dalam 'adaptiveWorkouts' terdapat sesi dengan status 'rescheduled', ini berarti ATLET SENDIRI yang memindahkan hari latihan akibat kendala nyata (seperti hujan lebat, DOMS/kelelahan, nyeri sendi, atau waktu terbatas). Anda WAJIB mempertahankan penyesuaian tersebut dalam 'schedule' dan 'nextWorkoutDay', serta jangan meresetnya ke menu default!
       
       Gunakan nada bicara pelatih yang TEGAS, SUPORTIF, MEMBAKAR SEMANGAT, dan TIDAK MENGGUNAKAN BAHASA AI GENERIK.
 
@@ -536,9 +613,37 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     };
   }
 
-  const rawRecommendations = JSON.stringify(parsedPlan);
-  const summary = parsedPlan.coachGreeting;
-  const strengths = `${parsedPlan.intensityVerdict}: ${parsedPlan.lastWeekAnalysis}`;
+  const activePlan: CoachPlanData = parsedPlan;
+
+  // Preservasi mutlak terhadap sesi yang di-reschedule manual oleh atlet agar tidak hilang saat refresh insight
+  if (activePlan) {
+    if (auditResult.schedule.monday.status === 'rescheduled') {
+      activePlan.schedule.monday = auditResult.schedule.monday;
+    }
+    if (auditResult.schedule.thursday.status === 'rescheduled') {
+      activePlan.schedule.thursday = auditResult.schedule.thursday;
+    }
+    if (auditResult.schedule.saturday.status === 'rescheduled') {
+      activePlan.schedule.saturday = auditResult.schedule.saturday;
+    }
+
+    const hasRescheduledSession =
+      auditResult.schedule.monday.status === 'rescheduled' ||
+      auditResult.schedule.thursday.status === 'rescheduled' ||
+      auditResult.schedule.saturday.status === 'rescheduled';
+
+    if (hasRescheduledSession) {
+      activePlan.smartSkipAudit = auditResult.smartSkipAudit;
+      activePlan.nextWorkoutDay = auditResult.nextWorkoutDay;
+      if (auditResult.smartSkipAudit.activeAdjustmentNote && !activePlan.coachGreeting.includes('dialihkan')) {
+        activePlan.coachGreeting = `Perhatian Pelatih: ${auditResult.smartSkipAudit.activeAdjustmentNote} ${activePlan.coachGreeting}`;
+      }
+    }
+  }
+
+  const rawRecommendations = JSON.stringify(activePlan);
+  const summary = activePlan.coachGreeting;
+  const strengths = `${activePlan.intensityVerdict}: ${activePlan.lastWeekAnalysis}`;
 
   const insightRecord = {
     id: 'ins_' + Date.now(),
@@ -555,13 +660,13 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     const saved = await prisma.aiInsight.create({ data: insightRecord });
     return {
       ...saved,
-      coachPlan: parsedPlan,
+      coachPlan: activePlan,
     };
   } catch (err) {
     console.warn('Prisma create insight fallback:', err);
     return {
       ...insightRecord,
-      coachPlan: parsedPlan,
+      coachPlan: activePlan,
     };
   }
 }
