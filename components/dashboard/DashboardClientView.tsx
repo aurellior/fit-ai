@@ -14,9 +14,6 @@ import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
 import BottomNav from '@/components/navigation/BottomNav';
 import {
-  Plus,
-  Camera,
-  Scale,
   MapPin,
   Clock,
   Flame,
@@ -38,6 +35,7 @@ import {
 } from '@/types';
 import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
+import DailyStepCheckInCard from '@/components/dashboard/DailyStepCheckInCard';
 
 interface DashboardClientViewProps {
   user: UserProfile | null;
@@ -50,7 +48,6 @@ interface DashboardClientViewProps {
 }
 
 export default function DashboardClientView({
-  user,
   stravaToken,
   initialActivities,
   initialInsight,
@@ -600,6 +597,10 @@ export default function DashboardClientView({
 
         {/* Right Column: Ringkasan Nutrisi Harian & Energy Balance */}
         <div id="nutrition" className="lg:col-span-5 space-y-6">
+          <DailyStepCheckInCard
+            auditData={initialNutritionAudit}
+            onCheckInSuccess={handleRefresh}
+          />
           {initialNutritionAudit && (
             <DailyNutritionAuditCard
               initialAudit={initialNutritionAudit}
