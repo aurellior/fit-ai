@@ -37,7 +37,7 @@ import {
 import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
 import DailyStepCheckInCard from '@/components/dashboard/DailyStepCheckInCard';
-import TodayWorkoutCard from '@/components/dashboard/TodayWorkoutCard';
+import TodayCoachDirectiveBanner from '@/components/dashboard/TodayCoachDirectiveBanner';
 import { getWibDayIndex } from '@/lib/timezone';
 
 interface DashboardClientViewProps {
@@ -193,8 +193,14 @@ export default function DashboardClientView({
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
-      {/* 1. Strava Sync Action Bar */}
-      <div className="flex items-center justify-end">
+      {/* 1. Header Bar: Sync status and Quick Actions */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#FC5200]"></span>
+          <span className="text-[11px] font-mono font-semibold tracking-wider text-zinc-500 uppercase">
+            FitPulse AI Overview
+          </span>
+        </div>
         <StravaConnectButton
           isConnected={!!stravaToken}
           athleteId={stravaToken?.athleteId}
@@ -202,7 +208,16 @@ export default function DashboardClientView({
         />
       </div>
 
-      {/* 2. Top Stats Bar: Clean Strava Dual-Hierarchy (This Week Overview & All-Time Cumulative) */}
+      {/* 2. Top Overview Banner: Today's AI Coach Directive */}
+      <section id="today-directive">
+        <TodayCoachDirectiveBanner
+          coachPlan={weeklyInsight?.coachPlan}
+          onRescheduled={handleWorkoutRescheduled}
+          onStartWorkoutClick={() => setIsActivityModalOpen(true)}
+        />
+      </section>
+
+      {/* 3. Top Stats Bar: Clean Strava Dual-Hierarchy (This Week Overview & All-Time Cumulative) */}
       <section className="space-y-3.5">
         {/* Tier Header & Tab Segmen Switcher */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -585,13 +600,8 @@ export default function DashboardClientView({
 
       {/* 6. Feed Ringkas Overview: Recent Activities & Nutrition */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Feed Ringkas Aktivitas Terbaru & Menu Latihan Hari Ini */}
+        {/* Left Column: Feed Ringkas Aktivitas Terbaru */}
         <div id="activities" className="lg:col-span-7 space-y-4">
-          <TodayWorkoutCard
-            coachPlan={weeklyInsight?.coachPlan}
-            onRescheduled={handleWorkoutRescheduled}
-          />
-
           <div className="flex items-center justify-between pb-1">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">

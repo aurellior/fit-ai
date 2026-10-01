@@ -27,6 +27,7 @@ import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
 import BottomNav from '@/components/navigation/BottomNav';
+import TodayCoachDirectiveBanner from '@/components/dashboard/TodayCoachDirectiveBanner';
 
 interface CoachClientViewProps {
   user: UserProfile | null;
@@ -116,6 +117,26 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           <span>{error}</span>
         </div>
       )}
+
+      {/* TOP OVERVIEW BANNER: Today's AI Coach Directive */}
+      <section id="today-directive">
+        <TodayCoachDirectiveBanner
+          coachPlan={insight?.coachPlan}
+          onRescheduled={(newPlan) => {
+            setInsight((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    coachPlan: newPlan,
+                    summary: newPlan.coachGreeting,
+                  }
+                : null
+            );
+            handleRefreshData();
+          }}
+          onStartWorkoutClick={() => setIsActivityModalOpen(true)}
+        />
+      </section>
 
       {/* SECTION 1: Evaluasi Kedisiplinan & Smart Skip Audit */}
       <section className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 sm:p-6 shadow-xs space-y-5">
