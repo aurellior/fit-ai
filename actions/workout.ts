@@ -7,6 +7,12 @@ import { parseCoachPlanFromInsight, generateWeeklyPerformanceInsight } from '@/l
 import { CoachPlanData } from '@/types';
 import { revalidatePath } from 'next/cache';
 
+export {
+  processAndSaveWorkoutReschedule,
+  type RescheduleInput,
+  type RescheduleOutput,
+} from './workout-reschedule';
+
 export async function rescheduleWorkoutAction(payload: RescheduleRequestPayload) {
   try {
     const result = await rescheduleWorkoutWithAI(payload);
@@ -88,6 +94,40 @@ export async function rescheduleWorkoutAction(payload: RescheduleRequestPayload)
               recommendations: JSON.stringify(coachPlan),
             },
           });
+
+          // Simpan juga ke tabel workout_reschedules untuk riwayat audit persisten
+          try {
+            const origDate = new Date();
+            origDate.setHours(0, 0, 0, 0);
+            const reschedDate = new Date(origDate);
+            if (result.decisionType === 'RESCHEDULE_DAY') {
+              reschedDate.setDate(reschedDate.getDate() + 1);
+            }
+            await prisma.workoutReschedule.upsert({
+              where: {
+                userId_originalDate: {
+                  userId: dbUser.id,
+                  originalDate: origDate,
+                },
+              },
+              update: {
+                rescheduledDate: reschedDate,
+                activityType: payload.originalFocus,
+                reason: payload.obstacleType + (payload.customNotes ? ` (${payload.customNotes})` : ''),
+                aiRecommendation: JSON.stringify(result),
+              },
+              create: {
+                userId: dbUser.id,
+                originalDate: origDate,
+                rescheduledDate: reschedDate,
+                activityType: payload.originalFocus,
+                reason: payload.obstacleType + (payload.customNotes ? ` (${payload.customNotes})` : ''),
+                aiRecommendation: JSON.stringify(result),
+              },
+            });
+          } catch (tableErr) {
+            console.warn('Gagal mencatat ke WorkoutReschedule table:', tableErr);
+          }
 
           updatedCoachPlan = coachPlan;
 

@@ -36,6 +36,7 @@ model User {
   foodLogs       FoodLog[]
   aiInsights     AiInsight[]
   stepLogs       StepLog[]
+  workoutReschedules WorkoutReschedule[]
 
   @@map("users")
 }
@@ -150,5 +151,23 @@ model StepLog {
   @@unique([userId, dateStr])
   @@index([userId, dateStr])
   @@map("step_logs")
+}
+
+model WorkoutReschedule {
+  id               String   @id @default(cuid())
+  userId           String
+  originalDate     DateTime // Tanggal awal jadwal (YYYY-MM-DD)
+  rescheduledDate  DateTime // Tanggal baru hasil penyesuaian
+  activityType     String   // Contoh: 'TEMPO', 'INTERVAL', 'LONG_RUN'
+  reason           String?  // Alasan reschedule dari user
+  aiRecommendation String?  @db.Text // Saran taktis dari Gemini AI
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, originalDate])
+  @@index([userId, originalDate])
+  @@map("workout_reschedules")
 }
 
