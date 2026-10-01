@@ -7,12 +7,6 @@ import { parseCoachPlanFromInsight, generateWeeklyPerformanceInsight } from '@/l
 import { CoachPlanData } from '@/types';
 import { revalidatePath } from 'next/cache';
 
-export {
-  processAndSaveWorkoutReschedule,
-  type RescheduleInput,
-  type RescheduleOutput,
-} from './workout-reschedule';
-
 export async function rescheduleWorkoutAction(payload: RescheduleRequestPayload) {
   try {
     const result = await rescheduleWorkoutWithAI(payload);
