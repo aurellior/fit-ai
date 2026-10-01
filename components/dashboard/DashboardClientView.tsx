@@ -36,6 +36,7 @@ import {
 import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
 import DailyStepCheckInCard from '@/components/dashboard/DailyStepCheckInCard';
+import TodayWorkoutCard from '@/components/dashboard/TodayWorkoutCard';
 
 interface DashboardClientViewProps {
   user: UserProfile | null;
@@ -567,8 +568,10 @@ export default function DashboardClientView({
 
       {/* 6. Feed Ringkas Overview: Recent Activities & Nutrition */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Feed Ringkas Aktivitas Terbaru (Max 3-4 items) */}
-        <div id="activities" className="lg:col-span-7 space-y-3">
+        {/* Left Column: Feed Ringkas Aktivitas Terbaru & Menu Latihan Hari Ini */}
+        <div id="activities" className="lg:col-span-7 space-y-4">
+          <TodayWorkoutCard coachPlan={initialInsight?.coachPlan} />
+
           <div className="flex items-center justify-between pb-1">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">

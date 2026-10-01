@@ -62,6 +62,10 @@ Aplikasi ini dibangun menggunakan arsitektur monolit modern yang mengoptimalkan 
   - **Jika sesi Senin terlewat**: Menu Kamis otomatis diubah menjadi *Aerobic Interval & Cruise Tempo* untuk menyerap stimulasi yang hilang tanpa menimbulkan stres berlebih.
   - **Jika sesi Kamis terlewat**: Menu Sabtu diadaptasi menjadi *Progressive Long Run (Zone 2 + Tempo Finish)*.
   - **Jika dua sesi terlewat**: AI mengaktifkan protokol perlindungan cedera (*Injury Prevention Guard*) — melarang penumpukan jarak ekstrem dan menginstruksikan lari *Reset & Recovery* santai di Zona 2.
+- **AI Workout Rescheduler (Today's Workout Card)**:
+  - Kartu menu latihan hari ini di Dashboard yang secara cerdas mendeteksi jadwal latihan rutin (Senin Tempo, Kamis Interval, Sabtu Long Run, atau Hari Pemulihan/Cross-Training).
+  - Tombol interaktif *"Kendala Hari Ini? (Reschedule)"* dengan modal dialog cepat untuk memilih kendala (Hujan/Cuaca Buruk, Kelelahan/DOMS, Waktu Terbatas/Lembur, Nyeri Sendi/Lutut) atau input catatan bebas.
+  - Gemini AI memberikan adaptasi taktis instan: pengalihan ke indoor treadmill, modifikasi volume latihan, atau penggeseran sesi ke hari pemulihan berikutnya agar atlet tetap konsisten dan bebas cedera.
 - **Rekomendasi Pemulihan Komprehensif**: Panduan nutrisi pre/post workout, hidrasi, jendela asupan protein, dan larangan benturan sesi latihan beban kaki (*leg day*) sebelum *long run*.
 
 ### 2. Daily Sports Nutrition Audit & Energy Balance
@@ -388,6 +392,7 @@ model StepLog {
 | `POST` | `/api/strava/sync` | Mengambil 30 aktivitas terbaru dari Strava, menghitung kalori, dan melakukan upsert |
 | `POST` | `/api/ai/food-scanner` | Menerima `multipart/form-data` foto hidangan, menganalisis via Gemini Vision, dan menyimpan ke `FoodLog` |
 | `POST` | `/api/ai/food-text-log` | Menerima teks deskripsi menu, mengekstrak makronutrisi via Gemini AI, dan menyimpan ke `FoodLog` |
+| `POST` | `/api/ai/workout-rescheduler` | Menganalisis kendala sesi hari ini dan memberikan rekomendasi jadwal adaptif via Gemini AI |
 | `POST` | `/api/ai/insights` | Memproses riwayat 14 hari latihan & berat badan untuk menghasilkan analisis *Coach* dan *Adaptive Schedule* baru |
 | `GET`, `POST` | `/api/ai/nutrition-audit` | Mengambil / mengevaluasi audit nutrisi harian (Calories In vs Out, Strava vs NEAT de-duplication, Protein) |
 | `GET`, `POST` | `/api/steps` | Mengambil atau menyimpan riwayat jumlah langkah harian per tanggal |
@@ -398,6 +403,7 @@ model StepLog {
 | :--- | :--- | :--- |
 | `createManualActivity(formData)` | [`actions/activity.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/activity.ts) | Memvalidasi dan menyimpan sesi lari atau latihan beban gym ke PostgreSQL |
 | `deleteActivity(activityId)` | [`actions/activity.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/activity.ts) | Menghapus catatan aktivitas dan merevalidasi cache halaman |
+| `rescheduleWorkoutAction(data)` | [`actions/workout.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/workout.ts) | Menganalisis kendala atlet dan mengembalikan menu latihan adaptif baru |
 | `logFoodFromTextAction(desc)` | [`actions/nutrition.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/nutrition.ts) | Mengekstrak gizi dari teks bebas via Gemini dan menyimpan ke `FoodLog` |
 | `createFoodLog(formData)` | [`actions/nutrition.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/nutrition.ts) | Menyimpan log makanan manual beserta rincian makronutrisinya |
 | `logDailyStepsAction(data)` | [`actions/steps.ts`](file:///c:/Users/Aurellio/Documents/Dhio/Mini%20Project/fit-ai/actions/steps.ts) | Menyimpan langkah harian dan merevalidasi kalkulasi anti-double counting |
