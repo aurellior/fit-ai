@@ -32,6 +32,7 @@ export function formatPace(secPerKm?: number | null): string {
 export function formatDate(date: Date | string): string {
   const d = new Date(date);
   return d.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric',
     month: 'short',
     year: 'numeric',

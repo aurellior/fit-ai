@@ -3,11 +3,14 @@ import { prisma } from '@/lib/db/prisma';
 import { DailyNutritionAuditData, EnergyBalanceStatus } from '@/types';
 import { calculateIsolatedEnergyExpenditure, estimateWorkoutSteps } from '@/lib/services/step-isolation';
 
-const INDONESIAN_DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-const INDONESIAN_MONTHS = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-];
+import {
+  getWibDateString,
+  getWibDayIndex,
+  getWibDayName,
+  formatWibDateIndonesian,
+  getWibStartAndEndOfDay,
+  isSameWibDate,
+} from '@/lib/timezone';
 
 interface ScheduleMeta {
   dayName: string;
@@ -15,9 +18,9 @@ interface ScheduleMeta {
   isTrainingDay: boolean;
 }
 
-function getScheduleMeta(date: Date): ScheduleMeta {
-  const dayIndex = date.getDay();
-  const dayName = INDONESIAN_DAYS[dayIndex];
+function getScheduleMeta(date: Date | string): ScheduleMeta {
+  const dayIndex = getWibDayIndex(date);
+  const dayName = getWibDayName(date);
 
   switch (dayIndex) {
     case 1:
@@ -33,21 +36,6 @@ function getScheduleMeta(date: Date): ScheduleMeta {
     default:
       return { dayName, dayScheduleFocus: 'Active Recovery / Rest Day', isTrainingDay: false };
   }
-}
-
-function formatDateIndonesian(date: Date): string {
-  const dayName = INDONESIAN_DAYS[date.getDay()];
-  const day = date.getDate();
-  const month = INDONESIAN_MONTHS[date.getMonth()];
-  const year = date.getFullYear();
-  return `${dayName}, ${day} ${month} ${year}`;
-}
-
-function toIsoDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 /**
@@ -157,16 +145,9 @@ export async function getDailyNutritionAudit({
   targetDate?: Date | string;
   forceAiRefresh?: boolean;
 }): Promise<DailyNutritionAuditData> {
-  const dateObj = targetDate ? new Date(targetDate) : new Date();
-  const dateStr = toIsoDateString(dateObj);
-  const dateFormatted = formatDateIndonesian(dateObj);
-  const { dayName, dayScheduleFocus, isTrainingDay } = getScheduleMeta(dateObj);
-
-  // Batas awal & akhir hari (00:00:00 - 23:59:59 lokal)
-  const startOfDay = new Date(dateObj);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(dateObj);
-  endOfDay.setHours(23, 59, 59, 999);
+  const { startOfDay, endOfDay, dateStr } = getWibStartAndEndOfDay(targetDate || new Date());
+  const dateFormatted = formatWibDateIndonesian(targetDate || new Date());
+  const { dayName, dayScheduleFocus, isTrainingDay } = getScheduleMeta(dateStr);
 
   let foodLogsData: Array<{ calories: number; proteinG: number; carbsG: number; fatG: number; foodName: string }> = [];
   let activitiesData: Array<{
@@ -226,14 +207,8 @@ export async function getDailyNutritionAudit({
     // Jika DB kosong dan untuk demo date, coba ambil dari mock data
     if (foodLogsData.length === 0 && activitiesData.length === 0) {
       const { MOCK_FOOD_LOGS, MOCK_ACTIVITIES, MOCK_STEP_LOGS } = await import('@/lib/mockData');
-      const mockFoods = MOCK_FOOD_LOGS.filter((f) => {
-        const d = new Date(f.loggedAt);
-        return d.getDate() === dateObj.getDate() && d.getMonth() === dateObj.getMonth();
-      });
-      const mockActs = MOCK_ACTIVITIES.filter((a) => {
-        const d = new Date(a.startTime);
-        return d.getDate() === dateObj.getDate() && d.getMonth() === dateObj.getMonth();
-      });
+      const mockFoods = MOCK_FOOD_LOGS.filter((f) => isSameWibDate(f.loggedAt, dateStr));
+      const mockActs = MOCK_ACTIVITIES.filter((a) => isSameWibDate(a.startTime, dateStr));
       const mockStep = MOCK_STEP_LOGS.find((s) => s.dateStr === dateStr);
 
       if (mockFoods.length > 0 || mockActs.length > 0) {
@@ -537,20 +512,13 @@ export async function getNutritionAuditHistory({
   for (let i = 0; i < days; i++) {
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() - i);
-    const dateStr = toIsoDateString(targetDate);
-    const dateFormatted = formatDateIndonesian(targetDate);
-    const { dayName, dayScheduleFocus, isTrainingDay } = getScheduleMeta(targetDate);
+    const dateStr = getWibDateString(targetDate);
+    const dateFormatted = formatWibDateIndonesian(targetDate);
+    const { dayName, dayScheduleFocus, isTrainingDay } = getScheduleMeta(dateStr);
 
     // Filter food logs & activities for this date
-    const dayFoods = allFoodLogs.filter((f) => {
-      const d = new Date(f.loggedAt);
-      return toIsoDateString(d) === dateStr;
-    });
-
-    const dayActivities = allActivities.filter((a) => {
-      const d = new Date(a.startTime);
-      return toIsoDateString(d) === dateStr;
-    });
+    const dayFoods = allFoodLogs.filter((f) => isSameWibDate(f.loggedAt, dateStr));
+    const dayActivities = allActivities.filter((a) => isSameWibDate(a.startTime, dateStr));
 
     const dayStepLog = allStepLogs.find((s) => s.dateStr === dateStr);
     const loggedSteps = dayStepLog ? dayStepLog.stepCount : null;

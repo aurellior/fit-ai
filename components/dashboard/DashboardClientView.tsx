@@ -37,6 +37,7 @@ import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
 import DailyStepCheckInCard from '@/components/dashboard/DailyStepCheckInCard';
 import TodayWorkoutCard from '@/components/dashboard/TodayWorkoutCard';
+import { getWibDayIndex } from '@/lib/timezone';
 
 interface DashboardClientViewProps {
   user: UserProfile | null;
@@ -79,7 +80,7 @@ export default function DashboardClientView({
       : latestActivityTimestamp;
 
   const refDate = new Date(refTime);
-  const currentDayOfWeek = refDate.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
+  const currentDayOfWeek = getWibDayIndex(refDate); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
   const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
 
   // Awal minggu: Senin 00:00:00

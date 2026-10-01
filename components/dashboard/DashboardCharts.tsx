@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { ActivityData, WeightLogData, FoodLogData } from '@/types';
 import { cn } from '@/lib/utils';
+import { getWibDateString, getWibDayIndex, WIB_TIMEZONE } from '@/lib/timezone';
 
 interface DashboardChartsProps {
   activities: ActivityData[];
@@ -83,7 +84,7 @@ export default function DashboardCharts({
   const numDays = chartPeriod === '7d' ? 7 : 30;
 
   const refDate = new Date(refTime);
-  const currentDayOfWeek = refDate.getDay();
+  const currentDayOfWeek = getWibDayIndex(refDate);
   const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
   const mondayOfCurrentWeek = new Date(refDate);
   mondayOfCurrentWeek.setDate(refDate.getDate() + distanceToMonday);
@@ -101,16 +102,16 @@ export default function DashboardCharts({
       d = new Date(refTime);
       d.setDate(d.getDate() - (numDays - 1 - i));
     }
-    const dayStr = d.toISOString().split('T')[0];
+    const dayStr = getWibDateString(d);
     const label =
       numDays === 7
-        ? d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
-        : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        ? d.toLocaleDateString('id-ID', { timeZone: WIB_TIMEZONE, weekday: 'short', day: 'numeric' })
+        : d.toLocaleDateString('id-ID', { timeZone: WIB_TIMEZONE, day: 'numeric', month: 'short' });
     return { date: dayStr, label, distanceKm: 0, durationMin: 0 };
   });
 
   activities.forEach((act) => {
-    const actDate = new Date(act.startTime).toISOString().split('T')[0];
+    const actDate = getWibDateString(act.startTime);
     const target = activityDays.find((d) => d.date === actDate);
     if (target) {
       if (act.distanceMeters) {
@@ -132,16 +133,16 @@ export default function DashboardCharts({
       d = new Date(refTime);
       d.setDate(d.getDate() - (numDays - 1 - i));
     }
-    const dayStr = d.toISOString().split('T')[0];
+    const dayStr = getWibDateString(d);
     const label =
       numDays === 7
-        ? d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' })
-        : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        ? d.toLocaleDateString('id-ID', { timeZone: WIB_TIMEZONE, weekday: 'short', day: 'numeric' })
+        : d.toLocaleDateString('id-ID', { timeZone: WIB_TIMEZONE, day: 'numeric', month: 'short' });
     return { date: dayStr, label, weightKg: null as number | null, calories: 0 };
   });
 
   foodLogs.forEach((food) => {
-    const fDate = new Date(food.loggedAt).toISOString().split('T')[0];
+    const fDate = getWibDateString(food.loggedAt);
     const target = weightDays.find((d) => d.date === fDate);
     if (target) {
       target.calories += Math.round(food.calories);
@@ -151,7 +152,7 @@ export default function DashboardCharts({
   let lastKnownWeight = weightLogs[0]?.weightKg || 68.0;
   weightDays.forEach((day) => {
     const log = weightLogs.find(
-      (w) => new Date(w.loggedAt).toISOString().split('T')[0] === day.date
+      (w) => getWibDateString(w.loggedAt) === day.date
     );
     if (log) {
       day.weightKg = log.weightKg;

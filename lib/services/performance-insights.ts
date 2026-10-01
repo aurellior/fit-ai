@@ -11,6 +11,8 @@ import {
   ScheduledDayStatus,
 } from '@/types';
 
+import { getWibDayIndex, getWibParts, getWibDateString, isSameWibDate } from '@/lib/timezone';
+
 interface ScheduleAuditResult {
   smartSkipAudit: SmartSkipAudit;
   nextWorkoutDay: CoachPlanData['nextWorkoutDay'];
@@ -27,37 +29,26 @@ interface ScheduleAuditResult {
  */
 function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAuditResult {
   const now = new Date();
-  const currentDayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
+  const currentDayOfWeek = getWibDayIndex(now); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
 
-  // Hitung tanggal Senin di minggu berjalan
-  // Jika hari Minggu (0), anggap awal minggu adalah Senin sebelumnya
+  // Hitung tanggal Senin di minggu berjalan dalam kalender WIB
   const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
-  const mondayDate = new Date(now);
-  mondayDate.setDate(now.getDate() + distanceToMonday);
-  mondayDate.setHours(0, 0, 0, 0);
+  const { year, month, day } = getWibParts(now);
 
-  const thursdayDate = new Date(mondayDate);
-  thursdayDate.setDate(mondayDate.getDate() + 3);
+  const mondayDate = new Date(Date.UTC(year, month - 1, day + distanceToMonday, 12, 0, 0));
+  const mondayDateStr = getWibDateString(mondayDate);
 
-  const saturdayDate = new Date(mondayDate);
-  saturdayDate.setDate(mondayDate.getDate() + 5);
+  const thursdayDate = new Date(Date.UTC(year, month - 1, day + distanceToMonday + 3, 12, 0, 0));
+  const thursdayDateStr = getWibDateString(thursdayDate);
+
+  const saturdayDate = new Date(Date.UTC(year, month - 1, day + distanceToMonday + 5, 12, 0, 0));
+  const saturdayDateStr = getWibDateString(saturdayDate);
 
   const runActivities = activities.filter((a) => a.type === 'RUN');
 
-  const findRunOnDate = (targetDate: Date) => {
-    return runActivities.find((act) => {
-      const actDate = new Date(act.startTime);
-      return (
-        actDate.getFullYear() === targetDate.getFullYear() &&
-        actDate.getMonth() === targetDate.getMonth() &&
-        actDate.getDate() === targetDate.getDate()
-      );
-    });
-  };
-
-  const mondayRun = findRunOnDate(mondayDate);
-  const thursdayRun = findRunOnDate(thursdayDate);
-  const saturdayRun = findRunOnDate(saturdayDate);
+  const mondayRun = runActivities.find((act) => isSameWibDate(act.startTime, mondayDateStr));
+  const thursdayRun = runActivities.find((act) => isSameWibDate(act.startTime, thursdayDateStr));
+  const saturdayRun = runActivities.find((act) => isSameWibDate(act.startTime, saturdayDateStr));
 
   // Status Senin
   let mondayStatus: ScheduledDayStatus = 'upcoming';
@@ -263,15 +254,15 @@ function auditScheduleAndAdaptivePlan(activities: ActivityData[]): ScheduleAudit
     auditDetails: {
       monday: {
         status: mondayStatus,
-        dateLabel: mondayDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        dateLabel: mondayDate.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' }),
       },
       thursday: {
         status: thursdayStatus,
-        dateLabel: thursdayDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        dateLabel: thursdayDate.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' }),
       },
       saturday: {
         status: saturdayStatus,
-        dateLabel: saturdayDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        dateLabel: saturdayDate.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short' }),
       },
     },
   };

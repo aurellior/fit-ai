@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { createManualActivity } from '@/actions/activity';
 import { ActivityType } from '@prisma/client';
 import { Trash2, Plus } from 'lucide-react';
+import { getWibDateTimeLocalString } from '@/lib/timezone';
 
 interface GymSetInput {
   exercise: string;
@@ -20,7 +21,7 @@ interface ManualActivityFormProps {
 export default function ManualActivityForm({ onSuccess, isModal = false }: ManualActivityFormProps) {
   const [activityType, setActivityType] = useState<ActivityType>(ActivityType.RUN);
   const [title, setTitle] = useState('');
-  const [startTime, setStartTime] = useState(new Date().toISOString().slice(0, 16));
+  const [startTime, setStartTime] = useState(() => getWibDateTimeLocalString());
   const [durationMinutes, setDurationMinutes] = useState<number | ''>('');
   const [distanceKm, setDistanceKm] = useState<number | ''>('');
   const [calories, setCalories] = useState<number | ''>('');

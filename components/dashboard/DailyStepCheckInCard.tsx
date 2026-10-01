@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { Footprints, ShieldCheck, Check, Loader2, ArrowUpRight, Flame, Target } from 'lucide-react';
 import { DailyNutritionAuditData } from '@/types';
 import { logDailyStepsAction } from '@/actions/steps';
+import { getWibDateString } from '@/lib/timezone';
 
 interface DailyStepCheckInCardProps {
   auditData?: DailyNutritionAuditData | null;
@@ -21,8 +22,8 @@ export default function DailyStepCheckInCard({
   const [isSaved, setIsSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Today's date string format: YYYY-MM-DD
-  const targetDateStr = auditData?.date || new Date().toISOString().split('T')[0];
+  // Today's date string format: YYYY-MM-DD (WIB)
+  const targetDateStr = auditData?.date || getWibDateString();
   const totalSteps = auditData?.totalDailySteps || 0;
   const targetGoal = 10000;
   const progressPercent = Math.min(100, Math.round((totalSteps / targetGoal) * 100));

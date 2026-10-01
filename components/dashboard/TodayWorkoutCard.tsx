@@ -16,6 +16,7 @@ import {
 import { CoachPlanData, CoachWorkoutDay } from '@/types';
 import Modal from '@/components/ui/Modal';
 import { RescheduledWorkoutResult } from '@/lib/services/workout-rescheduler';
+import { getWibDayIndex } from '@/lib/timezone';
 
 interface TodayWorkoutCardProps {
   coachPlan?: CoachPlanData | null;
@@ -108,8 +109,8 @@ const DEFAULT_SCHEDULES: Record<number, { dayName: string; focus: string; target
 };
 
 export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
-  // Deteksi hari saat ini
-  const todayDayIndex = new Date().getDay();
+  // Deteksi hari saat ini dalam zona waktu WIB
+  const todayDayIndex = getWibDayIndex();
   const defaultToday = DEFAULT_SCHEDULES[todayDayIndex] || DEFAULT_SCHEDULES[1];
 
   // Cari apakah ada sesi terstruktur di coachPlan
