@@ -17,9 +17,11 @@ import { CoachPlanData, CoachWorkoutDay } from '@/types';
 import Modal from '@/components/ui/Modal';
 import { RescheduledWorkoutResult } from '@/lib/services/workout-rescheduler';
 import { getWibDayIndex } from '@/lib/timezone';
+import { rescheduleWorkoutAction } from '@/actions/workout';
 
 interface TodayWorkoutCardProps {
   coachPlan?: CoachPlanData | null;
+  onRescheduled?: (newCoachPlan: CoachPlanData) => void;
 }
 
 const PRESET_OBSTACLES = [
@@ -108,7 +110,7 @@ const DEFAULT_SCHEDULES: Record<number, { dayName: string; focus: string; target
   },
 };
 
-export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
+export default function TodayWorkoutCard({ coachPlan, onRescheduled }: TodayWorkoutCardProps) {
   // Deteksi hari saat ini dalam zona waktu WIB
   const todayDayIndex = getWibDayIndex();
   const defaultToday = DEFAULT_SCHEDULES[todayDayIndex] || DEFAULT_SCHEDULES[1];
@@ -144,24 +146,22 @@ export default function TodayWorkoutCard({ coachPlan }: TodayWorkoutCardProps) {
     setErrorMsg(null);
 
     try {
-      const res = await fetch('/api/ai/workout-rescheduler', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dayName: defaultToday.dayName,
-          originalFocus: baseFocus,
-          originalTarget: baseTarget,
-          obstacleType: selectedObstacle,
-          customNotes: customNotes.trim() || undefined,
-        }),
+      const res = await rescheduleWorkoutAction({
+        dayName: defaultToday.dayName,
+        originalFocus: baseFocus,
+        originalTarget: baseTarget,
+        obstacleType: selectedObstacle,
+        customNotes: customNotes.trim() || undefined,
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Gagal mereschedule latihan');
+      if (!res.success || !res.data) {
+        throw new Error(res.error || 'Gagal mereschedule latihan');
       }
 
-      setRescheduledPlan(json.data);
+      setRescheduledPlan(res.data);
+      if (res.coachPlan && onRescheduled) {
+        onRescheduled(res.coachPlan);
+      }
       setIsModalOpen(false);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Terjadi kegagalan koneksi AI';

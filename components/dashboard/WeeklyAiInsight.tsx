@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw,
@@ -10,6 +10,7 @@ import {
   XCircle,
   Clock,
   SlidersHorizontal,
+  RotateCcw,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { AiInsightData } from '@/types';
@@ -20,6 +21,13 @@ interface WeeklyAiInsightProps {
 
 export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps) {
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight || null);
+
+  useEffect(() => {
+    if (initialInsight) {
+      setInsight(initialInsight);
+    }
+  }, [initialInsight]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -171,6 +179,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.monday.status === 'completed'
                       ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                      : audit.auditDetails.monday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                       : audit.auditDetails.monday.status === 'skipped'
                       ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                       : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -180,6 +190,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                     <span className="font-bold text-[11px] font-mono">SENIN</span>
                     {audit.auditDetails.monday.status === 'completed' ? (
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    ) : audit.auditDetails.monday.status === 'rescheduled' ? (
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     ) : audit.auditDetails.monday.status === 'skipped' ? (
                       <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     ) : (
@@ -189,6 +201,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   <div className="text-[10px] text-zinc-500 mt-1 capitalize">
                     {audit.auditDetails.monday.status === 'completed'
                       ? 'Tuntas'
+                      : audit.auditDetails.monday.status === 'rescheduled'
+                      ? 'Dialihkan'
                       : audit.auditDetails.monday.status === 'skipped'
                       ? 'Terlewat'
                       : 'Mendatang'}
@@ -200,6 +214,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.thursday.status === 'completed'
                       ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                      : audit.auditDetails.thursday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                       : audit.auditDetails.thursday.status === 'skipped'
                       ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                       : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -209,6 +225,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                     <span className="font-bold text-[11px] font-mono">KAMIS</span>
                     {audit.auditDetails.thursday.status === 'completed' ? (
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     ) : audit.auditDetails.thursday.status === 'skipped' ? (
                       <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     ) : (
@@ -218,6 +236,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   <div className="text-[10px] text-zinc-500 mt-1 capitalize">
                     {audit.auditDetails.thursday.status === 'completed'
                       ? 'Tuntas'
+                      : audit.auditDetails.thursday.status === 'rescheduled'
+                      ? 'Dialihkan'
                       : audit.auditDetails.thursday.status === 'skipped'
                       ? 'Terlewat'
                       : 'Mendatang'}
@@ -229,6 +249,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.saturday.status === 'completed'
                       ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                      : audit.auditDetails.saturday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                       : audit.auditDetails.saturday.status === 'skipped'
                       ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                       : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -238,6 +260,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                     <span className="font-bold text-[11px] font-mono">SABTU</span>
                     {audit.auditDetails.saturday.status === 'completed' ? (
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     ) : audit.auditDetails.saturday.status === 'skipped' ? (
                       <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     ) : (
@@ -247,6 +271,8 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   <div className="text-[10px] text-zinc-500 mt-1 capitalize">
                     {audit.auditDetails.saturday.status === 'completed'
                       ? 'Tuntas'
+                      : audit.auditDetails.saturday.status === 'rescheduled'
+                      ? 'Dialihkan'
                       : audit.auditDetails.saturday.status === 'skipped'
                       ? 'Terlewat'
                       : 'Mendatang'}

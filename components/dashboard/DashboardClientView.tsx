@@ -32,6 +32,7 @@ import {
   FoodLogData,
   WeightLogData,
   DailyNutritionAuditData,
+  CoachPlanData,
 } from '@/types';
 import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
@@ -58,6 +59,21 @@ export default function DashboardClientView({
   initialNutritionAudit,
 }: DashboardClientViewProps) {
   const router = useRouter();
+
+  // Active AI Insight state for real-time reactivity
+  const [weeklyInsight, setWeeklyInsight] = useState<AiInsightData | null>(initialInsight || null);
+
+  const handleWorkoutRescheduled = (newPlan: CoachPlanData) => {
+    setWeeklyInsight((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        summary: newPlan.coachGreeting,
+        coachPlan: newPlan,
+      };
+    });
+    router.refresh();
+  };
 
   // Modals state (Keeps dashboard pristine & clutter-free)
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
@@ -564,14 +580,17 @@ export default function DashboardClientView({
 
       {/* 4. Weekly AI Performance Intelligence */}
       <section id="insights">
-        <WeeklyAiInsight initialInsight={initialInsight} />
+        <WeeklyAiInsight initialInsight={weeklyInsight} />
       </section>
 
       {/* 6. Feed Ringkas Overview: Recent Activities & Nutrition */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Feed Ringkas Aktivitas Terbaru & Menu Latihan Hari Ini */}
         <div id="activities" className="lg:col-span-7 space-y-4">
-          <TodayWorkoutCard coachPlan={initialInsight?.coachPlan} />
+          <TodayWorkoutCard
+            coachPlan={weeklyInsight?.coachPlan}
+            onRescheduled={handleWorkoutRescheduled}
+          />
 
           <div className="flex items-center justify-between pb-1">
             <div className="flex items-center gap-2">

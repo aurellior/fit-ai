@@ -60,7 +60,7 @@ export interface FoodLogData {
   loggedAt: Date | string;
 }
 
-export type ScheduledDayStatus = 'completed' | 'skipped' | 'upcoming' | 'today';
+export type ScheduledDayStatus = 'completed' | 'skipped' | 'upcoming' | 'today' | 'rescheduled';
 
 export interface CoachWorkoutDay {
   dayName: 'Senin' | 'Kamis' | 'Sabtu';
