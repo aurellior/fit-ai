@@ -145,18 +145,33 @@ export default function TodayCoachDirectiveBanner({
 
   // Cari apakah ada sesi terstruktur di coachPlan
   let activeWorkout: CoachWorkoutDay | null = null;
+  let isRescheduledToToday = false;
+
   if (coachPlan?.schedule) {
     if (todayDayIndex === 1) activeWorkout = coachPlan.schedule.monday;
     else if (todayDayIndex === 4) activeWorkout = coachPlan.schedule.thursday;
     else if (todayDayIndex === 6) activeWorkout = coachPlan.schedule.saturday;
-  }
 
-  const baseFocus = activeWorkout?.focus || defaultToday.focus;
-  const baseTarget = activeWorkout?.targetMetric || defaultToday.targetMetric;
-  const baseDetails = activeWorkout?.details || defaultToday.details;
-  const isKeyDay = defaultToday.isKey;
-  const isAdjusted = activeWorkout?.isAdjusted || false;
-  const adjustmentReason = activeWorkout?.adjustmentReason || null;
+    // Jika hari ini bukan jadwal default (misal: Jumat, Selasa, Minggu), periksa apakah ada sesi yang dialihkan ke hari ini
+    if (!activeWorkout || activeWorkout.status !== 'rescheduled') {
+      const scheduleDays = [
+        coachPlan.schedule.monday,
+        coachPlan.schedule.thursday,
+        coachPlan.schedule.saturday,
+      ].filter(Boolean) as CoachWorkoutDay[];
+
+      const shiftedToToday = scheduleDays.find(
+        (day) =>
+          day.status === 'rescheduled' &&
+          (day.adjustmentReason?.toLowerCase().includes(todayWibName.toLowerCase()) ||
+            coachPlan.nextWorkoutDay?.dayName.toLowerCase() === todayWibName.toLowerCase())
+      );
+      if (shiftedToToday) {
+        activeWorkout = shiftedToToday;
+        isRescheduledToToday = true;
+      }
+    }
+  }
 
   // State untuk Rescheduler Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -165,6 +180,15 @@ export default function TodayCoachDirectiveBanner({
   const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
   const [rescheduledPlan, setRescheduledPlan] = useState<RescheduledWorkoutResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const isRescheduled = (activeWorkout?.status === 'rescheduled') || isRescheduledToToday || !!rescheduledPlan;
+  const isAdjusted = activeWorkout?.isAdjusted || false;
+  const adjustmentReason = activeWorkout?.adjustmentReason || null;
+
+  const baseFocus = activeWorkout?.focus || defaultToday.focus;
+  const baseTarget = activeWorkout?.targetMetric || defaultToday.targetMetric;
+  const baseDetails = activeWorkout?.details || defaultToday.details;
+  const isKeyDay = defaultToday.isKey;
 
   // Body Scroll Lock saat modal dibuka di iOS/Mobile
   React.useEffect(() => {
@@ -227,7 +251,13 @@ export default function TodayCoachDirectiveBanner({
   const displayFocus = rescheduledPlan ? rescheduledPlan.newFocus : baseFocus;
   const displayTarget = rescheduledPlan ? rescheduledPlan.newTargetMetric : baseTarget;
   const displayDetails = rescheduledPlan ? rescheduledPlan.coachAdvice : baseDetails;
-  const displayBadge = rescheduledPlan ? rescheduledPlan.badge : isAdjusted ? 'Smart Adjusted' : defaultToday.badge;
+  const displayBadge = rescheduledPlan
+    ? rescheduledPlan.badge
+    : isRescheduled
+    ? (activeWorkout?.adjustmentReason ? activeWorkout.adjustmentReason.split(':')[0] : 'AI Rescheduled')
+    : isAdjusted
+    ? 'Smart Adjusted'
+    : defaultToday.badge;
 
   return (
     <>
@@ -253,10 +283,16 @@ export default function TodayCoachDirectiveBanner({
                 {todayWibName}
               </span>
 
-              {rescheduledPlan ? (
+              {isRescheduled ? (
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800/60 flex items-center gap-1">
                   <RotateCcw className="w-3 h-3 text-sky-500" />
-                  <span>AI Rescheduled: {rescheduledPlan.newDayOrTime}</span>
+                  <span>
+                    {rescheduledPlan
+                      ? `AI Rescheduled: ${rescheduledPlan.newDayOrTime}`
+                      : activeWorkout?.adjustmentReason
+                      ? activeWorkout.adjustmentReason.split(' akibat ')[0]
+                      : 'AI Rescheduled'}
+                  </span>
                 </span>
               ) : isAdjusted ? (
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 flex items-center gap-1">
@@ -302,17 +338,29 @@ export default function TodayCoachDirectiveBanner({
           </div>
 
           {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala) */}
-          {(rescheduledPlan || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
-            <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
-              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
+            <div className={cn(
+              "p-3 rounded-xl border text-xs flex items-start gap-2.5",
+              isRescheduled
+                ? "bg-sky-500/10 dark:bg-sky-950/30 border-sky-500/30 text-sky-800 dark:text-sky-300"
+                : "bg-amber-500/10 dark:bg-amber-950/30 border-amber-500/30 text-amber-800 dark:text-amber-300"
+            )}>
+              {isRescheduled ? (
+                <RotateCcw className="w-4 h-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              )}
               <div className="space-y-1">
                 <span className="font-semibold block text-[11px] uppercase tracking-wider font-mono">
-                  {rescheduledPlan ? 'Solusi Penyesuaian AI Berhasil Diterapkan' : 'Catatan Penyesuaian Adaptif AI'}
+                  {isRescheduled ? 'Solusi Penyesuaian AI Berhasil Diterapkan' : 'Catatan Penyesuaian Adaptif AI'}
                 </span>
-                <p className="leading-relaxed text-zinc-700 dark:text-zinc-300">
+                <p className="leading-relaxed text-zinc-700 dark:text-zinc-300 font-sans">
                   {rescheduledPlan
-                    ? `Menu latihan dialihkan ke ${rescheduledPlan.newDayOrTime} dengan target penyesuaian agar progres mingguan tetap terjaga tanpa risiko overtraining.`
-                    : adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote}
+                    ? `Sesi latihan dialihkan (${rescheduledPlan.badge}): ${rescheduledPlan.newDayOrTime} — ${rescheduledPlan.coachAdvice}`
+                    : activeWorkout?.adjustmentReason
+                    ? activeWorkout.adjustmentReason
+                    : coachPlan?.smartSkipAudit?.activeAdjustmentNote ||
+                      'Target latihan minggu ini telah disesuaikan otomatis oleh AI Coach.'}
                 </p>
               </div>
             </div>

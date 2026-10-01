@@ -19,6 +19,7 @@ import {
   Sparkles,
   SlidersHorizontal,
   ShieldCheck,
+  RotateCcw,
 } from 'lucide-react';
 import { AiInsightData, UserProfile } from '@/types';
 import { formatDate } from '@/lib/utils';
@@ -38,6 +39,13 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight);
+
+  React.useEffect(() => {
+    if (initialInsight) {
+      setInsight(initialInsight);
+    }
+  }, [initialInsight]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -175,6 +183,8 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.monday.status === 'completed'
                     ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                    : audit.auditDetails.monday.status === 'rescheduled'
+                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                     : audit.auditDetails.monday.status === 'skipped'
                     ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                     : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -191,6 +201,10 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="w-4 h-4" /> Tuntas
                     </span>
+                  ) : audit.auditDetails.monday.status === 'rescheduled' ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                    </span>
                   ) : audit.auditDetails.monday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                       <XCircle className="w-4 h-4" /> Terlewat
@@ -202,7 +216,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   )}
                 </div>
                 <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: Tempo / Speed Run
+                  Target: {plan?.schedule.monday.focus || 'Tempo / Speed Run'}
                 </div>
               </div>
 
@@ -211,6 +225,8 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.thursday.status === 'completed'
                     ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                    : audit.auditDetails.thursday.status === 'rescheduled'
+                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                     : audit.auditDetails.thursday.status === 'skipped'
                     ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                     : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -227,6 +243,10 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="w-4 h-4" /> Tuntas
                     </span>
+                  ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                    </span>
                   ) : audit.auditDetails.thursday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                       <XCircle className="w-4 h-4" /> Terlewat
@@ -238,7 +258,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   )}
                 </div>
                 <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: Interval / Mid-Week Endurance
+                  Target: {plan?.schedule.thursday.focus || 'Interval / Mid-Week Endurance'}
                 </div>
               </div>
 
@@ -247,6 +267,8 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.saturday.status === 'completed'
                     ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
+                    : audit.auditDetails.saturday.status === 'rescheduled'
+                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                     : audit.auditDetails.saturday.status === 'skipped'
                     ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
                     : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
@@ -263,6 +285,10 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="w-4 h-4" /> Tuntas
                     </span>
+                  ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                    </span>
                   ) : audit.auditDetails.saturday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                       <XCircle className="w-4 h-4" /> Terlewat
@@ -274,7 +300,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   )}
                 </div>
                 <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: Safe Progressive Long Run
+                  Target: {plan?.schedule.saturday.focus || 'Safe Progressive Long Run'}
                 </div>
               </div>
             </div>
@@ -311,7 +337,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
             Program Lari Mingguan Adaptif
           </h2>
           <p className="text-xs text-zinc-500">
-            Jika ada sesi yang terlewat, target berikutnya telah disesuaikan secara proporsional agar tidak membebani tubuh.
+            Jika ada sesi yang terlewat atau dialihkan, target berikutnya telah disesuaikan secara proporsional agar tidak membebani tubuh.
           </p>
         </div>
 
@@ -319,7 +345,9 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           {/* SENIN */}
           <div
             className={`bg-white dark:bg-zinc-900 border rounded-lg p-5 flex flex-col justify-between transition-colors shadow-xs ${
-              plan?.schedule.monday.isAdjusted
+              plan?.schedule.monday.status === 'rescheduled'
+                ? 'border-sky-400/80 dark:border-sky-500/50 ring-1 ring-sky-400/20'
+                : plan?.schedule.monday.isAdjusted
                 ? 'border-amber-400/60 dark:border-amber-500/40'
                 : 'border-zinc-200 dark:border-zinc-800'
             }`}
@@ -330,11 +358,16 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
                     SENIN
                   </span>
-                  {plan?.schedule.monday.isAdjusted && (
+                  {plan?.schedule.monday.status === 'rescheduled' ? (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-semibold flex items-center gap-1">
+                      <RotateCcw className="w-3 h-3" />
+                      Dialihkan
+                    </span>
+                  ) : plan?.schedule.monday.isAdjusted ? (
                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-semibold">
                       Disesuaikan
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <span className="text-[10px] font-mono text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded border border-orange-200/80 dark:border-orange-900/40 font-medium">
                   Speed & Laktat
@@ -353,8 +386,12 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pt-1 space-y-2">
                 <p>{plan?.schedule.monday.details}</p>
                 {plan?.schedule.monday.adjustmentReason && (
-                  <div className="p-2 rounded bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300">
-                    <strong>Alasan Adaptif:</strong> {plan.schedule.monday.adjustmentReason}
+                  <div className={`p-2 rounded text-[11px] border ${
+                    plan.schedule.monday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
+                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
+                  }`}>
+                    <strong>{plan.schedule.monday.status === 'rescheduled' ? 'Penyesuaian Jadwal:' : 'Alasan Adaptif:'}</strong> {plan.schedule.monday.adjustmentReason}
                   </div>
                 )}
               </div>
@@ -369,7 +406,9 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           {/* KAMIS */}
           <div
             className={`bg-white dark:bg-zinc-900 border rounded-lg p-5 flex flex-col justify-between transition-colors shadow-xs ${
-              plan?.schedule.thursday.isAdjusted
+              plan?.schedule.thursday.status === 'rescheduled'
+                ? 'border-sky-400/80 dark:border-sky-500/50 ring-1 ring-sky-400/20'
+                : plan?.schedule.thursday.isAdjusted
                 ? 'border-amber-400/80 dark:border-amber-500/50 ring-1 ring-amber-400/20'
                 : 'border-zinc-200 dark:border-zinc-800'
             }`}
@@ -380,11 +419,16 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
                     KAMIS
                   </span>
-                  {plan?.schedule.thursday.isAdjusted && (
+                  {plan?.schedule.thursday.status === 'rescheduled' ? (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-semibold flex items-center gap-1">
+                      <RotateCcw className="w-3 h-3" />
+                      Dialihkan
+                    </span>
+                  ) : plan?.schedule.thursday.isAdjusted ? (
                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-semibold">
                       Disesuaikan
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-200/80 dark:border-purple-900/40 font-medium">
                   VO2 Max Booster
@@ -403,8 +447,12 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pt-1 space-y-2">
                 <p>{plan?.schedule.thursday.details}</p>
                 {plan?.schedule.thursday.adjustmentReason && (
-                  <div className="p-2 rounded bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300">
-                    <strong>Alasan Adaptif:</strong> {plan.schedule.thursday.adjustmentReason}
+                  <div className={`p-2 rounded text-[11px] border ${
+                    plan.schedule.thursday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
+                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
+                  }`}>
+                    <strong>{plan.schedule.thursday.status === 'rescheduled' ? 'Penyesuaian Jadwal:' : 'Alasan Adaptif:'}</strong> {plan.schedule.thursday.adjustmentReason}
                   </div>
                 )}
               </div>
@@ -419,7 +467,9 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           {/* SABTU */}
           <div
             className={`bg-white dark:bg-zinc-900 border rounded-lg p-5 flex flex-col justify-between transition-colors shadow-xs ${
-              plan?.schedule.saturday.isAdjusted
+              plan?.schedule.saturday.status === 'rescheduled'
+                ? 'border-sky-400/80 dark:border-sky-500/50 ring-1 ring-sky-400/20'
+                : plan?.schedule.saturday.isAdjusted
                 ? 'border-amber-400/80 dark:border-amber-500/50 ring-1 ring-amber-400/20'
                 : 'border-zinc-200 dark:border-zinc-800'
             }`}
@@ -430,11 +480,16 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
                     SABTU
                   </span>
-                  {plan?.schedule.saturday.isAdjusted && (
+                  {plan?.schedule.saturday.status === 'rescheduled' ? (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-semibold flex items-center gap-1">
+                      <RotateCcw className="w-3 h-3" />
+                      Dialihkan
+                    </span>
+                  ) : plan?.schedule.saturday.isAdjusted ? (
                     <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-semibold">
                       Disesuaikan
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200/80 dark:border-emerald-900/40 font-medium">
                   Zone 2 Aerobic
@@ -453,8 +508,12 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed pt-1 space-y-2">
                 <p>{plan?.schedule.saturday.details}</p>
                 {plan?.schedule.saturday.adjustmentReason && (
-                  <div className="p-2 rounded bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300">
-                    <strong>Alasan Adaptif:</strong> {plan.schedule.saturday.adjustmentReason}
+                  <div className={`p-2 rounded text-[11px] border ${
+                    plan.schedule.saturday.status === 'rescheduled'
+                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
+                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
+                  }`}>
+                    <strong>{plan.schedule.saturday.status === 'rescheduled' ? 'Penyesuaian Jadwal:' : 'Alasan Adaptif:'}</strong> {plan.schedule.saturday.adjustmentReason}
                   </div>
                 )}
               </div>
