@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DailyNutritionAuditData } from '@/types';
-import { Calendar, ArrowUpRight, ArrowDownRight, Scale, ChevronRight } from 'lucide-react';
+import { Calendar, ArrowUpRight, ArrowDownRight, Scale } from 'lucide-react';
 import DailyNutritionAuditCard from './DailyNutritionAuditCard';
 
 interface DailyNutritionAuditHistoryProps {
@@ -28,6 +28,7 @@ export default function DailyNutritionAuditHistory({
       {/* Active Detailed Audit Card */}
       {selectedAudit && (
         <DailyNutritionAuditCard
+          key={selectedAudit.date}
           initialAudit={selectedAudit}
           onRefreshSuccess={handleUpdateAudit}
         />
@@ -89,6 +90,18 @@ export default function DailyNutritionAuditHistory({
                     {dayAudit.netCalories > 0 ? `+${dayAudit.netCalories}` : dayAudit.netCalories}
                   </span>
                 </div>
+
+                {dayAudit.totalDailySteps > 0 && (
+                  <div className="flex items-center justify-between text-[9px] text-zinc-400 font-mono mt-0.5">
+                    <span>Langkah:</span>
+                    <span className="flex items-center gap-0.5 text-zinc-500 dark:text-zinc-300">
+                      {dayAudit.doubleCountingPrevented && <span title="Anti-Double Counting aktif">🛡️</span>}
+                      {dayAudit.totalDailySteps >= 1000
+                        ? `${(dayAudit.totalDailySteps / 1000).toFixed(1)}k`
+                        : dayAudit.totalDailySteps}
+                    </span>
+                  </div>
+                )}
               </button>
             );
           })}

@@ -116,3 +116,36 @@ export async function getNutritionAuditHistoryAction(days = 7) {
     days,
   });
 }
+
+export async function logDailyStepsAction({
+  dateStr,
+  stepCount,
+  source = 'MANUAL',
+  notes,
+}: {
+  dateStr: string;
+  stepCount: number;
+  source?: string;
+  notes?: string;
+}) {
+  const { logDailyStepsAction: logSteps } = await import('@/actions/steps');
+  return await logSteps({ dateStr, stepCount, source, notes });
+}
+
+export async function logFoodFromTextAction(description: string) {
+  const user = await getCurrentUser();
+  const { parseFoodTextWithAI, saveFoodLogFromNutrition } = await import('@/lib/services/food-text-parser');
+  
+  const nutrition = await parseFoodTextWithAI(description);
+  const savedLog = await saveFoodLogFromNutrition(user.id, nutrition);
+
+  revalidatePath('/nutrition');
+  revalidatePath('/dashboard');
+  revalidatePath('/activities');
+
+  return {
+    success: true,
+    data: savedLog,
+  };
+}
+

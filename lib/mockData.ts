@@ -277,3 +277,21 @@ export const MOCK_AI_INSIGHT: AiInsightData = {
   periodEnd: BASE_DATE,
   createdAt: BASE_DATE,
 };
+
+export interface MockStepLog {
+  id: string;
+  dateStr: string;
+  stepCount: number;
+  source: string;
+}
+
+export const MOCK_STEP_LOGS: MockStepLog[] = [
+  { id: 'step-1', dateStr: '2026-09-28', stepCount: 10850, source: 'APPLE_HEALTH' },
+  { id: 'step-2', dateStr: '2026-09-27', stepCount: 5200, source: 'APPLE_HEALTH' },
+  { id: 'step-3', dateStr: '2026-09-26', stepCount: 14200, source: 'APPLE_HEALTH' },
+  { id: 'step-4', dateStr: '2026-09-25', stepCount: 7800, source: 'APPLE_HEALTH' },
+  { id: 'step-5', dateStr: '2026-09-24', stepCount: 11400, source: 'APPLE_HEALTH' },
+  { id: 'step-6', dateStr: '2026-09-23', stepCount: 6500, source: 'APPLE_HEALTH' },
+  { id: 'step-7', dateStr: '2026-09-22', stepCount: 8900, source: 'APPLE_HEALTH' },
+];
+

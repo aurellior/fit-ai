@@ -522,8 +522,8 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
-        title="AI Food Scanner (Multimodal)"
-        description="Ambil foto atau unggah gambar makanan untuk deteksi kalori & makro"
+        title="Catat Nutrisi Makanan (AI Vision & Quick-Log)"
+        description="Pindai foto makanan atau ketik menu bebas untuk estimasi makronutrisi & kalori instan dengan Gemini AI"
         maxWidth="md"
       >
         <FoodScannerModal

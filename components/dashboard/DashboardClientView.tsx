@@ -635,8 +635,8 @@ export default function DashboardClientView({
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
-        title="AI Food Scanner (Multimodal)"
-        description="Unggah foto makanan untuk ekstraksi nutrisi & kalori instan dengan Gemini Vision"
+        title="Catat Nutrisi Makanan (AI Vision & Quick-Log)"
+        description="Pindai foto makanan atau ketik menu bebas untuk estimasi makronutrisi & kalori instan dengan Gemini AI"
         maxWidth="md"
       >
         <FoodScannerModal

@@ -127,7 +127,28 @@ export interface AiInsightData {
   coachPlan?: CoachPlanData | null;
 }
 
+export interface StepLogData {
+  id: string;
+  userId?: string;
+  dateStr: string;
+  stepCount: number;
+  loggedAt: Date | string;
+  source?: string;
+  notes?: string | null;
+}
+
 export type EnergyBalanceStatus = 'Surplus' | 'Defisit' | 'Balanced';
+
+export interface StravaActivityStepSummary {
+  id: string;
+  title: string;
+  type: string;
+  calories: number;
+  distanceKm?: number;
+  durationSec: number;
+  stepsAbsorbed: number;
+  isStrava: boolean;
+}
 
 export interface DailyNutritionAuditData {
   date: string; // 'YYYY-MM-DD'
@@ -145,6 +166,18 @@ export interface DailyNutritionAuditData {
   status: EnergyBalanceStatus;
   calorieProgressPercent: number; // (caloriesIn / caloriesOut) * 100
 
+  // Anti-Double Counting & Daily Steps Breakdown
+  totalDailySteps: number;
+  workoutStepsAbsorbed: number;
+  pureNeatSteps: number;
+  neatCalories: number;
+  hasStravaWorkout: boolean;
+  doubleCountingPrevented: boolean;
+  deduplicatedCaloriesSaved: number;
+  stepSource?: string;
+  hasStepsLogged: boolean;
+  stravaActivitiesSummary?: StravaActivityStepSummary[];
+
   // Macronutrients
   totalProtein: number;
   totalCarbs: number;
@@ -161,4 +194,5 @@ export interface DailyNutritionAuditData {
   foodCount: number;
   activityCount: number;
 }
+
 

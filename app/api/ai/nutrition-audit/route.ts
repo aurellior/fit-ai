@@ -35,7 +35,22 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     const body = await req.json().catch(() => ({}));
-    const { date, forceRefresh } = body;
+    const { date, forceRefresh, steps, stepSource, notes } = body;
+
+    if (typeof steps === 'number' && !isNaN(steps)) {
+      const { logDailyStepsAction } = await import('@/actions/steps');
+      const target = date ? new Date(date) : new Date();
+      const y = target.getFullYear();
+      const m = String(target.getMonth() + 1).padStart(2, '0');
+      const d = String(target.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+      await logDailyStepsAction({
+        dateStr,
+        stepCount: steps,
+        source: stepSource || 'MANUAL',
+        notes,
+      });
+    }
 
     const audit = await getDailyNutritionAudit({
       userId: user.id,
