@@ -242,7 +242,7 @@ export default function TodayCoachDirectiveBanner({
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <span className="text-xs font-mono font-bold text-[#FC5200] bg-orange-500/15 border border-orange-500/30 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs max-w-full">
                     <Target className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
-                    <span className="truncate">{displayTarget}</span>
+                    <span className="break-words">{displayTarget}</span>
                   </span>
                   <span className="text-[11px] font-mono text-zinc-400 shrink-0">
                     Target Utama

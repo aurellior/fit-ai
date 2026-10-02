@@ -120,6 +120,7 @@ Tugas Anda:
     // 5. Revalidasi cache Next.js agar data langsung termuat secara persisten saat di-refresh
     revalidatePath('/');
     revalidatePath('/dashboard');
+    revalidatePath('/coach');
     revalidatePath('/ai-coach');
 
     return { success: true, data: resultJson };

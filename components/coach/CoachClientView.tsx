@@ -100,7 +100,9 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               AI Coach Intelligence
             </h1>
             <span className="text-[9px] font-mono text-[#FC5200] bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 px-1.5 py-0.5 rounded font-bold">
-              Sen • Kam • Sab
+              {audit
+                ? `${audit.auditDetails.monday.dayName?.slice(0, 3) || 'Sen'} • ${audit.auditDetails.thursday.dayName?.slice(0, 3) || 'Kam'} • ${audit.auditDetails.saturday.dayName?.slice(0, 3) || 'Sab'}`
+                : 'Sen • Kam • Sab'}
             </span>
           </div>
         </div>
@@ -174,7 +176,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               Pemeriksaan Riwayat Sesi Minggu Berjalan (Database Sync)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* SENIN */}
+              {/* Slot 1: Senin (Default) / Adaptif */}
               <div
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.monday.status === 'completed'
@@ -188,26 +190,35 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-xs font-mono block">SENIN</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs font-mono uppercase block">
+                        {audit.auditDetails.monday.dayName || 'SENIN'}
+                      </span>
+                      {audit.auditDetails.monday.isShifted && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                          Def: {audit.auditDetails.monday.defaultDayName || 'Senin'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
                       {audit.auditDetails.monday.dateLabel}
                     </span>
                   </div>
                   {audit.auditDetails.monday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.monday.fulfilledOn && audit.auditDetails.monday.fulfilledOn !== 'Senin' ? `(${audit.auditDetails.monday.fulfilledOn})` : ''}
+                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
                     </span>
                   ) : audit.auditDetails.monday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
                     </span>
                   ) : audit.auditDetails.monday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4" /> Terlewat
+                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5" /> Mendatang
+                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
                     </span>
                   )}
                 </div>
@@ -216,7 +227,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 </div>
               </div>
 
-              {/* KAMIS */}
+              {/* Slot 2: Kamis (Default) / Adaptif */}
               <div
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.thursday.status === 'completed'
@@ -230,26 +241,35 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-xs font-mono block">KAMIS</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs font-mono uppercase block">
+                        {audit.auditDetails.thursday.dayName || 'KAMIS'}
+                      </span>
+                      {audit.auditDetails.thursday.isShifted && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                          Def: {audit.auditDetails.thursday.defaultDayName || 'Kamis'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
                       {audit.auditDetails.thursday.dateLabel}
                     </span>
                   </div>
                   {audit.auditDetails.thursday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.thursday.fulfilledOn && audit.auditDetails.thursday.fulfilledOn !== 'Kamis' ? `(${audit.auditDetails.thursday.fulfilledOn})` : ''}
+                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
                     </span>
                   ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
                     </span>
                   ) : audit.auditDetails.thursday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4" /> Terlewat
+                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5" /> Mendatang
+                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
                     </span>
                   )}
                 </div>
@@ -258,7 +278,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 </div>
               </div>
 
-              {/* SABTU */}
+              {/* Slot 3: Sabtu (Default) / Adaptif */}
               <div
                 className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
                   audit.auditDetails.saturday.status === 'completed'
@@ -272,26 +292,35 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-xs font-mono block">SABTU</span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs font-mono uppercase block">
+                        {audit.auditDetails.saturday.dayName || 'SABTU'}
+                      </span>
+                      {audit.auditDetails.saturday.isShifted && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                          Def: {audit.auditDetails.saturday.defaultDayName || 'Sabtu'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
                       {audit.auditDetails.saturday.dateLabel}
                     </span>
                   </div>
                   {audit.auditDetails.saturday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.saturday.fulfilledOn && audit.auditDetails.saturday.fulfilledOn !== 'Sabtu' ? `(${audit.auditDetails.saturday.fulfilledOn})` : ''}
+                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
                     </span>
                   ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4" /> Dialihkan
+                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
                     </span>
                   ) : audit.auditDetails.saturday.status === 'skipped' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4" /> Terlewat
+                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5" /> Mendatang
+                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
                     </span>
                   )}
                 </div>
@@ -358,10 +387,15 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           >
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    SENIN
+                    {plan?.schedule.monday.dayName?.toUpperCase() || 'SENIN'}
                   </span>
+                  {plan?.schedule.monday.isShifted && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                      Def: {plan.schedule.monday.defaultDayName || 'Senin'}
+                    </span>
+                  )}
                   {plan?.schedule.monday.status === 'rescheduled' ? (
                     <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
                       <RotateCcw className="w-2.5 h-2.5" />
@@ -416,10 +450,15 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           >
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    KAMIS
+                    {plan?.schedule.thursday.dayName?.toUpperCase() || 'KAMIS'}
                   </span>
+                  {plan?.schedule.thursday.isShifted && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                      Def: {plan.schedule.thursday.defaultDayName || 'Kamis'}
+                    </span>
+                  )}
                   {plan?.schedule.thursday.status === 'rescheduled' ? (
                     <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
                       <RotateCcw className="w-2.5 h-2.5" />
@@ -474,10 +513,15 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           >
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    SABTU
+                    {plan?.schedule.saturday.dayName?.toUpperCase() || 'SABTU'}
                   </span>
+                  {plan?.schedule.saturday.isShifted && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
+                      Def: {plan.schedule.saturday.defaultDayName || 'Sabtu'}
+                    </span>
+                  )}
                   {plan?.schedule.saturday.status === 'rescheduled' ? (
                     <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
                       <RotateCcw className="w-2.5 h-2.5" />

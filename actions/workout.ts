@@ -74,9 +74,17 @@ export async function rescheduleWorkoutAction(input: unknown): Promise<Reschedul
           : null;
 
         if (dayKey && coachPlan.schedule && coachPlan.schedule[dayKey]) {
+          const targetDay = result.newDayOrTime.includes('Geser ke')
+            ? result.newDayOrTime.replace('Geser ke', '').trim()
+            : payload.dayName;
+          const isShiftedDay = targetDay.toLowerCase() !== payload.dayName.toLowerCase();
+
           const currentDay = coachPlan.schedule[dayKey];
           currentDay.isAdjusted = true;
           currentDay.status = 'rescheduled';
+          currentDay.dayName = targetDay;
+          currentDay.defaultDayName = payload.dayName;
+          currentDay.isShifted = isShiftedDay;
           currentDay.focus = result.newFocus;
           currentDay.targetMetric = result.newTargetMetric;
           currentDay.details = `${result.coachAdvice} [Kendala: ${payload.obstacleType}]`;
@@ -91,14 +99,16 @@ export async function rescheduleWorkoutAction(input: unknown): Promise<Reschedul
 
           if (coachPlan.smartSkipAudit.auditDetails?.[dayKey]) {
             coachPlan.smartSkipAudit.auditDetails[dayKey].status = 'rescheduled';
+            coachPlan.smartSkipAudit.auditDetails[dayKey].dayName = targetDay;
+            coachPlan.smartSkipAudit.auditDetails[dayKey].defaultDayName = payload.dayName;
+            coachPlan.smartSkipAudit.auditDetails[dayKey].isShifted = isShiftedDay;
+            coachPlan.smartSkipAudit.auditDetails[dayKey].shiftReason = `Dialihkan ke ${targetDay}`;
           }
 
           // Perbarui target sesi berikutnya di kartu AI Coach
           coachPlan.nextWorkoutDay = {
             ...coachPlan.nextWorkoutDay,
-            dayName: result.newDayOrTime.includes('Geser ke')
-              ? result.newDayOrTime.replace('Geser ke', '').trim()
-              : payload.dayName,
+            dayName: targetDay,
             label: result.badge,
             focus: result.newFocus,
             targetMetric: result.newTargetMetric,
@@ -157,6 +167,7 @@ export async function rescheduleWorkoutAction(input: unknown): Promise<Reschedul
 
           revalidatePath('/');
           revalidatePath('/dashboard');
+          revalidatePath('/coach');
           revalidatePath('/ai-coach');
         }
       }

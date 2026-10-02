@@ -66,9 +66,11 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
             <span>AI Coach Directive</span>
           </div>
           <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200/60 dark:border-zinc-700/60">
-            Sen • Kam • Sab
+            {audit
+              ? `${audit.auditDetails.monday.dayName?.slice(0, 3) || 'Sen'} • ${audit.auditDetails.thursday.dayName?.slice(0, 3) || 'Kam'} • ${audit.auditDetails.saturday.dayName?.slice(0, 3) || 'Sab'}`
+              : 'Sen • Kam • Sab'}
           </span>
-          {audit?.hasSkippedDays ? (
+          {audit?.hasSkippedDays || audit?.auditDetails.monday.isShifted || audit?.auditDetails.thursday.isShifted || audit?.auditDetails.saturday.isShifted ? (
             <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 flex items-center gap-1">
               <SlidersHorizontal className="w-3 h-3" />
               <span>Adaptif</span>
@@ -93,7 +95,7 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
       </div>
 
       {error && (
-        <div className="mt-3 text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/60 flex items-start gap-2">
+        <div className="mt-3 text-xs text-rose-700 dark:rose-400 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/60 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -122,29 +124,34 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
             </p>
           </div>
 
-          {/* Sesi Lari Terdekat Directive Box */}
+          {/* Sesi Lari Terdekat Directive Box (Responsif mobile/iPhone 15 tanpa terpotong) */}
           {nextWorkout && (
-            <div className="p-3.5 rounded-xl bg-white dark:bg-[#121214] border border-orange-500/30 dark:border-orange-500/25 shadow-2xs relative overflow-hidden">
-              <div className="flex items-start justify-between gap-2.5">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-white dark:bg-[#121214] border border-orange-500/30 dark:border-orange-500/25 shadow-2xs relative">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-[#FC5200] text-white">
+                    <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-[#FC5200] text-white shrink-0">
                       {nextWorkout.dayName}
                     </span>
-                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 break-words">
                       {nextWorkout.focus}
                     </span>
+                    {nextWorkout.adjustmentBadge && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold shrink-0">
+                        {nextWorkout.adjustmentBadge}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 break-words leading-relaxed">
                     • {nextWorkout.summary}
                   </div>
                 </div>
 
-                <div className="text-right shrink-0 bg-orange-50/80 dark:bg-orange-950/40 px-2.5 py-1.5 rounded-lg border border-orange-200/80 dark:border-orange-900/60">
-                  <span className="text-[9px] uppercase font-mono text-zinc-400 block">
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 bg-orange-50/80 dark:bg-orange-950/40 px-3 py-1.5 rounded-lg border border-orange-200/80 dark:border-orange-900/60 shrink-0">
+                  <span className="text-[9px] uppercase font-mono text-zinc-500 dark:text-zinc-400 font-semibold shrink-0">
                     Target
                   </span>
-                  <span className="text-xs font-mono font-bold text-[#FC5200]">
+                  <span className="text-xs font-mono font-bold text-[#FC5200] break-words text-right">
                     {nextWorkout.targetMetric}
                   </span>
                 </div>
@@ -152,7 +159,7 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
             </div>
           )}
 
-          {/* Mini Track Record Minggu Berjalan */}
+          {/* Mini Track Record Minggu Berjalan (Adaptif & Dinamis) */}
           {audit && (
             <div className="pt-2">
               <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 mb-2">
@@ -160,7 +167,7 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                 <span>3 Sesi Wajib</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {/* Senin */}
+                {/* Slot 1: Senin (Default) / Adaptif */}
                 <div
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.monday.status === 'completed'
@@ -173,18 +180,27 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] font-mono">SENIN</span>
+                    <div>
+                      <span className="font-bold text-[11px] font-mono uppercase block">
+                        {audit.auditDetails.monday.dayName || 'SENIN'}
+                      </span>
+                      {audit.auditDetails.monday.isShifted && (
+                        <span className="text-[8px] font-mono text-amber-600 dark:text-amber-400 block -mt-0.5">
+                          Def: {audit.auditDetails.monday.defaultDayName?.slice(0, 3) || 'Sen'}
+                        </span>
+                      )}
+                    </div>
                     {audit.auditDetails.monday.status === 'completed' ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : audit.auditDetails.monday.status === 'rescheduled' ? (
-                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                     ) : audit.auditDetails.monday.status === 'skipped' ? (
-                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-1 capitalize">
+                  <div className="text-[10px] text-zinc-500 mt-1 capitalize truncate">
                     {audit.auditDetails.monday.status === 'completed'
                       ? 'Tuntas'
                       : audit.auditDetails.monday.status === 'rescheduled'
@@ -195,7 +211,7 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   </div>
                 </div>
 
-                {/* Kamis */}
+                {/* Slot 2: Kamis (Default) / Adaptif */}
                 <div
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.thursday.status === 'completed'
@@ -208,18 +224,27 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] font-mono">KAMIS</span>
+                    <div>
+                      <span className="font-bold text-[11px] font-mono uppercase block">
+                        {audit.auditDetails.thursday.dayName || 'KAMIS'}
+                      </span>
+                      {audit.auditDetails.thursday.isShifted && (
+                        <span className="text-[8px] font-mono text-amber-600 dark:text-amber-400 block -mt-0.5">
+                          Def: {audit.auditDetails.thursday.defaultDayName?.slice(0, 3) || 'Kam'}
+                        </span>
+                      )}
+                    </div>
                     {audit.auditDetails.thursday.status === 'completed' ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
-                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                     ) : audit.auditDetails.thursday.status === 'skipped' ? (
-                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-1 capitalize">
+                  <div className="text-[10px] text-zinc-500 mt-1 capitalize truncate">
                     {audit.auditDetails.thursday.status === 'completed'
                       ? 'Tuntas'
                       : audit.auditDetails.thursday.status === 'rescheduled'
@@ -230,7 +255,7 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   </div>
                 </div>
 
-                {/* Sabtu */}
+                {/* Slot 3: Sabtu (Default) / Adaptif */}
                 <div
                   className={`p-2.5 rounded border text-xs flex flex-col justify-between ${
                     audit.auditDetails.saturday.status === 'completed'
@@ -243,18 +268,27 @@ export default function WeeklyAiInsight({ initialInsight }: WeeklyAiInsightProps
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] font-mono">SABTU</span>
+                    <div>
+                      <span className="font-bold text-[11px] font-mono uppercase block">
+                        {audit.auditDetails.saturday.dayName || 'SABTU'}
+                      </span>
+                      {audit.auditDetails.saturday.isShifted && (
+                        <span className="text-[8px] font-mono text-amber-600 dark:text-amber-400 block -mt-0.5">
+                          Def: {audit.auditDetails.saturday.defaultDayName?.slice(0, 3) || 'Sab'}
+                        </span>
+                      )}
+                    </div>
                     {audit.auditDetails.saturday.status === 'completed' ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
-                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                     ) : audit.auditDetails.saturday.status === 'skipped' ? (
-                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                     )}
                   </div>
-                  <div className="text-[10px] text-zinc-500 mt-1 capitalize">
+                  <div className="text-[10px] text-zinc-500 mt-1 capitalize truncate">
                     {audit.auditDetails.saturday.status === 'completed'
                       ? 'Tuntas'
                       : audit.auditDetails.saturday.status === 'rescheduled'

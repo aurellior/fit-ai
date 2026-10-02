@@ -169,23 +169,31 @@ export function auditScheduleAndAdaptivePlan(
 
   // ==========================================
   // AUDIT SLOT 1: SENIN (Anchor: Speed/Tempo)
+  // Default: Senin. Adaptif jika digeser/dieksekusi di hari lain (cth: Selasa).
   // ==========================================
   let mondayStatus: ScheduledDayStatus = 'upcoming';
   let mondayFulfilledOn: string | undefined = undefined;
   let mondayCompletedAct = null;
   let mondayIsAdjusted = false;
   let mondayAdjustmentReason: string | null = null;
+  let mondaySlotDayName = 'Senin';
+  let mondaySlotIsShifted = false;
+  let mondaySlotShiftReason: string | undefined = undefined;
 
   if (mondayRun) {
     mondayStatus = 'completed';
     mondayFulfilledOn = 'Senin';
     mondayCompletedAct = formatCompletedActivity(mondayRun, 'Senin');
+    mondaySlotDayName = 'Senin';
   } else if (tuesdayRun) {
     // Atlet lari di hari Selasa: Mengakuisisi sesi awal minggu secara adaptif!
     mondayStatus = 'completed';
     mondayFulfilledOn = 'Selasa';
     mondayCompletedAct = formatCompletedActivity(tuesdayRun, 'Selasa');
     mondayIsAdjusted = true;
+    mondaySlotDayName = 'Selasa';
+    mondaySlotIsShifted = true;
+    mondaySlotShiftReason = `Diselesaikan di hari Selasa (${tuesdayRun.title})`;
     mondayAdjustmentReason = `Diselesaikan fleksibel di hari Selasa (${tuesdayRun.title}, ${(
       (tuesdayRun.distanceMeters || 0) / 1000
     ).toFixed(1)} km) menggantikan sesi Senin.`;
@@ -197,37 +205,54 @@ export function auditScheduleAndAdaptivePlan(
     });
   } else if (isMondayRescheduled) {
     mondayStatus = 'rescheduled';
+    const reschedDay = existingPlan?.schedule?.monday?.dayName || existingPlan?.nextWorkoutDay?.dayName || 'Selasa';
+    mondaySlotDayName = reschedDay;
+    mondaySlotIsShifted = reschedDay.toLowerCase() !== 'senin';
+    mondaySlotShiftReason = existingPlan?.schedule?.monday?.adjustmentReason || 'Jadwal dialihkan';
   } else if (currentDayOfWeek === 1) {
     mondayStatus = 'today';
+    mondaySlotDayName = 'Senin';
   } else if (currentDayOfWeek === 2) {
     // Hari Selasa masih dalam jendela adaptif untuk mengeksekusi sesi awal minggu
     mondayStatus = 'today';
     mondayIsAdjusted = true;
+    mondaySlotDayName = 'Selasa';
+    mondaySlotIsShifted = true;
+    mondaySlotShiftReason = 'Jendela Adaptif Selasa';
     mondayAdjustmentReason = 'Jendela Adaptif: Sesi awal minggu dapat dieksekusi hari Selasa ini.';
   } else {
     // Hari Rabu ke atas dan tidak ada lari di Senin/Selasa
     mondayStatus = 'skipped';
+    mondaySlotDayName = 'Senin';
   }
 
   // ==========================================
   // AUDIT SLOT 2: KAMIS (Anchor: Interval VO2Max)
+  // Default: Kamis. Adaptif jika dihalangi/digeser (cth: Rabu atau Jumat).
   // ==========================================
   let thursdayStatus: ScheduledDayStatus = 'upcoming';
   let thursdayFulfilledOn: string | undefined = undefined;
   let thursdayCompletedAct = null;
   let thursdayIsAdjusted = false;
   let thursdayAdjustmentReason: string | null = null;
+  let thursdaySlotDayName = 'Kamis';
+  let thursdaySlotIsShifted = false;
+  let thursdaySlotShiftReason: string | undefined = undefined;
 
   if (thursdayRun) {
     thursdayStatus = 'completed';
     thursdayFulfilledOn = 'Kamis';
     thursdayCompletedAct = formatCompletedActivity(thursdayRun, 'Kamis');
+    thursdaySlotDayName = 'Kamis';
   } else if (wednesdayRun && (!tuesdayRun || mondayRun)) {
     // Atlet lari di hari Rabu (dan bukan satu-satunya lari untuk menggantikan Senin)
     thursdayStatus = 'completed';
     thursdayFulfilledOn = 'Rabu';
     thursdayCompletedAct = formatCompletedActivity(wednesdayRun, 'Rabu');
     thursdayIsAdjusted = true;
+    thursdaySlotDayName = 'Rabu';
+    thursdaySlotIsShifted = true;
+    thursdaySlotShiftReason = `Dimajukan ke hari Rabu (${wednesdayRun.title})`;
     thursdayAdjustmentReason = `Sesi tengah minggu dimajukan ke hari Rabu (${wednesdayRun.title}). Hari Kamis dialihkan untuk pemulihan/gym.`;
     adaptiveShifts.push({
       targetSlot: 'Kamis (Interval)',
@@ -241,6 +266,9 @@ export function auditScheduleAndAdaptivePlan(
     thursdayFulfilledOn = 'Jumat';
     thursdayCompletedAct = formatCompletedActivity(fridayRun, 'Jumat');
     thursdayIsAdjusted = true;
+    thursdaySlotDayName = 'Jumat';
+    thursdaySlotIsShifted = true;
+    thursdaySlotShiftReason = `Dieksekusi di hari Jumat (${fridayRun.title})`;
     thursdayAdjustmentReason = `Sesi tengah minggu digeser ke hari Jumat (${fridayRun.title}). Sesi Long Run akhir pekan disesuaikan.`;
     adaptiveShifts.push({
       targetSlot: 'Kamis (Interval)',
@@ -250,39 +278,57 @@ export function auditScheduleAndAdaptivePlan(
     });
   } else if (isThursdayRescheduled) {
     thursdayStatus = 'rescheduled';
+    const reschedDay = existingPlan?.schedule?.thursday?.dayName || existingPlan?.nextWorkoutDay?.dayName || 'Jumat';
+    thursdaySlotDayName = reschedDay;
+    thursdaySlotIsShifted = reschedDay.toLowerCase() !== 'kamis';
+    thursdaySlotShiftReason = existingPlan?.schedule?.thursday?.adjustmentReason || 'Jadwal dialihkan';
   } else if (currentDayOfWeek === 4) {
     thursdayStatus = 'today';
+    thursdaySlotDayName = 'Kamis';
   } else if (currentDayOfWeek === 5) {
     // Hari Jumat masih jendela adaptif untuk interval tengah minggu sebelum akhir pekan
     thursdayStatus = 'today';
     thursdayIsAdjusted = true;
+    thursdaySlotDayName = 'Jumat';
+    thursdaySlotIsShifted = true;
+    thursdaySlotShiftReason = 'Jendela Adaptif Jumat';
     thursdayAdjustmentReason = 'Jendela Adaptif: Eksekusi sesi interval tengah minggu di hari Jumat ini.';
   } else if (currentDayOfWeek >= 1 && currentDayOfWeek < 4) {
     thursdayStatus = 'upcoming';
+    thursdaySlotDayName = 'Kamis';
   } else {
     // Hari Sabtu / Minggu dan tidak ada lari di Rabu/Kamis/Jumat
     thursdayStatus = 'skipped';
+    thursdaySlotDayName = 'Kamis';
   }
 
   // ==========================================
   // AUDIT SLOT 3: SABTU (Anchor: Progressive Long Run)
+  // Default: Sabtu. Adaptif jika lari Jumat atau long run di hari Minggu.
   // ==========================================
   let saturdayStatus: ScheduledDayStatus = 'upcoming';
   let saturdayFulfilledOn: string | undefined = undefined;
   let saturdayCompletedAct = null;
   let saturdayIsAdjusted = false;
   let saturdayAdjustmentReason: string | null = null;
+  let saturdaySlotDayName = 'Sabtu';
+  let saturdaySlotIsShifted = false;
+  let saturdaySlotShiftReason: string | undefined = undefined;
 
   if (saturdayRun) {
     saturdayStatus = 'completed';
     saturdayFulfilledOn = 'Sabtu';
     saturdayCompletedAct = formatCompletedActivity(saturdayRun, 'Sabtu');
+    saturdaySlotDayName = 'Sabtu';
   } else if (sundayRun) {
     // Atlet lari di hari Minggu: Menuntaskan Long Run akhir pekan
     saturdayStatus = 'completed';
     saturdayFulfilledOn = 'Minggu';
     saturdayCompletedAct = formatCompletedActivity(sundayRun, 'Minggu');
     saturdayIsAdjusted = true;
+    saturdaySlotDayName = 'Minggu';
+    saturdaySlotIsShifted = true;
+    saturdaySlotShiftReason = `Diselesaikan di hari Minggu (${sundayRun.title})`;
     saturdayAdjustmentReason = `Long Run akhir pekan diselesaikan di hari Minggu (${sundayRun.title}, ${(
       (sundayRun.distanceMeters || 0) / 1000
     ).toFixed(1)} km).`;
@@ -294,14 +340,30 @@ export function auditScheduleAndAdaptivePlan(
     });
   } else if (isSaturdayRescheduled) {
     saturdayStatus = 'rescheduled';
+    const reschedDay = existingPlan?.schedule?.saturday?.dayName || existingPlan?.nextWorkoutDay?.dayName || 'Minggu';
+    saturdaySlotDayName = reschedDay;
+    saturdaySlotIsShifted = reschedDay.toLowerCase() !== 'sabtu';
+    saturdaySlotShiftReason = existingPlan?.schedule?.saturday?.adjustmentReason || 'Jadwal dialihkan';
   } else if (currentDayOfWeek === 6) {
     saturdayStatus = 'today';
+    saturdaySlotDayName = 'Sabtu';
   } else if (currentDayOfWeek === 0) {
     // Hari Minggu adalah jendela adaptif Long Run jika Sabtu belum lari
     saturdayStatus = 'today';
     saturdayIsAdjusted = true;
+    saturdaySlotDayName = 'Minggu';
+    saturdaySlotIsShifted = true;
+    saturdaySlotShiftReason = 'Jendela Adaptif Minggu';
     saturdayAdjustmentReason = 'Jendela Adaptif: Long Run akhir pekan dieksekusi di hari Minggu ini.';
   } else {
+    // Jika lari Jumat terdeteksi, jadwalkan Sabtu bergeser ke Minggu demi recovery 48 jam
+    if (fridayRun) {
+      saturdaySlotDayName = 'Minggu';
+      saturdaySlotIsShifted = true;
+      saturdaySlotShiftReason = 'Geser ke Minggu (Recovery 48 jam pasca lari Jumat)';
+    } else {
+      saturdaySlotDayName = 'Sabtu';
+    }
     saturdayStatus = 'upcoming';
   }
 
@@ -313,9 +375,11 @@ export function auditScheduleAndAdaptivePlan(
   const hasSkippedDays =
     skippedDayNames.length > 0 || isMondayRescheduled || isThursdayRescheduled || isSaturdayRescheduled;
 
-  // Bangun Workout Days dasar (dengan preservasi data reschedule jika ada)
+  // Bangun Workout Days dasar (dengan preservasi data reschedule dan nama hari adaptif)
   const mondayWorkout: CoachWorkoutDay = {
-    dayName: 'Senin',
+    dayName: mondaySlotDayName,
+    defaultDayName: 'Senin',
+    isShifted: mondaySlotIsShifted,
     focus: isMondayRescheduled ? existingPlan!.schedule.monday.focus : 'Tempo / Speed Run',
     originalFocus: 'Tempo / Speed Run',
     targetMetric: isMondayRescheduled
@@ -332,7 +396,9 @@ export function auditScheduleAndAdaptivePlan(
   };
 
   const thursdayWorkout: CoachWorkoutDay = {
-    dayName: 'Kamis',
+    dayName: thursdaySlotDayName,
+    defaultDayName: 'Kamis',
+    isShifted: thursdaySlotIsShifted,
     focus: isThursdayRescheduled ? existingPlan!.schedule.thursday.focus : 'Interval / Mid-Week Endurance',
     originalFocus: 'Interval / Mid-Week Endurance',
     targetMetric: isThursdayRescheduled
@@ -349,7 +415,9 @@ export function auditScheduleAndAdaptivePlan(
   };
 
   const saturdayWorkout: CoachWorkoutDay = {
-    dayName: 'Sabtu',
+    dayName: saturdaySlotDayName,
+    defaultDayName: 'Sabtu',
+    isShifted: saturdaySlotIsShifted,
     focus: isSaturdayRescheduled ? existingPlan!.schedule.saturday.focus : 'Safe Progressive Long Run',
     originalFocus: 'Safe Progressive Long Run',
     targetMetric: isSaturdayRescheduled
@@ -729,16 +797,28 @@ export function auditScheduleAndAdaptivePlan(
         status: mondayStatus,
         dateLabel: mondayInfo.dateLabel,
         fulfilledOn: mondayFulfilledOn,
+        dayName: mondaySlotDayName,
+        defaultDayName: 'Senin',
+        isShifted: mondaySlotIsShifted,
+        shiftReason: mondaySlotShiftReason,
       },
       thursday: {
         status: thursdayStatus,
         dateLabel: thursdayInfo.dateLabel,
         fulfilledOn: thursdayFulfilledOn,
+        dayName: thursdaySlotDayName,
+        defaultDayName: 'Kamis',
+        isShifted: thursdaySlotIsShifted,
+        shiftReason: thursdaySlotShiftReason,
       },
       saturday: {
         status: saturdayStatus,
         dateLabel: saturdayInfo.dateLabel,
         fulfilledOn: saturdayFulfilledOn,
+        dayName: saturdaySlotDayName,
+        defaultDayName: 'Sabtu',
+        isShifted: saturdaySlotIsShifted,
+        shiftReason: saturdaySlotShiftReason,
       },
     },
   };

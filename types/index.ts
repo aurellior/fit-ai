@@ -67,7 +67,9 @@ export interface FoodLogData {
 export type ScheduledDayStatus = 'completed' | 'skipped' | 'upcoming' | 'today' | 'rescheduled';
 
 export interface CoachWorkoutDay {
-  dayName: 'Senin' | 'Kamis' | 'Sabtu';
+  dayName: string;
+  defaultDayName?: string;
+  isShifted?: boolean;
   focus: string;
   originalFocus?: string;
   targetMetric: string;
@@ -84,14 +86,24 @@ export interface CoachWorkoutDay {
   } | null;
 }
 
+export interface SmartSkipAuditSlot {
+  status: ScheduledDayStatus;
+  dateLabel: string;
+  fulfilledOn?: string;
+  dayName?: string;
+  defaultDayName?: string;
+  isShifted?: boolean;
+  shiftReason?: string;
+}
+
 export interface SmartSkipAudit {
   hasSkippedDays: boolean;
   skippedDayNames: string[];
   activeAdjustmentNote: string | null;
   auditDetails: {
-    monday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
-    thursday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
-    saturday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
+    monday: SmartSkipAuditSlot;
+    thursday: SmartSkipAuditSlot;
+    saturday: SmartSkipAuditSlot;
   };
   crossTrainingNotice?: string | null;
   adaptiveShifts?: Array<{
