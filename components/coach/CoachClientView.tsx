@@ -195,7 +195,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   </div>
                   {audit.auditDetails.monday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas
+                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.monday.fulfilledOn && audit.auditDetails.monday.fulfilledOn !== 'Senin' ? `(${audit.auditDetails.monday.fulfilledOn})` : ''}
                     </span>
                   ) : audit.auditDetails.monday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
@@ -237,7 +237,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   </div>
                   {audit.auditDetails.thursday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas
+                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.thursday.fulfilledOn && audit.auditDetails.thursday.fulfilledOn !== 'Kamis' ? `(${audit.auditDetails.thursday.fulfilledOn})` : ''}
                     </span>
                   ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
@@ -279,7 +279,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                   </div>
                   {audit.auditDetails.saturday.status === 'completed' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4" /> Tuntas
+                      <CheckCircle2 className="w-4 h-4" /> Tuntas {audit.auditDetails.saturday.fulfilledOn && audit.auditDetails.saturday.fulfilledOn !== 'Sabtu' ? `(${audit.auditDetails.saturday.fulfilledOn})` : ''}
                     </span>
                   ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
@@ -311,6 +311,11 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           <p className="text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-snug italic">
             &ldquo;{plan?.coachGreeting || insight?.summary}&rdquo;
           </p>
+          {audit?.crossTrainingNotice && (
+            <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold pt-0.5">
+              • {audit.crossTrainingNotice}
+            </p>
+          )}
           {audit?.activeAdjustmentNote && (
             <p className="text-[11px] text-[#FC5200] font-semibold pt-0.5">
               • {audit.activeAdjustmentNote}

@@ -80,6 +80,7 @@ export interface CoachWorkoutDay {
     title: string;
     distanceKm: number;
     paceFormatted: string;
+    executedOnDay?: string;
   } | null;
 }
 
@@ -88,10 +89,17 @@ export interface SmartSkipAudit {
   skippedDayNames: string[];
   activeAdjustmentNote: string | null;
   auditDetails: {
-    monday: { status: ScheduledDayStatus; dateLabel: string };
-    thursday: { status: ScheduledDayStatus; dateLabel: string };
-    saturday: { status: ScheduledDayStatus; dateLabel: string };
+    monday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
+    thursday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
+    saturday: { status: ScheduledDayStatus; dateLabel: string; fulfilledOn?: string };
   };
+  crossTrainingNotice?: string | null;
+  adaptiveShifts?: Array<{
+    targetSlot: string;
+    actualDay: string;
+    activityTitle: string;
+    note: string;
+  }>;
 }
 
 export interface CoachPlanData {
@@ -117,6 +125,15 @@ export interface CoachPlanData {
     nutrition: string;
     restAndGym: string;
     proteinRecommendation: string;
+  };
+  todayDynamicDirective?: {
+    dayName: string;
+    focus: string;
+    targetMetric: string;
+    details: string;
+    badge: string;
+    isRecovery: boolean;
+    reason?: string | null;
   };
 }
 

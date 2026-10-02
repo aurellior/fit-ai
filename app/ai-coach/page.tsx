@@ -29,13 +29,26 @@ export default async function AiCoachPage() {
       avatarUrl: dbUser.avatarUrl,
     };
 
-    const latestInsight = await prisma.aiInsight.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    const [latestInsight, rawActivities] = await Promise.all([
+      prisma.aiInsight.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.activity.findMany({
+        where: { userId: user.id },
+        orderBy: { startTime: 'desc' },
+        take: 20,
+      }),
+    ]);
+
+    const activities = rawActivities.map((act) => ({
+      ...act,
+      stravaActivityId: act.stravaActivityId ? act.stravaActivityId.toString() : null,
+      gymSets: (act.gymSets as unknown as import('@/types').GymSet[]) || null,
+    }));
 
     if (latestInsight) {
-      insight = parseCoachPlanFromInsight(latestInsight);
+      insight = parseCoachPlanFromInsight(latestInsight, activities);
     } else {
       insight = await generateWeeklyPerformanceInsight(user.id);
     }

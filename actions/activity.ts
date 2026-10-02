@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { ActivityType, ActivitySource, Prisma } from '@prisma/client';
 import { estimateActivityCalories } from '@/lib/services/strava';
 import { ActionResult, ActivityData, GymSet } from '@/types';
+import { generateWeeklyPerformanceInsight } from '@/lib/services/performance-insights';
 
 const gymSetSchema = z.object({
   exercise: z.string().min(1, 'Nama gerakan wajib diisi'),
@@ -83,8 +84,17 @@ export async function createManualActivity(
       },
     });
 
+    // Re-evaluasi otomatis performa AI Coach agar langsung beradaptasi dengan aktivitas baru
+    try {
+      await generateWeeklyPerformanceInsight(user.id);
+    } catch (coachErr) {
+      console.warn('Gagal sinkronisasi otomatis AI Coach pasca input aktivitas:', coachErr);
+    }
+
+    revalidatePath('/');
     revalidatePath('/dashboard');
     revalidatePath('/activities');
+    revalidatePath('/ai-coach');
 
     return {
       success: true,
@@ -256,8 +266,17 @@ export async function deleteActivity(id: string): Promise<ActionResult<{ id: str
       },
     });
 
+    // Re-evaluasi otomatis performa AI Coach agar langsung beradaptasi
+    try {
+      await generateWeeklyPerformanceInsight(user.id);
+    } catch (coachErr) {
+      console.warn('Gagal sinkronisasi otomatis AI Coach pasca hapus aktivitas:', coachErr);
+    }
+
+    revalidatePath('/');
     revalidatePath('/dashboard');
     revalidatePath('/activities');
+    revalidatePath('/ai-coach');
     return { success: true, data: { id: parsed.data.id } };
   } catch (err) {
     console.warn('Could not delete activity from DB:', err);

@@ -39,9 +39,10 @@ export default function TodayCoachDirectiveBanner({
   const todayWibName = getWibDayName();
   const defaultToday = DEFAULT_WEEKLY_SCHEDULES[todayDayIndex] || DEFAULT_WEEKLY_SCHEDULES[1];
 
-  // Cari apakah ada sesi terstruktur di coachPlan
+  // Cari apakah ada sesi terstruktur di coachPlan atau arahan dinamis
   let activeWorkout: CoachWorkoutDay | null = null;
   let isRescheduledToToday = false;
+  const dynamicDirective = coachPlan?.todayDynamicDirective;
 
   if (coachPlan?.schedule) {
     if (todayDayIndex === 1) activeWorkout = coachPlan.schedule.monday;
@@ -81,9 +82,9 @@ export default function TodayCoachDirectiveBanner({
   const isAdjusted = activeWorkout?.isAdjusted || false;
   const adjustmentReason = activeWorkout?.adjustmentReason || null;
 
-  const baseFocus = activeWorkout?.focus || defaultToday.focus;
-  const baseTarget = activeWorkout?.targetMetric || defaultToday.targetMetric;
-  const baseDetails = activeWorkout?.details || defaultToday.details;
+  const baseFocus = dynamicDirective ? dynamicDirective.focus : (activeWorkout?.focus || defaultToday.focus);
+  const baseTarget = dynamicDirective ? dynamicDirective.targetMetric : (activeWorkout?.targetMetric || defaultToday.targetMetric);
+  const baseDetails = dynamicDirective ? dynamicDirective.details : (activeWorkout?.details || defaultToday.details);
   const isKeyDay = defaultToday.isKey;
 
   // Body Scroll Lock saat modal dibuka di iOS/Mobile
@@ -151,6 +152,8 @@ export default function TodayCoachDirectiveBanner({
     ? rescheduledPlan.badge
     : isRescheduled
     ? (activeWorkout?.adjustmentReason ? activeWorkout.adjustmentReason.split(':')[0] : 'AI Rescheduled')
+    : dynamicDirective?.badge
+    ? dynamicDirective.badge
     : isAdjusted
     ? 'Smart Adjusted'
     : defaultToday.badge;
@@ -209,10 +212,15 @@ export default function TodayCoachDirectiveBanner({
                   <RotateCcw className="w-3 h-3 text-sky-400" />
                   <span>AI Rescheduled</span>
                 </span>
-              ) : isAdjusted ? (
+              ) : dynamicDirective?.badge === 'Tuntas Hari Ini' ? (
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>Sesi Tuntas Hari Ini</span>
+                </span>
+              ) : isAdjusted || dynamicDirective?.badge?.toLowerCase().includes('adaptive') ? (
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0">
                   <SlidersHorizontal className="w-3 h-3 text-amber-400" />
-                  <span>Adaptasi Sesi</span>
+                  <span>{displayBadge}</span>
                 </span>
               ) : isKeyDay ? (
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
@@ -251,28 +259,38 @@ export default function TodayCoachDirectiveBanner({
               <span>{displayDetails}</span>
             </div>
 
-            {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala) */}
-            {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
+            {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala / cross-training) */}
+            {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.crossTrainingNotice || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
               <div className={cn(
                 "p-2.5 rounded-xl border text-xs flex items-center gap-2",
                 isRescheduled
                   ? "bg-sky-500/15 border-sky-500/30 text-sky-200"
+                  : coachPlan?.smartSkipAudit?.crossTrainingNotice
+                  ? "bg-purple-500/15 border-purple-500/30 text-purple-200"
                   : "bg-amber-500/15 border-amber-500/30 text-amber-200"
               )}>
                 {isRescheduled ? (
                   <RotateCcw className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                ) : coachPlan?.smartSkipAudit?.crossTrainingNotice ? (
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                 ) : (
                   <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 )}
                 <div className="min-w-0 flex-1 truncate">
                   <span className="font-semibold font-mono text-[10px] uppercase tracking-wide mr-1">
-                    {isRescheduled ? 'Adaptasi Selesai:' : 'Catatan AI:'}
+                    {isRescheduled
+                      ? 'Adaptasi Selesai:'
+                      : coachPlan?.smartSkipAudit?.crossTrainingNotice
+                      ? 'Proteksi Otot:'
+                      : 'Catatan AI:'}
                   </span>
                   <span className="text-[11px]">
                     {rescheduledPlan
                       ? `${rescheduledPlan.badge} (${rescheduledPlan.newDayOrTime})`
                       : activeWorkout?.adjustmentReason
                       ? activeWorkout.adjustmentReason
+                      : coachPlan?.smartSkipAudit?.crossTrainingNotice
+                      ? coachPlan.smartSkipAudit.crossTrainingNotice
                       : coachPlan?.smartSkipAudit?.activeAdjustmentNote || 'Target latihan disesuaikan otomatis.'}
                   </span>
                 </div>

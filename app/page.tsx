@@ -86,7 +86,7 @@ export default async function HomePage() {
       stravaActivityId: act.stravaActivityId ? act.stravaActivityId.toString() : null,
       gymSets: (act.gymSets as unknown as GymSet[]) || null,
     }));
-    latestInsight = rawInsight ? parseCoachPlanFromInsight(rawInsight) : null;
+    latestInsight = rawInsight ? parseCoachPlanFromInsight(rawInsight, activities) : null;
     foodLogs = dbFoodLogs;
     weightLogs = dbWeightLogs;
     nutritionAudit = dbNutritionAudit;
@@ -135,7 +135,7 @@ export default async function HomePage() {
       periodStart: MOCK_START_GYM,
       periodEnd: BASE_MOCK_DATE,
       createdAt: BASE_MOCK_DATE,
-    });
+    }, activities);
     foodLogs = [
       {
         id: 'fd-1',
