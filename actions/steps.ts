@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { ActionResult, StepLogData } from '@/types';
 
-export const logDailyStepsSchema = z.object({
+const logDailyStepsSchema = z.object({
   dateStr: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD'),
   stepCount: z.coerce.number().min(0, 'Jumlah langkah tidak boleh bernilai negatif'),
   source: z.string().default('MANUAL'),

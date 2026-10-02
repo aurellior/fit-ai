@@ -7,7 +7,7 @@ import { Type, Schema } from '@google/genai';
 import { revalidatePath } from 'next/cache';
 import { ActionResult } from '@/types';
 
-export const rescheduleInputSchema = z.object({
+const rescheduleInputSchema = z.object({
   userId: z.string().min(1, 'User ID wajib disertakan'),
   originalDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Format tanggal harus YYYY-MM-DD'),
   activityType: z.string().min(1, 'Jenis aktivitas wajib disertakan'),
