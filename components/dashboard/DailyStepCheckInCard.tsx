@@ -73,28 +73,25 @@ export default function DailyStepCheckInCard({
     <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 shadow-xs relative overflow-hidden">
       {/* Top Header */}
       <div className="flex items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#FC5200]/10 flex items-center justify-center text-[#FC5200] shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#FC5200]/10 flex items-center justify-center text-[#FC5200] shrink-0">
             <Footprints className="w-4 h-4 stroke-[2.2]" />
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-              <span>Daily Step Check-in</span>
-              <span className="text-[10px] font-mono font-normal text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                NEAT
-              </span>
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight font-mono">
+              Daily Step Check-in
             </h3>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              Sinkronisasi langkah harian ke pengeluaran energi murni
-            </p>
+            <span className="text-[9px] font-mono font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+              NEAT
+            </span>
           </div>
         </div>
 
         {/* Protection Shield Indicator */}
         {auditData?.doubleCountingPrevented ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 shrink-0 font-mono">
             <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-            <span>Anti-Duplikasi Aktif</span>
+            <span>Anti-Duplikasi</span>
           </span>
         ) : (
           <span className="text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded shrink-0">
@@ -104,11 +101,11 @@ export default function DailyStepCheckInCard({
       </div>
 
       {/* Progress & Stat Cards */}
-      <div className="pt-3.5 space-y-3">
+      <div className="pt-3 space-y-2.5">
         <div className="flex items-end justify-between">
           <div>
-            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
-              Total Langkah Terlacak
+            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
+              Total Langkah
             </span>
             <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {totalSteps.toLocaleString('id-ID')}{' '}
@@ -117,11 +114,11 @@ export default function DailyStepCheckInCard({
           </div>
 
           <div className="text-right">
-            <span className="text-[11px] text-zinc-400 font-mono flex items-center justify-end gap-1">
+            <span className="text-[10px] text-zinc-400 font-mono flex items-center justify-end gap-1">
               <Target className="w-3 h-3 text-zinc-400" />
               <span>Target: {targetGoal.toLocaleString('id-ID')}</span>
             </span>
-            <div className="text-xs font-semibold font-mono text-[#FC5200]">
+            <div className="text-xs font-bold font-mono text-[#FC5200]">
               {progressPercent}%
             </div>
           </div>
@@ -138,29 +135,27 @@ export default function DailyStepCheckInCard({
         {/* Biomechanical Isolation Breakdown: Strava vs NEAT */}
         {auditData?.hasStepsLogged && (
           <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
-            <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60">
+            <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60">
               <span className="text-[10px] text-zinc-400 uppercase font-mono block">
                 🏃 Sesi Strava
               </span>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200 font-mono text-xs tabular-nums">
+              <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono text-xs tabular-nums">
                 {auditData.workoutStepsAbsorbed.toLocaleString('id-ID')}{' '}
                 <span className="text-[10px] text-zinc-400 font-normal">langkah</span>
               </span>
-              <p className="text-[10px] text-zinc-400 mt-0.5">Terserap di latihan</p>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60">
+            <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60">
               <span className="text-[10px] text-zinc-400 uppercase font-mono flex items-center justify-between">
                 <span>🚶 NEAT Murni</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono">
                   +{auditData.neatCalories} kkal
                 </span>
               </span>
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200 font-mono text-xs tabular-nums">
+              <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono text-xs tabular-nums">
                 {auditData.pureNeatSteps.toLocaleString('id-ID')}{' '}
                 <span className="text-[10px] text-zinc-400 font-normal">langkah</span>
               </span>
-              <p className="text-[10px] text-zinc-400 mt-0.5">Mobilitas di luar sesi</p>
             </div>
           </div>
         )}
@@ -170,13 +165,13 @@ export default function DailyStepCheckInCard({
           <div className="flex items-center gap-1.5 p-2 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 text-[11px] text-emerald-800 dark:text-emerald-300">
             <Flame className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>
-              <strong>Hemat {auditData.deduplicatedCaloriesSaved} kkal:</strong> Langkah saat latihan Strava tidak dihitung dua kali ke NEAT.
+              <strong>Hemat {auditData.deduplicatedCaloriesSaved} kkal:</strong> Strava & NEAT terisolasi
             </span>
           </div>
         )}
 
         {/* Input Form Ala Strava */}
-        <form onSubmit={handleSubmit} className="pt-2 space-y-2">
+        <form onSubmit={handleSubmit} className="pt-1.5 space-y-2">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <input

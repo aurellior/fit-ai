@@ -65,60 +65,63 @@ export default function BottomNav({
   };
 
   const sheetContent = isFabMenuOpen ? (
-    <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end p-3 overflow-hidden isolate m-0">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end p-0 sm:p-3 overflow-hidden isolate m-0">
       <div
-        className="absolute inset-0 bg-black/60 dark:bg-black/80 transition-opacity"
+        className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs transition-opacity"
         onClick={() => setIsFabMenuOpen(false)}
         onTouchMove={(e) => e.preventDefault()}
       />
 
-      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 pb-[max(1.75rem,calc(1rem+env(safe-area-inset-bottom)))] mb-[max(0.5rem,env(safe-area-inset-bottom))] space-y-3 z-10 shadow-2xl overscroll-contain max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-        {/* Sheet Handle */}
-        <div className="w-12 h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-2 shrink-0" />
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-[#121214] border-t sm:border border-zinc-200 dark:border-zinc-800/90 rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 pb-[max(1.75rem,calc(1rem+env(safe-area-inset-bottom)))] mb-0 sm:mb-[max(0.5rem,env(safe-area-inset-bottom))] space-y-3.5 z-10 shadow-2xl overscroll-contain max-h-[85dvh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+        {/* Sheet Grab Handle */}
+        <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full mx-auto mb-1 shrink-0" />
 
         <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 font-mono">
-            Aksi Cepat Atlet
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#FC5200]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 font-mono">
+              Aksi Cepat Atlet
+            </span>
+          </div>
           <button
             onClick={() => setIsFabMenuOpen(false)}
-            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer active:scale-90 transition-transform"
             aria-label="Tutup menu aksi"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 pt-1">
+        <div className="grid grid-cols-1 gap-2.5 pt-1">
           <button
             onClick={() => handleAction(onOpenActivityModal)}
-            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+            className="flex items-center gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/50 text-left transition-all active:scale-98 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-lg bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Dumbbell className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Dumbbell className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
                 Catat Latihan (Lari & Gym)
               </div>
-              <div className="text-[11px] text-zinc-500">
-                Input durasi, pace lari, atau repetisi beban
+              <div className="text-[11px] text-zinc-500 truncate">
+                Input jarak, pace lari, atau repetisi beban
               </div>
             </div>
           </button>
 
           <button
             onClick={() => handleAction(onOpenFoodModal)}
-            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+            className="flex items-center gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/50 text-left transition-all active:scale-98 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0 shadow-xs">
-              <Camera className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0 shadow-xs">
+              <Camera className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
                 Scan Makanan AI
               </div>
-              <div className="text-[11px] text-zinc-500">
+              <div className="text-[11px] text-zinc-500 truncate">
                 Foto makanan untuk ekstraksi kalori & makro
               </div>
             </div>
@@ -126,16 +129,16 @@ export default function BottomNav({
 
           <button
             onClick={() => handleAction(onOpenWeightModal)}
-            className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+            className="flex items-center gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/50 text-left transition-all active:scale-98 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Scale className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Scale className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
                 Catat Berat Badan
               </div>
-              <div className="text-[11px] text-zinc-500">
+              <div className="text-[11px] text-zinc-500 truncate">
                 Pantau tren massa tubuh harian
               </div>
             </div>
@@ -152,81 +155,83 @@ export default function BottomNav({
         ? createPortal(sheetContent, document.body)
         : null}
 
-      {/* Thumb-friendly Bottom Navigation Bar with iOS Safe Area support */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 md:hidden m-0 pt-1.5 pb-[max(0.85rem,env(safe-area-inset-bottom))] shadow-lg touch-manipulation">
-        <div className="max-w-md mx-auto px-3 sm:px-4 h-16 flex items-center justify-between">
-          {/* Dashboard Tab */}
-          <Link
-            href="/"
-            prefetch={true}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              isOverview
-                ? 'text-[#FC5200] font-bold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-            }`}
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            <span className="text-[10px] mt-1">Overview</span>
-          </Link>
-
-          {/* AI Coach Tab */}
-          <Link
-            href="/ai-coach"
-            prefetch={true}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              isCoach
-                ? 'text-[#FC5200] font-bold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-            }`}
-          >
-            <div className="relative">
-              <Activity className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#FC5200]"></span>
-            </div>
-            <span className="text-[10px] mt-1">AI Coach</span>
-          </Link>
-
-          {/* Central Elevated FAB Trigger */}
-          <div className="flex items-center justify-center px-2">
-            <button
-              onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
-              className="w-12 h-12 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform touch-manipulation cursor-pointer shrink-0"
-              title="Aksi Cepat"
-              aria-label="Aksi Cepat"
+      {/* Thumb-friendly Fixed Bottom Navigation Bar inside centered viewport */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
+        <nav className="w-full max-w-md pointer-events-auto bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 sm:border-x sm:border-zinc-200/80 sm:dark:border-zinc-800/80 pt-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg touch-manipulation">
+          <div className="px-3 sm:px-4 h-15 flex items-center justify-between">
+            {/* Dashboard Tab */}
+            <Link
+              href="/"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+                isOverview
+                  ? 'text-[#FC5200] font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+              }`}
             >
-              <Plus className={`w-5 h-5 transition-transform duration-200 stroke-[2.5] ${isFabMenuOpen ? 'rotate-45' : ''}`} />
-            </button>
+              <LayoutDashboard className="w-4 h-4" />
+              <span className="text-[10px] mt-1 tracking-tight">Overview</span>
+            </Link>
+
+            {/* AI Coach Tab */}
+            <Link
+              href="/ai-coach"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+                isCoach
+                  ? 'text-[#FC5200] font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+              }`}
+            >
+              <div className="relative">
+                <Activity className="w-4 h-4" />
+                <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#FC5200]"></span>
+              </div>
+              <span className="text-[10px] mt-1 tracking-tight">AI Coach</span>
+            </Link>
+
+            {/* Central Elevated FAB Trigger */}
+            <div className="flex items-center justify-center px-2">
+              <button
+                onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
+                className="w-12 h-12 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-[#0c0c0e] active:scale-90 transition-transform touch-manipulation cursor-pointer shrink-0"
+                title="Aksi Cepat"
+                aria-label="Aksi Cepat"
+              >
+                <Plus className={`w-5 h-5 transition-transform duration-200 stroke-[2.5] ${isFabMenuOpen ? 'rotate-45' : ''}`} />
+              </button>
+            </div>
+
+            {/* Activities Tab */}
+            <Link
+              href="/activities"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+                isActivities
+                  ? 'text-[#FC5200] font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span className="text-[10px] mt-1 tracking-tight">Aktivitas</span>
+            </Link>
+
+            {/* Nutrition Tab */}
+            <Link
+              href="/nutrition"
+              prefetch={true}
+              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+                isNutrition
+                  ? 'text-[#FC5200] font-bold'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+              }`}
+            >
+              <Utensils className="w-4 h-4" />
+              <span className="text-[10px] mt-1 tracking-tight">Nutrisi</span>
+            </Link>
           </div>
-
-          {/* Activities Tab */}
-          <Link
-            href="/activities"
-            prefetch={true}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              isActivities
-                ? 'text-[#FC5200] font-bold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-            }`}
-          >
-            <Activity className="w-4 h-4" />
-            <span className="text-[10px] mt-1">Aktivitas</span>
-          </Link>
-
-          {/* Nutrition Tab */}
-          <Link
-            href="/nutrition"
-            prefetch={true}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              isNutrition
-                ? 'text-[#FC5200] font-bold'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-            }`}
-          >
-            <Utensils className="w-4 h-4" />
-            <span className="text-[10px] mt-1">Nutrisi</span>
-          </Link>
-        </div>
-      </nav>
+        </nav>
+      </div>
     </>
   );
 }

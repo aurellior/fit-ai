@@ -48,16 +48,16 @@ export default function DailyNutritionAuditHistory({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+        <div className="flex items-stretch gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth snap-x -mx-1 px-1">
           {history.map((dayAudit, idx) => {
             const isSelected = idx === selectedIndex;
             return (
               <button
                 key={dayAudit.date}
                 onClick={() => setSelectedIndex(idx)}
-                className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer min-w-[102px] shrink-0 snap-start active:scale-98 ${
                   isSelected
-                    ? 'border-[#FC5200] bg-orange-50/30 dark:bg-orange-950/20 ring-1 ring-[#FC5200]/30'
+                    ? 'border-[#FC5200] bg-orange-500/10 dark:bg-orange-500/15 ring-1 ring-[#FC5200]'
                     : 'border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50'
                 }`}
               >

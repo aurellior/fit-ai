@@ -3,7 +3,7 @@ import Skeleton from '@/components/ui/Skeleton';
 
 export default function DashboardLoading() {
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12 animate-in fade-in duration-150">
+    <div className="w-full px-3 sm:px-4 py-4 space-y-4 pb-[calc(5rem+env(safe-area-inset-bottom))] animate-in fade-in duration-150">
       {/* 1. Strava Sync Action Bar Skeleton */}
       <div className="flex items-center justify-end">
         <Skeleton className="h-9 w-32 rounded-lg shrink-0" />

@@ -18,7 +18,6 @@ import {
   Footprints,
   Search,
   Filter,
-  ArrowLeft,
   Trash2,
   Plus,
   ArrowUpRight,
@@ -136,44 +135,24 @@ export default function ActivitiesClientView({
 
   return (
     <div className="space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
-      {/* 1. Breadcrumbs & Header */}
-      <div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
-          <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Dashboard
-          </Link>
-          <span>/</span>
-          <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Aktivitas</span>
+      {/* 1. Header & Actions */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Riwayat Aktivitas
+          </h1>
+          <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+            {initialActivities.length} sesi latihan tercatat
+          </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Riwayat Aktivitas & Latihan
-            </h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Eksplorasi daftar lengkap aktivitas olahraga, analisis pace, dan beban latihan dengan pagination.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-1.5 bg-white dark:bg-zinc-900 shadow-xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Ke Overview</span>
-            </Link>
-
-            <button
-              onClick={() => setIsActivityModalOpen(true)}
-              className="text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-98"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Catat Latihan</span>
-            </button>
-          </div>
-        </div>
+        <button
+          onClick={() => setIsActivityModalOpen(true)}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-98 shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>+ Latihan</span>
+        </button>
       </div>
 
       {/* 2. Top Summary Stat Badges */}
@@ -470,7 +449,6 @@ export default function ActivitiesClientView({
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
         title="Catat Aktivitas Latihan"
-        description="Pilih jenis olahraga lari atau gym untuk mencatat sesi latihan Anda"
         maxWidth="lg"
       >
         <ManualActivityForm
@@ -485,8 +463,7 @@ export default function ActivitiesClientView({
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
-        title="Catat Nutrisi Makanan (AI Vision & Quick-Log)"
-        description="Pindai foto makanan atau ketik menu bebas untuk estimasi makronutrisi & kalori instan dengan Gemini AI"
+        title="Catat Nutrisi (AI Vision)"
         maxWidth="md"
       >
         <FoodScannerModal
@@ -502,7 +479,6 @@ export default function ActivitiesClientView({
         isOpen={isWeightModalOpen}
         onClose={() => setIsWeightModalOpen(false)}
         title="Catat Berat Badan"
-        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
         maxWidth="sm"
       >
         <LogWeightModalForm

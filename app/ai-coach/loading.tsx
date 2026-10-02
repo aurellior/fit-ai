@@ -3,7 +3,7 @@ import Skeleton from '@/components/ui/Skeleton';
 
 export default function AiCoachLoading() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12 animate-in fade-in duration-150">
+    <div className="w-full px-3 sm:px-4 py-4 space-y-4 pb-[calc(5rem+env(safe-area-inset-bottom))] animate-in fade-in duration-150">
       {/* 1. Header & Breadcrumb Skeleton */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div className="space-y-2">

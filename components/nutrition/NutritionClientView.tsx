@@ -69,42 +69,32 @@ export default function NutritionClientView({
   };
 
   return (
-    <div className="space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
+    <div className="space-y-4 pb-6">
       {/* 1. Breadcrumbs & Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
-          <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
-            Dashboard
+        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 mb-1">
+          <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1 transition-colors">
+            <ArrowLeft className="w-3 h-3" />
+            <span>Overview</span>
           </Link>
           <span>/</span>
           <span className="text-zinc-900 dark:text-zinc-100 font-semibold">Nutrisi</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="flex items-center justify-between gap-2 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Riwayat Nutrisi & Log Makanan
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
+              Nutrisi & Log Makanan
             </h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Daftar asupan kalori dan makronutrisi harian dari AI Food Scanner dengan pagination.
-            </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="text-xs font-medium px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors flex items-center gap-1.5 bg-white dark:bg-zinc-900 shadow-xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Ke Overview</span>
-            </Link>
-
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setIsFoodModalOpen(true)}
-              className="text-xs font-semibold px-3.5 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-98"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
             >
               <Camera className="w-3.5 h-3.5" />
-              <span>Scan Makanan AI</span>
+              <span>Scan AI</span>
             </button>
           </div>
         </div>
@@ -117,37 +107,37 @@ export default function NutritionClientView({
         </section>
       )}
 
-      {/* 3. Macronutrient Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 sm:p-5 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
-          <span className="text-[11px] text-zinc-400 uppercase font-mono font-semibold block">Total Energi</span>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-1 tabular-nums">
+      {/* 3. Macronutrient Cards Grid in 2x2 Mobile Layout */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs">
+          <span className="text-[10px] text-zinc-400 uppercase font-mono font-semibold block">Total Energi</span>
+          <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5 tabular-nums">
             {Math.round(totalCalories)}{' '}
-            <span className="text-xs font-normal text-zinc-500 font-sans">kkal</span>
+            <span className="text-[10px] font-normal text-zinc-500 font-sans">kkal</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
-          <span className="text-[11px] text-zinc-400 uppercase font-mono font-semibold block">Total Protein</span>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-[#FC5200] mt-1 tabular-nums">
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs">
+          <span className="text-[10px] text-zinc-400 uppercase font-mono font-semibold block">Protein</span>
+          <div className="text-xl sm:text-2xl font-bold font-mono text-[#FC5200] mt-0.5 tabular-nums">
             {Math.round(totalProtein)}{' '}
-            <span className="text-xs font-normal text-zinc-500 font-sans">gram</span>
+            <span className="text-[10px] font-normal text-zinc-500 font-sans">gram</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
-          <span className="text-[11px] text-zinc-400 uppercase font-mono font-semibold block">Total Karbohidrat</span>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1 tabular-nums">
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs">
+          <span className="text-[10px] text-zinc-400 uppercase font-mono font-semibold block">Karbohidrat</span>
+          <div className="text-xl sm:text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5 tabular-nums">
             {Math.round(totalCarbs)}{' '}
-            <span className="text-xs font-normal text-zinc-500 font-sans">gram</span>
+            <span className="text-[10px] font-normal text-zinc-500 font-sans">gram</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
-          <span className="text-[11px] text-zinc-400 uppercase font-mono font-semibold block">Total Lemak</span>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs">
+          <span className="text-[10px] text-zinc-400 uppercase font-mono font-semibold block">Lemak</span>
+          <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 tabular-nums">
             {Math.round(totalFat)}{' '}
-            <span className="text-xs font-normal text-zinc-500 font-sans">gram</span>
+            <span className="text-[10px] font-normal text-zinc-500 font-sans">gram</span>
           </div>
         </div>
       </div>

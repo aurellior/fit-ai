@@ -166,19 +166,12 @@ export default function DashboardCharts({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
       {/* Chart 1: Volume Latihan Mingguan / Bulanan (Strava Signature Orange) */}
       <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FC5200]" />
-              <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                Volume Latihan
-              </h3>
-            </div>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {chartPeriod === '7d'
-                ? 'Jarak tempuh harian pekan ini (Senin – Minggu)'
-                : 'Tren jarak tempuh 30 hari terakhir'}
-            </p>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-[#FC5200]" />
+            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
+              Volume Jarak Lari
+            </h3>
           </div>
 
           <div className="flex items-center gap-3 self-end sm:self-auto">
@@ -260,20 +253,13 @@ export default function DashboardCharts({
       </div>
 
       {/* Chart 2: Tren Massa Tubuh (Emerald Health Curve) */}
-      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <h3 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-                Tren Massa Tubuh
-              </h3>
-            </div>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {chartPeriod === '7d'
-                ? 'Fluktuasi berat badan (kg) pekan ini (Senin – Minggu)'
-                : 'Fluktuasi berat badan (kg) 30 hari terakhir'}
-            </p>
+      <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden shadow-2xs">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
+              Tren Berat Badan
+            </h3>
           </div>
 
           <div className="text-right">

@@ -249,10 +249,6 @@ export default function DailyNutritionAuditCard({
           )}
         </div>
 
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-          Sistem secara otomatis mengisolasi porsi langkah yang sudah terserap pada sesi olahraga Strava agar tidak dihitung ganda dengan pelacak langkah harian.
-        </p>
-
         {/* 3 Pillars Breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
           {/* Pillar 1: Sesi Latihan Strava / Olahraga */}
@@ -411,10 +407,6 @@ export default function DailyNutritionAuditCard({
                     <span>Simpan</span>
                   </button>
                 </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-400">
-                Input langkah dari pedometer jam atau smartphone Anda. Sistem akan otomatis memotong porsi langkah sesi lari Strava ({audit.workoutStepsAbsorbed.toLocaleString('id-ID')} langkah) agar tidak terjadi perhitungan ganda pada kalori keluar.
               </div>
             </div>
           )}

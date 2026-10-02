@@ -213,51 +213,58 @@ export default function TodayCoachDirectiveBanner({
             </div>
           </div>
 
-          {/* Core Content: Judul Menu & Target Metrik */}
-          <div className="space-y-3">
-            <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-snug">
-                {displayFocus}
-              </h1>
+          {/* Core Content: Judul Menu & Target Metrik (Minimalist Data-Dense) */}
+          <div className="space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold block">
+                  Fokus Sesi Hari Ini
+                </span>
+                <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-snug">
+                  {displayFocus}
+                </h1>
+              </div>
 
-              {/* Target Metric Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50/80 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/50 text-xs font-mono font-semibold text-[#FC5200] dark:text-orange-400 shrink-0">
+              {/* Target Metric Badge with Strava Orange Accent */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50/90 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 shadow-2xs">
                 <Target className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
                 <span>{displayTarget}</span>
               </div>
             </div>
 
-            {/* Instruksi Taktis Latihan */}
-            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
-              {displayDetails}
-            </p>
+            {/* Tactical Drill Instructions - Clean Bullet / Sentence */}
+            <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-300 font-sans leading-relaxed">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100 mr-1.5 font-mono text-[11px] uppercase tracking-wide">
+                • Target:
+              </span>
+              <span>{displayDetails}</span>
+            </div>
           </div>
 
           {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala) */}
           {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
             <div className={cn(
-              "p-3 rounded-xl border text-xs flex items-start gap-2.5",
+              "p-2.5 rounded-xl border text-xs flex items-center gap-2",
               isRescheduled
-                ? "bg-sky-500/10 dark:bg-sky-950/30 border-sky-500/30 text-sky-800 dark:text-sky-300"
-                : "bg-amber-500/10 dark:bg-amber-950/30 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                ? "bg-sky-500/10 dark:bg-sky-950/40 border-sky-500/30 text-sky-800 dark:text-sky-300"
+                : "bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/30 text-amber-800 dark:text-amber-300"
             )}>
               {isRescheduled ? (
-                <RotateCcw className="w-4 h-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+                <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
               ) : (
-                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               )}
-              <div className="space-y-1">
-                <span className="font-semibold block text-[11px] uppercase tracking-wider font-mono">
-                  {isRescheduled ? 'Solusi Penyesuaian AI Berhasil Diterapkan' : 'Catatan Penyesuaian Adaptif AI'}
+              <div className="min-w-0 flex-1 truncate">
+                <span className="font-semibold font-mono text-[10px] uppercase tracking-wide mr-1">
+                  {isRescheduled ? 'Adaptasi Selesai:' : 'Catatan AI:'}
                 </span>
-                <p className="leading-relaxed text-zinc-700 dark:text-zinc-300 font-sans">
+                <span className="text-[11px]">
                   {rescheduledPlan
-                    ? `Sesi latihan dialihkan (${rescheduledPlan.badge}): ${rescheduledPlan.newDayOrTime} — ${rescheduledPlan.coachAdvice}`
+                    ? `${rescheduledPlan.badge} (${rescheduledPlan.newDayOrTime})`
                     : activeWorkout?.adjustmentReason
                     ? activeWorkout.adjustmentReason
-                    : coachPlan?.smartSkipAudit?.activeAdjustmentNote ||
-                      'Target latihan minggu ini telah disesuaikan otomatis oleh AI Coach.'}
-                </p>
+                    : coachPlan?.smartSkipAudit?.activeAdjustmentNote || 'Target latihan disesuaikan otomatis.'}
+                </span>
               </div>
             </div>
           )}

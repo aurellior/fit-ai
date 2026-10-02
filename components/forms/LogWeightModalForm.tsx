@@ -71,7 +71,7 @@ export default function LogWeightModalForm({ onSuccess }: LogWeightModalFormProp
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-2.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-xs active:scale-98"
+          className="w-full py-2.5 sm:py-2 bg-[#FC5200] hover:bg-[#E04900] text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-xs active:scale-98"
         >
           {isSubmitting ? 'Menyimpan...' : 'Simpan Log Berat Badan'}
         </button>
