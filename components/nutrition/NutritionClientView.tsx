@@ -145,7 +145,7 @@ export default function NutritionClientView({
       {/* 3. Search Bar */}
       <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
@@ -154,7 +154,7 @@ export default function NutritionClientView({
               setPage(1);
             }}
             placeholder="Cari nama makanan (misal: telur, dada ayam, salmon)..."
-            className="w-full text-base sm:text-xs pl-8 pr-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+            className="w-full text-base sm:text-sm pl-9 pr-3.5 py-2.5 min-h-[44px] rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
           />
         </div>
       </div>

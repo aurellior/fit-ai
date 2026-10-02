@@ -153,7 +153,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
             placeholder={activityType === ActivityType.RUN ? 'Misal: Easy Run 5K' : 'Misal: Chest & Triceps'}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+            className="w-full px-3.5 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
               required
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+              className="w-full px-3.5 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
             />
           </div>
           <div>
@@ -181,7 +181,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
               placeholder="45"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+              className="w-full px-3.5 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                 placeholder="5.0"
                 value={distanceKm}
                 onChange={(e) => setDistanceKm(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                className="w-full px-3.5 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
               />
             </div>
             <div>
@@ -212,7 +212,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                 placeholder="300"
                 value={calories}
                 onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+                className="w-full px-3.5 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 tabular-nums focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
               />
             </div>
           </div>
@@ -244,41 +244,41 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                     placeholder="Nama Latihan (misal: Bench Press)"
                     value={set.exercise}
                     onChange={(e) => handleSetChange(idx, 'exercise', e.target.value)}
-                    className="flex-1 min-w-0 px-2.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-zinc-900 dark:text-zinc-100"
+                    className="flex-1 min-w-0 px-3 py-2 min-h-[42px] text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200]"
                     required
                   />
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <div className="relative flex-1 sm:w-14">
+                    <div className="relative flex-1 sm:w-16">
                       <input
                         type="number"
                         placeholder="Set"
                         value={set.sets}
                         onChange={(e) => handleSetChange(idx, 'sets', Number(e.target.value))}
-                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        className="w-full px-2 py-2 min-h-[42px] text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md text-center tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200]"
                         min="1"
                         title="Sets"
                       />
                     </div>
                     <span className="text-zinc-400 text-xs font-mono">×</span>
-                    <div className="relative flex-1 sm:w-14">
+                    <div className="relative flex-1 sm:w-16">
                       <input
                         type="number"
                         placeholder="Reps"
                         value={set.reps}
                         onChange={(e) => handleSetChange(idx, 'reps', Number(e.target.value))}
-                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        className="w-full px-2 py-2 min-h-[42px] text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md text-center tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200]"
                         min="1"
                         title="Reps"
                       />
                     </div>
                     <span className="text-zinc-400 text-xs font-mono">@</span>
-                    <div className="relative flex-1 sm:w-16">
+                    <div className="relative flex-1 sm:w-20">
                       <input
                         type="number"
                         placeholder="kg"
                         value={set.weightKg}
                         onChange={(e) => handleSetChange(idx, 'weightKg', Number(e.target.value))}
-                        className="w-full px-1.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-center tabular-nums text-zinc-900 dark:text-zinc-100"
+                        className="w-full px-2 py-2 min-h-[42px] text-base sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md text-center tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200]"
                         min="0"
                         title="Beban (kg)"
                       />
@@ -287,10 +287,10 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
                       <button
                         type="button"
                         onClick={() => handleRemoveSet(idx)}
-                        className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-rose-600 rounded transition-colors"
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center text-zinc-400 hover:text-rose-600 rounded transition-colors"
                         aria-label="Hapus gerakan"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
@@ -309,7 +309,7 @@ export default function ManualActivityForm({ onSuccess, isModal = false }: Manua
             placeholder="Catatan kelelahan, sensasi latihan, atau beban..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-3 py-2 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-md text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+            className="w-full px-3.5 py-2.5 min-h-[64px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
           />
         </div>
 

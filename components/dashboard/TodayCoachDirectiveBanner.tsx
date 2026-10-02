@@ -393,7 +393,7 @@ export default function TodayCoachDirectiveBanner({
               onChange={(e) => setCustomNotes(e.target.value)}
               placeholder="Contoh: Sedang sedikit demam ringan, atau hanya punya waktu 20 menit sebelum meeting..."
               disabled={isRescheduling}
-              className="w-full text-base sm:text-xs p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] resize-none"
+              className="w-full text-base sm:text-sm p-3 min-h-[68px] rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors resize-none"
             />
           </div>
 

@@ -270,7 +270,7 @@ export default function FoodScannerModal({ onScanSuccess, isModal = false }: Foo
                     onKeyDown={handleKeyDown}
                     placeholder="Contoh: 1 porsi nasi goreng spesial ditambah telur mata sapi dan 1 gelas es teh manis..."
                     disabled={isLoading}
-                    className="w-full text-base sm:text-xs p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors resize-none"
+                    className="w-full text-base sm:text-sm p-3 min-h-[84px] rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors resize-none"
                   />
                   <div className="flex items-center justify-between text-[10px] text-zinc-400 px-1 mt-1">
                     <span>💡 Tip: Sebutkan jumlah/porsi untuk akurasi terbaik</span>

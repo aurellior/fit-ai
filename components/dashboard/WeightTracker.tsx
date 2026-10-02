@@ -63,19 +63,19 @@ export default function WeightTracker({ logs, onWeightLogged }: WeightTrackerPro
           placeholder="kg"
           value={weightKg}
           onChange={(e) => setWeightKg(e.target.value === '' ? '' : Number(e.target.value))}
-          className="w-20 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-base sm:text-xs tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+          className="w-24 px-3 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm tabular-nums text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
         />
         <input
           type="text"
           placeholder="Catatan (misal: pagi sebelum sarapan)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="flex-1 px-2.5 py-1.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded text-base sm:text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
+          className="flex-1 min-w-0 px-3 py-2.5 min-h-[44px] bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-lg text-base sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
         />
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded text-xs font-medium transition-colors disabled:opacity-50"
+          className="px-3.5 py-2.5 min-h-[44px] bg-[#FC5200] hover:bg-[#E04900] text-white rounded-lg text-xs font-semibold flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-xs active:scale-98 shrink-0"
         >
           {isSuccess ? 'Tercatat' : isSubmitting ? '...' : 'Catat'}
         </button>

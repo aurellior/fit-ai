@@ -182,9 +182,9 @@ export default function DailyStepCheckInCard({
                 value={stepInput}
                 onChange={(e) => setStepInput(e.target.value)}
                 disabled={isPending}
-                className="w-full text-xs font-mono px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
+                className="w-full text-base sm:text-xs font-mono px-3 py-2.5 min-h-[44px] rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 font-mono">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-mono pointer-events-none">
                 langkah
               </span>
             </div>
@@ -192,7 +192,7 @@ export default function DailyStepCheckInCard({
             <button
               type="submit"
               disabled={isPending || !stepInput}
-              className="py-2 px-3.5 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shrink-0 shadow-xs cursor-pointer"
+              className="py-2.5 px-3.5 min-h-[44px] bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shrink-0 shadow-xs cursor-pointer"
             >
               {isPending ? (
                 <>
