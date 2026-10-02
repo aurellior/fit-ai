@@ -98,16 +98,16 @@ export default function NutritionSummary({
           displayLogs.map((food) => (
             <div
               key={food.id}
-              className="flex items-center justify-between p-3 rounded-lg bg-zinc-50/60 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/80 hover:border-zinc-200 dark:hover:border-zinc-700 transition-colors"
+              className="flex items-center justify-between p-3 rounded-lg bg-zinc-50/60 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/80 hover:border-zinc-200 dark:hover:border-zinc-700 transition-colors gap-2.5 min-w-0"
             >
-              <div>
-                <h5 className="font-semibold text-xs text-zinc-900 dark:text-zinc-200">
+              <div className="min-w-0 flex-1 mr-2">
+                <h5 className="font-semibold text-xs text-zinc-900 dark:text-zinc-200 truncate">
                   {food.foodName}
                 </h5>
-                <p className="text-[10px] text-zinc-400 mt-0.5">{formatDate(food.loggedAt)}</p>
+                <p className="text-[10px] text-zinc-400 mt-0.5 truncate">{formatDate(food.loggedAt)}</p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 shrink-0">
                 <div className="text-right text-xs tabular-nums">
                   <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono">
                     {food.calories} kkal
@@ -120,6 +120,7 @@ export default function NutritionSummary({
                 <button
                   onClick={() => handleDelete(food.id)}
                   className="text-zinc-400 hover:text-rose-600 p-1 rounded transition-colors"
+                  title="Hapus log makanan"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

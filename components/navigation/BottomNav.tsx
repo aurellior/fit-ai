@@ -155,29 +155,29 @@ export default function BottomNav({
         ? createPortal(sheetContent, document.body)
         : null}
 
-      {/* Thumb-friendly Fixed Bottom Navigation Bar inside centered viewport */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
-        <nav className="w-full max-w-md pointer-events-auto bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-md border-t border-zinc-200/80 dark:border-zinc-800/80 sm:border-x sm:border-zinc-200/80 sm:dark:border-zinc-800/80 pt-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg touch-manipulation">
-          <div className="px-3 sm:px-4 h-15 flex items-center justify-between">
+      {/* Floating Liquid Glass Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none pb-[calc(0.75rem+env(safe-area-inset-bottom))] px-4 sm:px-6">
+        <nav className="w-full max-w-sm pointer-events-auto backdrop-blur-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/40 dark:border-zinc-700/30 rounded-full shadow-2xl px-3 py-1.5 touch-manipulation">
+          <div className="h-12 flex items-center justify-between gap-1">
             {/* Dashboard Tab */}
             <Link
               href="/"
               prefetch={true}
-              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-full transition-all active:scale-95 ${
                 isOverview
                   ? 'text-[#FC5200] font-bold'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span className="text-[10px] mt-1 tracking-tight">Overview</span>
+              <span className="text-[10px] mt-0.5 tracking-tight font-medium">Overview</span>
             </Link>
 
             {/* AI Coach Tab */}
             <Link
               href="/ai-coach"
               prefetch={true}
-              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-full transition-all active:scale-95 ${
                 isCoach
                   ? 'text-[#FC5200] font-bold'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
@@ -185,16 +185,16 @@ export default function BottomNav({
             >
               <div className="relative">
                 <Activity className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#FC5200]"></span>
+                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#FC5200] animate-pulse"></span>
               </div>
-              <span className="text-[10px] mt-1 tracking-tight">AI Coach</span>
+              <span className="text-[10px] mt-0.5 tracking-tight font-medium">AI Coach</span>
             </Link>
 
-            {/* Central Elevated FAB Trigger */}
-            <div className="flex items-center justify-center px-2">
+            {/* Central Floating Elevated Action Button */}
+            <div className="flex items-center justify-center px-1">
               <button
                 onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
-                className="w-12 h-12 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-[#0c0c0e] active:scale-90 transition-transform touch-manipulation cursor-pointer shrink-0"
+                className="w-11 h-11 rounded-full bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center justify-center shadow-lg shadow-orange-500/25 ring-2 ring-white/60 dark:ring-zinc-800/80 active:scale-90 transition-all touch-manipulation cursor-pointer shrink-0"
                 title="Aksi Cepat"
                 aria-label="Aksi Cepat"
               >
@@ -206,28 +206,28 @@ export default function BottomNav({
             <Link
               href="/activities"
               prefetch={true}
-              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-full transition-all active:scale-95 ${
                 isActivities
                   ? 'text-[#FC5200] font-bold'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
               }`}
             >
               <Activity className="w-4 h-4" />
-              <span className="text-[10px] mt-1 tracking-tight">Aktivitas</span>
+              <span className="text-[10px] mt-0.5 tracking-tight font-medium">Aktivitas</span>
             </Link>
 
             {/* Nutrition Tab */}
             <Link
               href="/nutrition"
               prefetch={true}
-              className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors active:scale-95 ${
+              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-full transition-all active:scale-95 ${
                 isNutrition
                   ? 'text-[#FC5200] font-bold'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
               }`}
             >
               <Utensils className="w-4 h-4" />
-              <span className="text-[10px] mt-1 tracking-tight">Nutrisi</span>
+              <span className="text-[10px] mt-0.5 tracking-tight font-medium">Nutrisi</span>
             </Link>
           </div>
         </nav>

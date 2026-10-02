@@ -373,21 +373,21 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 </span>
               </div>
 
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
                     {plan?.schedule.monday.focus || 'Tempo / Speed Run'}
                   </h3>
                 </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0">
+                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
                   {plan?.schedule.monday.targetMetric}
                 </div>
               </div>
 
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1">
+              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
                 <p>• {plan?.schedule.monday.details}</p>
                 {plan?.schedule.monday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border ${
+                  <div className={`p-2 rounded text-[10px] border break-words ${
                     plan.schedule.monday.status === 'rescheduled'
                       ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
                       : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
@@ -431,21 +431,21 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 </span>
               </div>
 
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
                     {plan?.schedule.thursday.focus || 'Interval / Mid-Week Endurance'}
                   </h3>
                 </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0">
+                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
                   {plan?.schedule.thursday.targetMetric}
                 </div>
               </div>
 
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1">
+              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
                 <p>• {plan?.schedule.thursday.details}</p>
                 {plan?.schedule.thursday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border ${
+                  <div className={`p-2 rounded text-[10px] border break-words ${
                     plan.schedule.thursday.status === 'rescheduled'
                       ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
                       : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
@@ -489,21 +489,21 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
                 </span>
               </div>
 
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
                     {plan?.schedule.saturday.focus || 'Safe Progressive Long Run'}
                   </h3>
                 </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0">
+                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
                   {plan?.schedule.saturday.targetMetric}
                 </div>
               </div>
 
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1">
+              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
                 <p>• {plan?.schedule.saturday.details}</p>
                 {plan?.schedule.saturday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border ${
+                  <div className={`p-2 rounded text-[10px] border break-words ${
                     plan.schedule.saturday.status === 'rescheduled'
                       ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
                       : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
@@ -589,8 +589,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
-        title="Catat Nutrisi Makanan (AI Vision & Quick-Log)"
-        description="Pindai foto makanan atau ketik menu bebas untuk estimasi makronutrisi & kalori instan dengan Gemini AI"
+        title="Catat Nutrisi (AI Vision)"
         maxWidth="md"
       >
         <FoodScannerModal
@@ -606,7 +605,6 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
         isOpen={isWeightModalOpen}
         onClose={() => setIsWeightModalOpen(false)}
         title="Catat Berat Badan"
-        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
         maxWidth="sm"
       >
         <LogWeightModalForm

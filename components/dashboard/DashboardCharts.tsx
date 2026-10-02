@@ -166,17 +166,19 @@ export default function DashboardCharts({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
       {/* Chart 1: Volume Latihan Mingguan / Bulanan (Strava Signature Orange) */}
       <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#FC5200]" />
-            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
-              Volume Jarak Lari
-            </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2 min-w-0">
+          <div className="flex items-center justify-between sm:justify-start gap-1.5 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0" />
+              <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono truncate">
+                Volume Jarak Lari
+              </h3>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
             {/* Quick Chart Filter */}
-            <div className="inline-flex p-0.5 bg-zinc-100 dark:bg-zinc-800/90 rounded-md border border-zinc-200/80 dark:border-zinc-700/80 text-[11px] font-medium">
+            <div className="inline-flex p-0.5 bg-zinc-100 dark:bg-zinc-800/90 rounded-md border border-zinc-200/80 dark:border-zinc-700/80 text-[10px] sm:text-[11px] font-medium shrink-0">
               <button
                 type="button"
                 onClick={() => setChartPeriod('7d')}
@@ -203,12 +205,12 @@ export default function DashboardCharts({
               </button>
             </div>
 
-            <div className="text-right pl-2 border-l border-zinc-200 dark:border-zinc-800">
-              <span className="text-[10px] uppercase font-mono text-zinc-400 block">
-                {chartPeriod === '7d' ? 'Total Pekan Ini' : 'Total 30H'}
+            <div className="text-right pl-2 border-l border-zinc-200 dark:border-zinc-800 shrink-0">
+              <span className="text-[9px] sm:text-[10px] uppercase font-mono text-zinc-400 block">
+                {chartPeriod === '7d' ? 'Total Pekan' : 'Total 30H'}
               </span>
-              <span className="text-base font-bold font-mono text-[#FC5200] tabular-nums">
-                {totalPeriodKm} <span className="text-xs font-normal text-zinc-500">km</span>
+              <span className="text-sm sm:text-base font-bold font-mono text-[#FC5200] tabular-nums">
+                {totalPeriodKm} <span className="text-[10px] sm:text-xs font-normal text-zinc-500 font-sans">km</span>
               </span>
             </div>
           </div>
@@ -254,18 +256,18 @@ export default function DashboardCharts({
 
       {/* Chart 2: Tren Massa Tubuh (Emerald Health Curve) */}
       <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col justify-between min-w-0 overflow-hidden shadow-2xs">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
+        <div className="flex items-center justify-between mb-2 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono truncate">
               Tren Berat Badan
             </h3>
           </div>
 
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-mono text-zinc-400 block">Status Terakhir</span>
-            <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-              {lastKnownWeight} <span className="text-xs font-normal text-zinc-500">kg</span>
+          <div className="text-right shrink-0">
+            <span className="text-[9px] sm:text-[10px] uppercase font-mono text-zinc-400 block">Status Terakhir</span>
+            <span className="text-sm sm:text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+              {lastKnownWeight} <span className="text-[10px] sm:text-xs font-normal text-zinc-500 font-sans">kg</span>
             </span>
           </div>
         </div>

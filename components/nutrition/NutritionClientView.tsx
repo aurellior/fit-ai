@@ -248,7 +248,6 @@ export default function NutritionClientView({
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
         title="Catat Aktivitas Latihan"
-        description="Pilih jenis olahraga lari atau gym untuk mencatat sesi latihan Anda"
         maxWidth="lg"
       >
         <ManualActivityForm
@@ -264,7 +263,6 @@ export default function NutritionClientView({
         isOpen={isWeightModalOpen}
         onClose={() => setIsWeightModalOpen(false)}
         title="Catat Berat Badan"
-        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
         maxWidth="sm"
       >
         <LogWeightModalForm

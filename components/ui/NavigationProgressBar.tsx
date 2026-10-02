@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 function NavigationProgressBarContent() {
@@ -10,36 +10,66 @@ function NavigationProgressBarContent() {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
+  const currentUrl = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+  const activeUrlRef = useRef(currentUrl);
+
+  const startProgress = useCallback(() => {
+    setIsVisible(true);
+    setIsNavigating(true);
+    setProgress((prev) => (prev > 0 ? prev : 25));
+  }, []);
+
+  const completeProgress = useCallback(() => {
+    setProgress(100);
+    const hideTimer = setTimeout(() => {
+      setIsVisible(false);
+      setIsNavigating(false);
+      setProgress(0);
+    }, 280);
+    return () => clearTimeout(hideTimer);
+  }, []);
+
+  // When pathname or searchParams change, mark navigation complete
   useEffect(() => {
-    // When path or search parameters finish changing, complete the progress bar asynchronously
-    if (!isNavigating) return;
+    if (activeUrlRef.current !== currentUrl) {
+      activeUrlRef.current = currentUrl;
+      if (isNavigating) {
+        const timer = setTimeout(() => {
+          completeProgress();
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentUrl, isNavigating, completeProgress]);
 
-    const timer = setTimeout(() => {
-      setProgress(100);
-      const hideTimer = setTimeout(() => {
-        setIsVisible(false);
-        setIsNavigating(false);
-        setProgress(0);
-      }, 250);
-      return () => clearTimeout(hideTimer);
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [pathname, searchParams, isNavigating]);
-
+  // Trickle progression while waiting for server / route render
   useEffect(() => {
     if (!isNavigating) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 85) return prev;
-        return prev + Math.floor(Math.random() * 10 + 5);
+        if (prev >= 88) return prev;
+        // Asymptotic trickle: slower as it gets closer to 88%
+        const diff = 88 - prev;
+        const step = Math.max(1, Math.floor(diff * 0.25));
+        return prev + step;
       });
-    }, 150);
+    }, 120);
 
-    return () => clearInterval(interval);
-  }, [isNavigating]);
+    // Safety timeout in case navigation stalls or is aborted
+    const timeout = setTimeout(() => {
+      if (isNavigating) {
+        completeProgress();
+      }
+    }, 8000);
 
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isNavigating, completeProgress]);
+
+  // Intercept click on internal links
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a');
@@ -52,48 +82,64 @@ function NavigationProgressBarContent() {
         href.startsWith('#') ||
         href.startsWith('mailto:') ||
         href.startsWith('tel:') ||
+        href.startsWith('javascript:') ||
         target.target === '_blank' ||
         target.hasAttribute('download')
       ) {
         return;
       }
 
-      // If internal navigation link
       try {
         const url = new URL(href, window.location.href);
-        const currentUrl = new URL(window.location.href);
+        const currentLoc = new URL(window.location.href);
 
-        const isSameOrigin = url.origin === currentUrl.origin;
+        const isSameOrigin = url.origin === currentLoc.origin;
         const isDifferentRoute =
-          url.pathname !== currentUrl.pathname || url.search !== currentUrl.search;
+          url.pathname !== currentLoc.pathname || url.search !== currentLoc.search;
 
         if (isSameOrigin && isDifferentRoute) {
-          setIsNavigating(true);
-          setProgress(30);
+          startProgress();
         }
       } catch {
-        // Ignore invalid URL
+        // Ignore invalid URL parsing
       }
     };
 
+    const handlePopState = () => {
+      startProgress();
+    };
+
     document.addEventListener('click', handleDocumentClick, { capture: true });
+    window.addEventListener('popstate', handlePopState);
+
     return () => {
       document.removeEventListener('click', handleDocumentClick, { capture: true });
+      window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [startProgress]);
 
-  if (!isVisible) return null;
+  if (!isVisible && progress === 0) return null;
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 h-[2.5px] z-50 pointer-events-none transition-opacity duration-300"
-      style={{ opacity: isVisible ? 1 : 0 }}
+      className={`fixed left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md z-[9999] pointer-events-none transition-opacity duration-200 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{
+        top: 'env(safe-area-inset-top, 0px)',
+      }}
       aria-hidden="true"
     >
-      <div
-        className="h-full bg-[#FC5200] shadow-[0_0_8px_#FC5200] transition-all ease-out duration-200"
-        style={{ width: `${progress}%` }}
-      />
+      <div className="relative w-full h-[2.5px] bg-transparent">
+        <div
+          className="h-full bg-gradient-to-r from-[#FC5200] via-[#FF7A00] to-[#FFB700] shadow-[0_0_12px_rgba(252,82,0,0.9),0_0_4px_rgba(255,183,0,0.8)] transition-all ease-out duration-150 relative rounded-r-full"
+          style={{ width: `${progress}%` }}
+        >
+          {/* Subtle glow spark on the leading edge */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#FC5200] blur-xs opacity-80 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/40 pointer-events-none" />
+        </div>
+      </div>
     </div>
   );
 }

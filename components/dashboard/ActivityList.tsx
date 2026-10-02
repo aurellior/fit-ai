@@ -69,22 +69,22 @@ export default function ActivityList({
             key={item.id}
             className="group relative bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs"
           >
-            <div className="flex items-start justify-between gap-3 mb-2.5">
-              <div className="flex items-start gap-3">
+            <div className="flex items-start justify-between gap-2.5 mb-2.5 min-w-0">
+              <div className="flex items-start gap-2.5 min-w-0 flex-1">
                 <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 mt-0.5 shrink-0">
                   {getSportIcon(item.type)}
                 </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Link
                       href={`/activities/${item.id}`}
-                      className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-[#FC5200] dark:hover:text-[#FC5200] transition-colors flex items-center gap-1"
+                      className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 hover:text-[#FC5200] dark:hover:text-[#FC5200] transition-colors flex items-center gap-1 min-w-0"
                     >
-                      <span>{item.title}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="truncate">{item.title}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                     </Link>
                     <span
-                      className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded font-medium ${
+                      className={`text-[9px] font-mono uppercase px-1.5 py-0.2 rounded font-medium shrink-0 ${
                         isStrava
                           ? 'bg-orange-50 text-[#FC5200] dark:bg-orange-950/40 dark:text-orange-400 border border-orange-200/80 dark:border-orange-900/50'
                           : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
@@ -93,7 +93,7 @@ export default function ActivityList({
                       {item.source}
                     </span>
                   </div>
-                  <div className="text-[11px] text-zinc-500 mt-0.5">
+                  <div className="text-[11px] text-zinc-500 mt-0.5 truncate">
                     {formatDate(item.startTime)} • {item.type.replace('_', ' ')}
                   </div>
                 </div>

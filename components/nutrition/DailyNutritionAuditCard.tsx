@@ -136,14 +136,14 @@ export default function DailyNutritionAuditCard({
     <div className="bg-white dark:bg-[#121214] border border-zinc-200/90 dark:border-zinc-800/90 rounded-xl p-4 sm:p-5 shadow-xs transition-colors space-y-4">
       {/* 1. Header Strava Style */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/70">
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="w-2.5 h-2.5 rounded-full bg-[#FC5200] shrink-0" />
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
+            <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-tight break-words">
               Daily Sports Nutrition Audit & Energy Balance
             </h3>
-            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-700/80">
-              AI Sports Nutritionist
+            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-700/80 shrink-0">
+              AI Nutritionist
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1 text-xs text-zinc-500 flex-wrap">
@@ -152,13 +152,13 @@ export default function DailyNutritionAuditCard({
               <span>{audit.dateFormatted}</span>
             </span>
             <span className="hidden xs:inline">•</span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-zinc-700 dark:text-zinc-300 truncate">
               {audit.dayScheduleFocus}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           {getStatusBadge(audit.status)}
           <button
             onClick={handleRefreshAi}
@@ -173,30 +173,30 @@ export default function DailyNutritionAuditCard({
 
       {/* 2. Ringkasan Total Kalori Masuk vs Keluar */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs">
-          <div className="space-y-0.5">
-            <span className="text-zinc-400 font-mono text-[11px] uppercase tracking-wide">
-              Kalori Masuk (Food Intake)
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="space-y-0.5 min-w-0">
+            <span className="text-zinc-400 font-mono text-[10px] sm:text-[11px] uppercase tracking-wide truncate block">
+              Kalori Masuk (Intake)
             </span>
-            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
+            <div className="text-base sm:text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {audit.caloriesIn.toLocaleString('id-ID')}{' '}
-              <span className="text-xs font-sans font-normal text-zinc-500">kkal</span>
+              <span className="text-[10px] sm:text-xs font-sans font-normal text-zinc-500">kkal</span>
             </div>
-            <span className="text-[11px] text-zinc-400">
+            <span className="text-[10px] text-zinc-400 truncate block">
               {audit.foodCount} hidangan tercatat
             </span>
           </div>
 
-          <div className="text-right space-y-0.5">
-            <span className="text-zinc-400 font-mono text-[11px] uppercase tracking-wide">
-              Kalori Keluar (Latihan + NEAT + BMR)
+          <div className="text-right space-y-0.5 min-w-0">
+            <span className="text-zinc-400 font-mono text-[10px] sm:text-[11px] uppercase tracking-wide truncate block">
+              Kalori Keluar (Burned)
             </span>
-            <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
+            <div className="text-base sm:text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
               {audit.caloriesOut.toLocaleString('id-ID')}{' '}
-              <span className="text-xs font-sans font-normal text-zinc-500">kkal</span>
+              <span className="text-[10px] sm:text-xs font-sans font-normal text-zinc-500">kkal</span>
             </div>
-            <span className="text-[11px] text-zinc-400">
-              Latihan: {audit.activityCalories} kkal • NEAT: {audit.neatCalories} kkal • BMR: {audit.bmrCalories} kkal
+            <span className="text-[10px] text-zinc-400 truncate block" title={`Latihan: ${audit.activityCalories} kkal • NEAT: ${audit.neatCalories} kkal • BMR: ${audit.bmrCalories} kkal`}>
+              Latihan: {audit.activityCalories} • NEAT: {audit.neatCalories} • BMR: {audit.bmrCalories}
             </span>
           </div>
         </div>
@@ -237,14 +237,14 @@ export default function DailyNutritionAuditCard({
 
           {/* Anti-Double Counting Shield Badge */}
           {audit.doubleCountingPrevented ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/80">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Anti-Double Counting: Hemat {audit.deduplicatedCaloriesSaved} kkal</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-emerald-100/80 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/80 max-w-full">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="truncate">Anti-Double Counting: Hemat {audit.deduplicatedCaloriesSaved} kkal</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-200/60 dark:bg-zinc-800/60">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-200/60 dark:bg-zinc-800/60 shrink-0">
               <Info className="w-3 h-3" />
-              <span>Pemisahan Strava & NEAT Aktif</span>
+              <span>Pemisahan Strava & NEAT</span>
             </span>
           )}
         </div>

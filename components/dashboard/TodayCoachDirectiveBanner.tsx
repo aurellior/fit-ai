@@ -159,159 +159,168 @@ export default function TodayCoachDirectiveBanner({
     <>
       <div
         className={cn(
-          'relative overflow-hidden rounded-2xl border border-zinc-200/90 dark:border-zinc-800 bg-white dark:bg-[#121214] shadow-xs transition-all',
-          'border-l-4 border-l-[#FC5200]',
+          'relative overflow-hidden rounded-3xl bg-[#0c0c10] dark:bg-[#111116] text-white border border-zinc-800/90 shadow-xl transition-all',
           className
         )}
       >
-        {/* Subtle Strava Background Accent Glow */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#FC5200]/5 dark:bg-[#FC5200]/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+        {/* Ambient athletic gradient glow */}
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-[#FC5200]/15 dark:bg-[#FC5200]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="p-4 sm:p-6 relative z-10 space-y-4">
-          {/* Top Bar: Status Hari Ini & Badge */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">
-                <span className="w-2 h-2 rounded-full bg-[#FC5200] animate-pulse shrink-0"></span>
-                <span>Today&apos;s AI Coach Directive</span>
+        <div className="p-4 sm:p-5 relative z-10 space-y-4">
+          {/* 1. Profile / Greeting Row (Inspired by "Sara Wilson" top section) */}
+          <div className="flex items-center justify-between gap-2.5 pb-3.5 border-b border-white/10 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="relative shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FC5200] to-orange-400 flex items-center justify-center text-white font-black text-sm shadow-md">
+                  FP
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0c0c10]" />
               </div>
-              <span className="text-[11px] font-mono text-[#FC5200] font-semibold bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded border border-orange-200/80 dark:border-orange-900/50 shrink-0">
-                {todayWibName}
-              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-zinc-300 truncate">Halo, Atlet</span>
+                  <span className="text-[9px] font-mono font-bold text-[#FC5200] bg-orange-500/15 border border-orange-500/30 px-1.5 py-0.2 rounded uppercase shrink-0">
+                    PRO
+                  </span>
+                </div>
+                <h2 className="text-sm font-bold text-white tracking-tight truncate">FitPulse Intelligence</h2>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <div className="px-2 sm:px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-mono text-zinc-300 flex items-center gap-1 shrink-0">
+                <Calendar className="w-3 h-3 text-[#FC5200] shrink-0" />
+                <span className="truncate max-w-[120px]">{todayWibName}, {formatWibDateIndonesian().split(',')[0]}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Today's Directive Focus & Target ("Your Next Appointment" structure) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 font-bold text-[10px] uppercase font-mono tracking-wider text-orange-400 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-[#FC5200] animate-pulse shrink-0"></span>
+                <span className="truncate">Sesi Hari Ini • Next Workout</span>
+              </div>
 
               {isRescheduled ? (
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800/60 flex items-center gap-1">
-                  <RotateCcw className="w-3 h-3 text-sky-500" />
-                  <span>
-                    {rescheduledPlan
-                      ? `AI Rescheduled: ${rescheduledPlan.newDayOrTime}`
-                      : activeWorkout?.adjustmentReason
-                      ? activeWorkout.adjustmentReason.split(' akibat ')[0]
-                      : 'AI Rescheduled'}
-                  </span>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1 shrink-0">
+                  <RotateCcw className="w-3 h-3 text-sky-400" />
+                  <span>AI Rescheduled</span>
                 </span>
               ) : isAdjusted ? (
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 flex items-center gap-1">
-                  <SlidersHorizontal className="w-3 h-3" />
-                  <span>Adaptasi Sesi Terlewat</span>
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0">
+                  <SlidersHorizontal className="w-3 h-3 text-amber-400" />
+                  <span>Adaptasi Sesi</span>
                 </span>
               ) : isKeyDay ? (
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   <span>Sesi Kunci Wajib</span>
                 </span>
               ) : (
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full font-medium bg-white/10 text-zinc-300 border border-white/10 shrink-0">
                   {displayBadge}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
-              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{formatWibDateIndonesian()} (WIB)</span>
-            </div>
-          </div>
-
-          {/* Core Content: Judul Menu & Target Metrik (Minimalist Data-Dense) */}
-          <div className="space-y-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 font-semibold block">
-                  Fokus Sesi Hari Ini
-                </span>
-                <h1 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-snug">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug break-words">
                   {displayFocus}
                 </h1>
-              </div>
-
-              {/* Target Metric Badge with Strava Orange Accent */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50/90 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 shadow-2xs">
-                <Target className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
-                <span>{displayTarget}</span>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="text-xs font-mono font-bold text-[#FC5200] bg-orange-500/15 border border-orange-500/30 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs max-w-full">
+                    <Target className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
+                    <span className="truncate">{displayTarget}</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-zinc-400 shrink-0">
+                    Target Utama
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Tactical Drill Instructions - Clean Bullet / Sentence */}
-            <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-300 font-sans leading-relaxed">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100 mr-1.5 font-mono text-[11px] uppercase tracking-wide">
-                • Target:
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs text-zinc-300 font-sans leading-relaxed break-words">
+              <span className="font-semibold text-white mr-1.5 font-mono text-[11px] uppercase tracking-wide">
+                • Arahan:
               </span>
               <span>{displayDetails}</span>
             </div>
+
+            {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala) */}
+            {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
+              <div className={cn(
+                "p-2.5 rounded-xl border text-xs flex items-center gap-2",
+                isRescheduled
+                  ? "bg-sky-500/15 border-sky-500/30 text-sky-200"
+                  : "bg-amber-500/15 border-amber-500/30 text-amber-200"
+              )}>
+                {isRescheduled ? (
+                  <RotateCcw className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                )}
+                <div className="min-w-0 flex-1 truncate">
+                  <span className="font-semibold font-mono text-[10px] uppercase tracking-wide mr-1">
+                    {isRescheduled ? 'Adaptasi Selesai:' : 'Catatan AI:'}
+                  </span>
+                  <span className="text-[11px]">
+                    {rescheduledPlan
+                      ? `${rescheduledPlan.badge} (${rescheduledPlan.newDayOrTime})`
+                      : activeWorkout?.adjustmentReason
+                      ? activeWorkout.adjustmentReason
+                      : coachPlan?.smartSkipAudit?.activeAdjustmentNote || 'Target latihan disesuaikan otomatis.'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Adaptive Notification Callout (Jika terjadi penyesuaian otomatis / kendala) */}
-          {(isRescheduled || isAdjusted || adjustmentReason || coachPlan?.smartSkipAudit?.activeAdjustmentNote) && (
-            <div className={cn(
-              "p-2.5 rounded-xl border text-xs flex items-center gap-2",
-              isRescheduled
-                ? "bg-sky-500/10 dark:bg-sky-950/40 border-sky-500/30 text-sky-800 dark:text-sky-300"
-                : "bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/30 text-amber-800 dark:text-amber-300"
-            )}>
-              {isRescheduled ? (
-                <RotateCcw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              )}
-              <div className="min-w-0 flex-1 truncate">
-                <span className="font-semibold font-mono text-[10px] uppercase tracking-wide mr-1">
-                  {isRescheduled ? 'Adaptasi Selesai:' : 'Catatan AI:'}
-                </span>
-                <span className="text-[11px]">
-                  {rescheduledPlan
-                    ? `${rescheduledPlan.badge} (${rescheduledPlan.newDayOrTime})`
-                    : activeWorkout?.adjustmentReason
-                    ? activeWorkout.adjustmentReason
-                    : coachPlan?.smartSkipAudit?.activeAdjustmentNote || 'Target latihan disesuaikan otomatis.'}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Quick Action Buttons (Thumb-friendly 44px min-height) */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-t border-zinc-100 dark:border-zinc-800/80">
-            <div className="flex items-center gap-2">
-              {onStartWorkoutClick ? (
-                <button
-                  type="button"
-                  onClick={onStartWorkoutClick}
-                  className="w-full sm:w-auto py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer min-h-[44px] active:scale-98"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Mulai Latihan / Log Aktivitas</span>
-                </button>
-              ) : (
-                <Link
-                  href="/activities"
-                  className="w-full sm:w-auto py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer min-h-[44px] active:scale-98"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Lihat Riwayat & Log Aktivitas</span>
-                </Link>
-              )}
-
-              {rescheduledPlan && (
-                <button
-                  type="button"
-                  onClick={handleResetToOriginal}
-                  className="py-2.5 px-3 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer min-h-[44px]"
-                  title="Kembalikan ke Jadwal Awal"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span className="hidden sm:inline">Reset Awal</span>
-                </button>
-              )}
-            </div>
+          {/* 3. Action Buttons Row (Thumb-Friendly) */}
+          <div className="pt-1 flex items-center gap-2">
+            {onStartWorkoutClick ? (
+              <button
+                type="button"
+                onClick={onStartWorkoutClick}
+                className="flex-1 py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 cursor-pointer min-h-[44px] active:scale-98"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Mulai Sesi Sekarang</span>
+              </button>
+            ) : (
+              <Link
+                href="/activities"
+                className="flex-1 py-2.5 px-4 bg-[#FC5200] hover:bg-[#E04800] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 cursor-pointer min-h-[44px] active:scale-98"
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Mulai Sesi</span>
+              </Link>
+            )}
 
             <button
               type="button"
               onClick={handleOpenModal}
-              className="w-full sm:w-auto py-2.5 px-3.5 border border-zinc-200/90 dark:border-zinc-700/80 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px] active:scale-98"
+              className="py-2.5 px-3.5 bg-white/10 hover:bg-white/15 border border-white/10 text-white rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[44px] active:scale-98 shrink-0"
+              title="Atur ulang jadwal jika ada kendala"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#FC5200]" />
-              <span>Kendala Hari Ini? (AI Reschedule)</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-300" />
+              <span className="hidden min-[380px]:inline">Atur Jadwal</span>
             </button>
+
+            {rescheduledPlan && (
+              <button
+                type="button"
+                onClick={handleResetToOriginal}
+                className="py-2.5 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white rounded-xl text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer min-h-[44px] shrink-0"
+                title="Kembalikan ke Jadwal Awal"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -87,3 +87,35 @@ textarea {
   touch-action: manipulation;
 }
 
+/* Elegant Shimmer Animation for Zero-CLS Skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(228, 228, 231, 0.45) 0%,
+    rgba(244, 244, 245, 0.95) 50%,
+    rgba(228, 228, 231, 0.45) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite ease-in-out;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(24, 24, 27, 0.6) 0%,
+    rgba(39, 39, 42, 0.95) 50%,
+    rgba(24, 24, 27, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite ease-in-out;
+}
+

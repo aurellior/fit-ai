@@ -192,13 +192,13 @@ export default function DashboardClientView({
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
-      {/* 1. Header Bar: Sync status and Quick Actions */}
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-4 sm:space-y-5 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+      {/* 1. Top Sub-header Bar: Strava Sync & Status */}
+      <div className="flex items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#FC5200]"></span>
-          <span className="text-[11px] font-mono font-semibold tracking-wider text-zinc-500 uppercase">
-            FitPulse AI Overview
+          <span className="w-2 h-2 rounded-full bg-[#FC5200] animate-pulse"></span>
+          <span className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">
+            FitPulse Athlete Engine
           </span>
         </div>
         <StravaConnectButton
@@ -208,7 +208,7 @@ export default function DashboardClientView({
         />
       </div>
 
-      {/* 2. Top Overview Banner: Today's AI Coach Directive */}
+      {/* 2. Top Overview Hero Card: Today's AI Coach Directive */}
       <section id="today-directive">
         <TodayCoachDirectiveBanner
           coachPlan={weeklyInsight?.coachPlan}
@@ -274,28 +274,28 @@ export default function DashboardClientView({
           <div className="space-y-3">
             {/* Weekly Target Progress Bar Banner (Linear / Strava style) */}
             <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 shadow-xs relative overflow-hidden">
-              <div className="flex items-center justify-between gap-3 pb-2.5">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-2.5 pb-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-[#FC5200]/10 flex items-center justify-center text-[#FC5200] shrink-0">
                     <Target className="w-4 h-4 stroke-[2.2]" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight truncate">
                         Target Mingguan
                       </span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#FC5200]/10 text-[#FC5200] font-bold">
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#FC5200]/10 text-[#FC5200] font-bold shrink-0">
                         {goalProgressPercent}%
                       </span>
                     </div>
-                    <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                    <p className="text-[10px] text-zinc-500 font-mono mt-0.5 truncate">
                       Sasaran: {weeklyGoalKm.toFixed(1)} km ({weekDateRange})
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-baseline gap-1 font-mono">
-                  <span className="text-xl sm:text-2xl font-bold text-[#FC5200] tabular-nums">
+                <div className="flex items-baseline gap-0.5 font-mono shrink-0">
+                  <span className="text-lg sm:text-2xl font-bold text-[#FC5200] tabular-nums">
                     {weekDistanceKm}
                   </span>
                   <span className="text-[10px] text-zinc-400 font-medium">/{weeklyGoalKm.toFixed(0)}km</span>
@@ -311,19 +311,19 @@ export default function DashboardClientView({
               </div>
 
               {/* Progress Details Footer */}
-              <div className="flex items-center justify-between gap-2 mt-2 text-[10px] text-zinc-500 font-mono">
-                <div className="truncate">
+              <div className="flex items-center justify-between gap-2 mt-2 text-[10px] text-zinc-500 font-mono min-w-0">
+                <div className="truncate min-w-0 flex-1">
                   {remainingKm > 0 ? (
-                    <span>
+                    <span className="truncate block">
                       Tersisa <strong className="text-zinc-800 dark:text-zinc-200 font-semibold">{remainingKm} km</strong> lagi
                     </span>
                   ) : (
-                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Target tuntas!
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 truncate">
+                      <CheckCircle2 className="w-3 h-3 shrink-0" /> Target tuntas!
                     </span>
                   )}
                 </div>
-                <div className="text-[9px] text-zinc-400 bg-zinc-50 dark:bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-zinc-800/50 truncate shrink-0">
+                <div className="text-[9px] text-zinc-400 bg-zinc-50 dark:bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-200/50 dark:border-zinc-800/50 truncate shrink-0 max-w-[140px]">
                   {sportsBreakdown}
                 </div>
               </div>
@@ -332,18 +332,18 @@ export default function DashboardClientView({
             {/* 4 Weekly KPI Cards in 2x2 Mobile Grid */}
             <div className="grid grid-cols-2 gap-2.5">
               {/* Card 1: Total Jarak */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Jarak
                   </span>
                   <MapPin className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {weekDistanceKm}
                   </span>
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono">km</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono shrink-0">km</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   {weekActivities.filter((a) => (a.distanceMeters || 0) > 0).length} rute GPS
@@ -351,15 +351,15 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 2: Total Durasi */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Durasi
                   </span>
                   <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-base sm:text-xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {weekDurationFormatted}
                   </span>
                 </div>
@@ -369,18 +369,18 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 3: Kalori Terbakar */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Kalori
                   </span>
                   <Flame className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {Math.round(weekCalories).toLocaleString('id-ID')}
                   </span>
-                  <span className="text-[9px] font-semibold text-zinc-500 uppercase font-mono">kkal</span>
+                  <span className="text-[9px] font-semibold text-zinc-500 uppercase font-mono shrink-0">kkal</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   Aktif terbakar
@@ -388,18 +388,18 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 4: Jumlah Aktivitas */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Sesi
                   </span>
                   <Activity className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {weekCount}
                   </span>
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono">sesi</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono shrink-0">sesi</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   Minggu berjalan
@@ -408,12 +408,12 @@ export default function DashboardClientView({
             </div>
 
             {/* Tingkat 2 Visual: All-Time Milestones Companion Strip */}
-            <div className="bg-zinc-50/80 dark:bg-[#151518] border border-zinc-200/70 dark:border-zinc-800/70 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2.5">
+            <div className="bg-zinc-50/80 dark:bg-[#151518] border border-zinc-200/70 dark:border-zinc-800/70 rounded-xl px-3.5 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-7 h-7 rounded-md bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
                   <Trophy className="w-3.5 h-3.5" />
                 </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-600 dark:text-zinc-400 text-xs">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-zinc-600 dark:text-zinc-400 text-xs min-w-0">
                   <span className="font-semibold text-zinc-900 dark:text-zinc-200">
                     All-Time Milestones:
                   </span>
@@ -428,10 +428,6 @@ export default function DashboardClientView({
                   <span className="tabular-nums">
                     <strong className="text-zinc-800 dark:text-zinc-200 font-mono">{allCount} sesi</strong> tercatat
                   </span>
-                  <span className="text-zinc-300 dark:text-zinc-700 hidden md:inline">•</span>
-                  <span className="tabular-nums hidden md:inline">
-                    Rekor jarak: <strong className="text-zinc-800 dark:text-zinc-200 font-mono">{longestActivityKm} km</strong>
-                  </span>
                 </div>
               </div>
 
@@ -440,7 +436,7 @@ export default function DashboardClientView({
                 onClick={() => setViewMode('all')}
                 className="text-xs font-semibold text-[#FC5200] hover:text-[#E04900] flex items-center gap-1 transition-colors self-end sm:self-auto cursor-pointer shrink-0"
               >
-                <span>Lihat Kumulatif Lengkap</span>
+                <span>Lihat Kumulatif</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -481,41 +477,41 @@ export default function DashboardClientView({
               </div>
 
               {/* Milestone badges */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60 text-xs">
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-zinc-400 block">Rekor Terpanjang</span>
-                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{longestActivityKm} km</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60 text-xs">
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-mono text-zinc-400 block truncate">Rekor Terpanjang</span>
+                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 truncate block">{longestActivityKm} km</span>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-zinc-400 block">Total Jam Olahraga</span>
-                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{allDurationHours} jam</span>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-mono text-zinc-400 block truncate">Total Jam Olahraga</span>
+                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 truncate block">{allDurationHours} jam</span>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-zinc-400 block">Total Kalori</span>
-                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{Math.round(allCalories).toLocaleString('id-ID')} kkal</span>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-mono text-zinc-400 block truncate">Total Kalori</span>
+                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 truncate block">{Math.round(allCalories).toLocaleString('id-ID')} kkal</span>
                 </div>
-                <div>
-                  <span className="text-[10px] uppercase font-mono text-zinc-400 block">Berat Terkini</span>
-                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">{latestWeight} kg</span>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-mono text-zinc-400 block truncate">Berat Terkini</span>
+                  <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 truncate block">{latestWeight} kg</span>
                 </div>
               </div>
             </div>
 
-            {/* 4 All-Time KPI Cards */}
+            {/* 4 All-Time KPI Cards in 2x2 Grid */}
             <div className="grid grid-cols-2 gap-2.5">
               {/* Card 1: Akumulasi Jarak */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Jarak
                   </span>
                   <MapPin className="w-3.5 h-3.5 text-[#FC5200] shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {allDistanceKm}
                   </span>
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono">km</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono shrink-0">km</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   Sepanjang masa
@@ -523,15 +519,15 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 2: Total Durasi Bergerak */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Durasi
                   </span>
                   <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-base sm:text-xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {allDurationFormatted}
                   </span>
                 </div>
@@ -541,18 +537,18 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 3: Total Kalori Karir */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Kalori
                   </span>
                   <Flame className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {Math.round(allCalories).toLocaleString('id-ID')}
                   </span>
-                  <span className="text-[9px] font-semibold text-zinc-500 uppercase font-mono">kkal</span>
+                  <span className="text-[9px] font-semibold text-zinc-500 uppercase font-mono shrink-0">kkal</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   Karir atlet
@@ -560,18 +556,18 @@ export default function DashboardClientView({
               </div>
 
               {/* Card 4: Total Sesi Latihan */}
-              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group">
-                <div className="flex items-center justify-between text-zinc-500">
+              <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3 sm:p-3.5 relative overflow-hidden group min-w-0">
+                <div className="flex items-center justify-between text-zinc-500 gap-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider font-semibold truncate">
                     Total Sesi
                   </span>
                   <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
+                <div className="mt-1 flex items-baseline gap-1 min-w-0">
+                  <span className="text-lg sm:text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums truncate">
                     {allCount}
                   </span>
-                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono">sesi</span>
+                  <span className="text-[10px] font-semibold text-zinc-500 uppercase font-mono shrink-0">sesi</span>
                 </div>
                 <div className="text-[10px] text-zinc-400 mt-0.5 truncate font-mono">
                   Rekor: {longestActivityKm} km
@@ -655,7 +651,6 @@ export default function DashboardClientView({
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
         title="Catat Aktivitas Latihan"
-        description="Pilih jenis olahraga lari atau gym untuk mencatat sesi latihan Anda"
         maxWidth="lg"
       >
         <ManualActivityForm
@@ -670,8 +665,7 @@ export default function DashboardClientView({
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
-        title="Catat Nutrisi Makanan (AI Vision & Quick-Log)"
-        description="Pindai foto makanan atau ketik menu bebas untuk estimasi makronutrisi & kalori instan dengan Gemini AI"
+        title="Catat Nutrisi (AI Vision)"
         maxWidth="md"
       >
         <FoodScannerModal
@@ -687,7 +681,6 @@ export default function DashboardClientView({
         isOpen={isWeightModalOpen}
         onClose={() => setIsWeightModalOpen(false)}
         title="Catat Berat Badan"
-        description="Catat penimbangan berat badan untuk melacak tren massa tubuh"
         maxWidth="sm"
       >
         <LogWeightModalForm
