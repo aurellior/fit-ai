@@ -156,7 +156,7 @@ export default function BottomNav({
         : null}
 
       {/* Floating Liquid Glass Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none pb-[calc(0.75rem+env(safe-area-inset-bottom))] px-4 sm:px-6">
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none pb-floating-nav px-4 sm:px-6">
         <nav className="w-full max-w-sm pointer-events-auto backdrop-blur-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/40 dark:border-zinc-700/30 rounded-full shadow-2xl px-3 py-1.5 touch-manipulation">
           <div className="h-12 flex items-center justify-between gap-1">
             {/* Dashboard Tab */}

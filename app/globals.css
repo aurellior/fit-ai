@@ -64,6 +64,14 @@ body {
   margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Floating Bottom Navigation Safe Area Clearance:
+   - On Desktop Web (safe-area = 0px): exactly 0.75rem (12px)
+   - On iPhone (safe-area = 34px): max(0.75rem, 34px - 14px) = 20px (~7px above home indicator)
+*/
+.pb-floating-nav {
+  padding-bottom: max(0.75rem, calc(env(safe-area-inset-bottom, 0px) - 14px));
+}
+
 /* Hide scrollbar for clean app carousel / horizontal pills */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
