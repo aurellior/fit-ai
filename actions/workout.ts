@@ -188,3 +188,86 @@ export async function rescheduleWorkoutAction(input: unknown): Promise<Reschedul
     };
   }
 }
+
+export async function advanceWorkoutQueueAction(options?: {
+  action?: 'complete' | 'skip' | 'swap';
+}): Promise<{
+  success: boolean;
+  coachPlan?: CoachPlanData | null;
+  error?: string;
+}> {
+  try {
+    const dbUser = await getCurrentUser();
+    let latestInsight = await prisma.aiInsight.findFirst({
+      where: { userId: dbUser.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const activities = await prisma.activity.findMany({
+      where: { userId: dbUser.id },
+      orderBy: { startTime: 'desc' },
+      take: 20,
+    });
+
+    const formattedActivities = activities.map((act) => ({
+      ...act,
+      stravaActivityId: act.stravaActivityId ? act.stravaActivityId.toString() : null,
+      gymSets: (act.gymSets as unknown as import('@/types').GymSet[]) || null,
+    }));
+
+    let coachPlan: CoachPlanData | null = null;
+    if (latestInsight) {
+      coachPlan = parseCoachPlanFromInsight(latestInsight, formattedActivities).coachPlan || null;
+    }
+    if (!coachPlan) {
+      const generated = await generateWeeklyPerformanceInsight(dbUser.id);
+      coachPlan = generated.coachPlan || null;
+      latestInsight = await prisma.aiInsight.findFirst({
+        where: { userId: dbUser.id },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    if (!coachPlan || !latestInsight) {
+      return { success: false, error: 'Rencana latihan tidak ditemukan' };
+    }
+
+    const currentIdx = typeof coachPlan.queueIndex === 'number' ? coachPlan.queueIndex : 0;
+    const newIdx = (currentIdx + 1) % 3;
+    coachPlan.queueIndex = newIdx;
+
+    const auditRes = parseCoachPlanFromInsight(
+      {
+        ...latestInsight,
+        recommendations: JSON.stringify(coachPlan),
+      },
+      formattedActivities
+    ).coachPlan;
+
+    if (auditRes) {
+      coachPlan = auditRes;
+      coachPlan.queueIndex = newIdx;
+    }
+
+    await prisma.aiInsight.update({
+      where: { id: latestInsight.id },
+      data: {
+        recommendations: JSON.stringify(coachPlan),
+      },
+    });
+
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+    revalidatePath('/coach');
+    revalidatePath('/ai-coach');
+
+    return {
+      success: true,
+      coachPlan,
+    };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Gagal memperbarui antrean latihan';
+    return { success: false, error: errorMsg };
+  }
+}
+

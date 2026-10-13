@@ -6,19 +6,20 @@ import {
   parseCoachPlanFromInsight,
 } from '@/lib/services/performance-insights';
 import CoachClientView from '@/components/coach/CoachClientView';
-import { AiInsightData, UserProfile } from '@/types';
+import { AiInsightData, UserProfile, ActivityData } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'AI Coach Intelligence & Adaptive Running Plan | FitAI',
   description:
-    'Program lari adaptif cerdas untuk hari Senin (Speed), Kamis (Interval), dan Sabtu (Long Run) dengan smart skip handling bersama AI Coach FitAI.',
+    'Program lari adaptif cerdas berkesinambungan dengan antrean sesi latihan otomatis bersama AI Coach FitAI.',
 };
 
 export default async function AiCoachPage() {
   let user: UserProfile | null = null;
   let insight: AiInsightData | null = null;
+  let activities: ActivityData[] = [];
 
   try {
     const dbUser = await getCurrentUser();
@@ -41,7 +42,7 @@ export default async function AiCoachPage() {
       }),
     ]);
 
-    const activities = rawActivities.map((act) => ({
+    activities = rawActivities.map((act) => ({
       ...act,
       stravaActivityId: act.stravaActivityId ? act.stravaActivityId.toString() : null,
       gymSets: (act.gymSets as unknown as import('@/types').GymSet[]) || null,
@@ -60,7 +61,7 @@ export default async function AiCoachPage() {
       periodStart: new Date(),
       periodEnd: new Date(),
       summary:
-        'Sesi Senin terlewat minggu ini. Sistem kami telah otomatis menyesuaikan target lari Kamis agar Anda tetap berkembang tanpa risiko kelelahan berlebih.',
+        'Sistem kami otomatis menyesuaikan antrean latihan agar Anda tetap berkembang tanpa risiko kelelahan berlebih.',
       strengths: 'Kemampuan menjaga ritme kardio pada lari 5K sudah stabil.',
       recommendations: '',
       createdAt: new Date(),
@@ -69,7 +70,7 @@ export default async function AiCoachPage() {
 
   return (
     <div className="w-full px-3 sm:px-4 py-4">
-      <CoachClientView user={user} initialInsight={insight} />
+      <CoachClientView user={user} initialInsight={insight} activities={activities} />
     </div>
   );
 }

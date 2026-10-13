@@ -39,12 +39,12 @@ export default function TodayCoachDirectiveBanner({
   const todayWibName = getWibDayName();
   const defaultToday = DEFAULT_WEEKLY_SCHEDULES[todayDayIndex] || DEFAULT_WEEKLY_SCHEDULES[1];
 
-  // Cari apakah ada sesi terstruktur di coachPlan atau arahan dinamis
-  let activeWorkout: CoachWorkoutDay | null = null;
+  // Prioritaskan activeWorkout dari antrean adaptif, atau fallback ke jadwal legacy
+  let activeWorkout: CoachWorkoutDay | null = coachPlan?.activeWorkout || null;
   let isRescheduledToToday = false;
   const dynamicDirective = coachPlan?.todayDynamicDirective;
 
-  if (coachPlan?.schedule) {
+  if (!activeWorkout && coachPlan?.schedule) {
     if (todayDayIndex === 1) activeWorkout = coachPlan.schedule.monday;
     else if (todayDayIndex === 4) activeWorkout = coachPlan.schedule.thursday;
     else if (todayDayIndex === 6) activeWorkout = coachPlan.schedule.saturday;
@@ -82,9 +82,9 @@ export default function TodayCoachDirectiveBanner({
   const isAdjusted = activeWorkout?.isAdjusted || false;
   const adjustmentReason = activeWorkout?.adjustmentReason || null;
 
-  const baseFocus = dynamicDirective ? dynamicDirective.focus : (activeWorkout?.focus || defaultToday.focus);
-  const baseTarget = dynamicDirective ? dynamicDirective.targetMetric : (activeWorkout?.targetMetric || defaultToday.targetMetric);
-  const baseDetails = dynamicDirective ? dynamicDirective.details : (activeWorkout?.details || defaultToday.details);
+  const baseFocus = activeWorkout?.focus || (dynamicDirective ? dynamicDirective.focus : defaultToday.focus);
+  const baseTarget = activeWorkout?.targetMetric || (dynamicDirective ? dynamicDirective.targetMetric : defaultToday.targetMetric);
+  const baseDetails = activeWorkout?.details || (dynamicDirective ? dynamicDirective.details : defaultToday.details);
   const isKeyDay = defaultToday.isKey;
 
   // Body Scroll Lock saat modal dibuka di iOS/Mobile

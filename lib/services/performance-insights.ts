@@ -18,7 +18,7 @@ import {
   getWibDayName,
   isSameWibDate,
 } from '@/lib/timezone';
-import { DEFAULT_WEEKLY_SCHEDULES } from '@/lib/constants/workout';
+import { DEFAULT_WEEKLY_SCHEDULES, DEFAULT_ADAPTIVE_WORKOUT_CYCLE } from '@/lib/constants/workout';
 
 interface ScheduleAuditResult {
   smartSkipAudit: SmartSkipAudit;
@@ -29,6 +29,9 @@ interface ScheduleAuditResult {
     saturday: CoachWorkoutDay;
   };
   todayDynamicDirective?: CoachPlanData['todayDynamicDirective'];
+  activeWorkout: CoachWorkoutDay;
+  upcomingQueue: CoachWorkoutDay[];
+  queueIndex: number;
 }
 
 /**
@@ -823,6 +826,64 @@ export function auditScheduleAndAdaptivePlan(
     },
   };
 
+  // Menentukan urutan antrean adaptif (0 = Tempo, 1 = Interval, 2 = Long Run)
+  let queueIndex = 0;
+  if (typeof existingPlan?.queueIndex === 'number') {
+    queueIndex = existingPlan.queueIndex % DEFAULT_ADAPTIVE_WORKOUT_CYCLE.length;
+  } else if (runActivities.length > 0) {
+    const latestRun = runActivities[0];
+    const latestDistKm = (latestRun.distanceMeters || 0) / 1000;
+    if (latestDistKm >= 6.0) {
+      queueIndex = 0; // Setelah Long Run -> Tempo
+    } else if (latestDistKm <= 4.5 && (latestRun.avgPaceSecPerKm || 999) < 450) {
+      queueIndex = 1; // Setelah Tempo -> Interval
+    } else {
+      queueIndex = 2; // Long Run
+    }
+  }
+
+  const activeTemplate = DEFAULT_ADAPTIVE_WORKOUT_CYCLE[queueIndex];
+  const activeWorkout: CoachWorkoutDay = {
+    dayName: 'Next Workout',
+    focus: activeTemplate.focus,
+    targetMetric: activeTemplate.targetMetric,
+    details: activeTemplate.details,
+    intensityBadge: activeTemplate.intensityBadge,
+    isAdjusted: false,
+    status: 'upcoming',
+  };
+
+  if (recentLegDay) {
+    activeWorkout.isAdjusted = true;
+    activeWorkout.adjustmentReason =
+      'Beban latihan beban kaki (Leg Day) terdeteksi dalam 36 jam terakhir. Sesi ini dapat diadaptasi dengan pemanasan ekstra atau tempo terkontrol.';
+    activeWorkout.intensityBadge = 'Recovery Guard';
+  }
+
+  const nextIdx1 = (queueIndex + 1) % DEFAULT_ADAPTIVE_WORKOUT_CYCLE.length;
+  const nextIdx2 = (queueIndex + 2) % DEFAULT_ADAPTIVE_WORKOUT_CYCLE.length;
+  const tmpl1 = DEFAULT_ADAPTIVE_WORKOUT_CYCLE[nextIdx1];
+  const tmpl2 = DEFAULT_ADAPTIVE_WORKOUT_CYCLE[nextIdx2];
+
+  const upcomingQueue: CoachWorkoutDay[] = [
+    {
+      dayName: 'Sesi Selanjutnya (+1)',
+      focus: tmpl1.focus,
+      targetMetric: tmpl1.targetMetric,
+      details: tmpl1.details,
+      intensityBadge: tmpl1.intensityBadge,
+      status: 'upcoming',
+    },
+    {
+      dayName: 'Sesi Selanjutnya (+2)',
+      focus: tmpl2.focus,
+      targetMetric: tmpl2.targetMetric,
+      details: tmpl2.details,
+      intensityBadge: tmpl2.intensityBadge,
+      status: 'upcoming',
+    },
+  ];
+
   return {
     smartSkipAudit,
     nextWorkoutDay,
@@ -832,6 +893,9 @@ export function auditScheduleAndAdaptivePlan(
       saturday: saturdayWorkout,
     },
     todayDynamicDirective,
+    activeWorkout,
+    upcomingQueue,
+    queueIndex,
   };
 }
 
@@ -878,6 +942,9 @@ export function parseCoachPlanFromInsight(
             'Targetkan minimal 1.6g protein per kg berat badan (110 - 130g harian) untuk regenerasi jaringan otot.',
         },
         todayDynamicDirective: auditRes.todayDynamicDirective,
+        activeWorkout: auditRes.activeWorkout,
+        upcomingQueue: auditRes.upcomingQueue,
+        queueIndex: auditRes.queueIndex,
       };
     } else {
       // Sinkronkan audit jadwal dan arahan hari ini dengan aktivitas riil terbaru
@@ -885,6 +952,9 @@ export function parseCoachPlanFromInsight(
       coachPlan.nextWorkoutDay = auditRes.nextWorkoutDay;
       coachPlan.schedule = auditRes.schedule;
       coachPlan.todayDynamicDirective = auditRes.todayDynamicDirective;
+      coachPlan.activeWorkout = auditRes.activeWorkout;
+      coachPlan.upcomingQueue = auditRes.upcomingQueue;
+      coachPlan.queueIndex = auditRes.queueIndex;
     }
   }
 
@@ -1165,6 +1235,9 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     if (!activePlan.todayDynamicDirective) {
       activePlan.todayDynamicDirective = auditResult.todayDynamicDirective;
     }
+    activePlan.activeWorkout = auditResult.activeWorkout;
+    activePlan.upcomingQueue = auditResult.upcomingQueue;
+    activePlan.queueIndex = auditResult.queueIndex;
   }
 
   const rawRecommendations = JSON.stringify(activePlan);

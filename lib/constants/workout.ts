@@ -104,3 +104,52 @@ export const DEFAULT_WEEKLY_SCHEDULES: Record<number, DefaultScheduleDay> = {
     isKey: false,
   },
 };
+
+export interface AdaptiveWorkoutTemplate {
+  id: string;
+  cycleIndex: number;
+  badge: string;
+  category: string;
+  focus: string;
+  targetMetric: string;
+  details: string;
+  intensityBadge: string;
+  color: string;
+}
+
+export const DEFAULT_ADAPTIVE_WORKOUT_CYCLE: AdaptiveWorkoutTemplate[] = [
+  {
+    id: 'cycle-tempo',
+    cycleIndex: 0,
+    badge: 'Tempo Run',
+    category: 'Speed & Ambang Laktat',
+    focus: 'Tempo / Speed Run',
+    targetMetric: '5.0 km • Pace 7:15 - 7:30/km',
+    details: '1 km pemanasan santai (Pace 8:30), 3 km tempo stabil di Pace 7:15-7:30/km, ditutup 1 km jalan aktif.',
+    intensityBadge: 'High Intensity',
+    color: '#FC5200',
+  },
+  {
+    id: 'cycle-interval',
+    cycleIndex: 1,
+    badge: 'Interval VO2Max',
+    category: 'VO2Max Booster',
+    focus: 'Interval VO2Max Training',
+    targetMetric: '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)',
+    details: '1 km jogging santai, 5 set interval 400m cepat dengan jeda jalan 90 detik antar repetisi, pendinginan 1 km.',
+    intensityBadge: 'Peak VO2Max',
+    color: '#8b5cf6',
+  },
+  {
+    id: 'cycle-longrun',
+    cycleIndex: 2,
+    badge: 'Long Run',
+    category: 'Zona 2 Endurance',
+    focus: 'Progressive Long Run',
+    targetMetric: '7.0 km • Pace 8:15 - 8:40/km',
+    details: 'Lari jarak jauh murni di Zona 2 (conversational pace). Jaga detak jantung stabil dan hidrasi berkala.',
+    intensityBadge: 'Aerobic Endurance',
+    color: '#10b981',
+  },
+];
+

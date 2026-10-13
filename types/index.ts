@@ -74,7 +74,7 @@ export interface CoachWorkoutDay {
   originalFocus?: string;
   targetMetric: string;
   details: string;
-  intensityBadge: 'Moderate' | 'High' | 'Endurance';
+  intensityBadge: 'Moderate' | 'High' | 'Endurance' | string;
   status?: ScheduledDayStatus;
   isAdjusted?: boolean;
   adjustmentReason?: string | null;
@@ -147,6 +147,9 @@ export interface CoachPlanData {
     isRecovery: boolean;
     reason?: string | null;
   };
+  activeWorkout?: CoachWorkoutDay;
+  upcomingQueue?: CoachWorkoutDay[];
+  queueIndex?: number;
 }
 
 export interface AiInsightData {

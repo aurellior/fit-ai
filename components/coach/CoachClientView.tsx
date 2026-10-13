@@ -5,34 +5,42 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   RefreshCw,
-  HeartPulse,
-  Dumbbell,
-  Apple,
   CheckCircle2,
-  XCircle,
-  Clock,
   AlertTriangle,
   ArrowLeft,
-  Sparkles,
   SlidersHorizontal,
-  ShieldCheck,
+  Play,
   RotateCcw,
+  FastForward,
+  Activity,
+  Flame,
+  Gauge,
+  Sparkles,
+  Calendar,
+  Layers,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
-import { AiInsightData, UserProfile } from '@/types';
-import { formatDate } from '@/lib/utils';
+import { AiInsightData, UserProfile, ActivityData, CoachWorkoutDay } from '@/types';
 import Modal from '@/components/ui/Modal';
 import ManualActivityForm from '@/components/forms/ManualActivityForm';
 import FoodScannerModal from '@/components/forms/FoodScannerModal';
 import LogWeightModalForm from '@/components/forms/LogWeightModalForm';
 import BottomNav from '@/components/navigation/BottomNav';
-import TodayCoachDirectiveBanner from '@/components/dashboard/TodayCoachDirectiveBanner';
+import { advanceWorkoutQueueAction, rescheduleWorkoutAction } from '@/actions/workout';
+import { PRESET_OBSTACLES } from '@/lib/constants/workout';
+import { cn } from '@/lib/utils';
 
 interface CoachClientViewProps {
   user: UserProfile | null;
   initialInsight: AiInsightData | null;
+  activities?: ActivityData[];
 }
 
-export default function CoachClientView({ initialInsight }: CoachClientViewProps) {
+export default function CoachClientView({
+  initialInsight,
+  activities = [],
+}: CoachClientViewProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [insight, setInsight] = useState<AiInsightData | null>(initialInsight);
@@ -44,6 +52,8 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
   }
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Quick Action Modals state for Mobile Bottom Navigation
@@ -51,35 +61,166 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
 
-  const handleRefreshData = () => {
-    startTransition(() => {
-      router.refresh();
-    });
+  // Rescheduler Modal State
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [selectedObstacle, setSelectedObstacle] = useState<string>(PRESET_OBSTACLES[0].label);
+  const [customNotes, setCustomNotes] = useState<string>('');
+  const [isSubmittingReschedule, setIsSubmittingReschedule] = useState(false);
+
+  const plan = insight?.coachPlan;
+
+  // Sesi aktif saat ini
+  const activeWorkout: CoachWorkoutDay = plan?.activeWorkout || {
+    dayName: 'Next Workout',
+    focus: plan?.nextWorkoutDay?.focus || 'Tempo / Speed Run',
+    targetMetric: plan?.nextWorkoutDay?.targetMetric || '5.0 km • Pace 7:15 - 7:30/km',
+    details: plan?.nextWorkoutDay?.summary || '1 km pemanasan santai (Pace 8:30) + 3 km tempo stabil + 1 km jalan aktif.',
+    intensityBadge: plan?.nextWorkoutDay?.label || 'Tempo Run',
+    status: 'upcoming',
   };
+
+  // Antrean sesi ke depan
+  const upcomingQueue: CoachWorkoutDay[] = plan?.upcomingQueue || [
+    {
+      dayName: 'Menu Selanjutnya (+1)',
+      focus: 'Interval VO2Max Training',
+      targetMetric: '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)',
+      details: '1 km jogging ringan, 5 set interval cepat dengan jeda 90 detik, pendinginan 1 km.',
+      intensityBadge: 'Peak VO2Max',
+      status: 'upcoming',
+    },
+    {
+      dayName: 'Menu Selanjutnya (+2)',
+      focus: 'Progressive Long Run',
+      targetMetric: '7.0 km • Pace 8:15 - 8:40/km',
+      details: 'Lari jarak jauh murni di Zona 2 (conversational pace). Jaga hidrasi optimal.',
+      intensityBadge: 'Aerobic Endurance',
+      status: 'upcoming',
+    },
+  ];
+
+  // Hitung performa 7 hari terakhir secara langsung
+  const now = new Date();
+  const sevenDaysAgoTime = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+  const recentActivities = activities.filter(
+    (a) => new Date(a.startTime).getTime() >= sevenDaysAgoTime
+  );
+  const recentRuns = recentActivities.filter((a) => a.type === 'RUN');
+  const total7DayMeters = recentRuns.reduce((acc, a) => acc + (a.distanceMeters || 0), 0);
+  const total7DayKm = (total7DayMeters / 1000).toFixed(1);
+  const total7DayRunsCount = recentRuns.length;
+
+  const validPaces = recentRuns.filter((a) => a.avgPaceSecPerKm && a.avgPaceSecPerKm > 0);
+  const avgPaceSec =
+    validPaces.length > 0
+      ? Math.round(
+          validPaces.reduce((acc, a) => acc + (a.avgPaceSecPerKm || 0), 0) / validPaces.length
+        )
+      : 0;
+  const avgPaceFormatted =
+    avgPaceSec > 0
+      ? `${Math.floor(avgPaceSec / 60)}'${(avgPaceSec % 60).toString().padStart(2, '0')}"/km`
+      : '7\'20"/km';
 
   const handleRefresh = async () => {
     setIsLoading(true);
     setError(null);
+    setActionMessage(null);
     try {
       const res = await fetch('/api/ai/insights', { method: 'POST' });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Gagal merefresh arahan coach');
+        throw new Error(json.error || 'Gagal mengevaluasi antrean latihan');
       }
       setInsight(json.data);
+      setActionMessage('Antrean latihan berhasil disinkronkan!');
+      setTimeout(() => setActionMessage(null), 3000);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem';
+      const msg = err instanceof Error ? err.message : 'Terjadi kegagalan koneksi';
       setError(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const plan = insight?.coachPlan;
-  const audit = plan?.smartSkipAudit;
+  const handleAdvanceQueue = async (actionType: 'complete' | 'skip') => {
+    setIsAdvancing(true);
+    setError(null);
+    setActionMessage(null);
+    try {
+      const res = await advanceWorkoutQueueAction({ action: actionType });
+      if (!res.success) {
+        throw new Error(res.error || 'Gagal memajukan sesi latihan');
+      }
+      if (res.coachPlan) {
+        setInsight((prev) =>
+          prev
+            ? {
+                ...prev,
+                coachPlan: res.coachPlan,
+              }
+            : null
+        );
+      }
+      setActionMessage(
+        actionType === 'complete'
+          ? 'Sesi ditandai tuntas! Antrean bergulir ke menu berikutnya.'
+          : 'Sesi dilewati. Menu berikutnya siap dieksekusi.'
+      );
+      setTimeout(() => setActionMessage(null), 3500);
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Terjadi kesalahan sistem';
+      setError(msg);
+    } finally {
+      setIsAdvancing(false);
+    }
+  };
+
+  const handleRescheduleSubmit = async () => {
+    setIsSubmittingReschedule(true);
+    setError(null);
+    try {
+      const res = await rescheduleWorkoutAction({
+        dayName: 'Next Workout',
+        originalFocus: activeWorkout.focus,
+        originalTarget: activeWorkout.targetMetric,
+        obstacleType: selectedObstacle,
+        customNotes,
+      });
+
+      if (!res.success) {
+        throw new Error(res.error || 'Gagal menyesuaikan kendala latihan');
+      }
+
+      if (res.coachPlan) {
+        setInsight((prev) =>
+          prev
+            ? {
+                ...prev,
+                coachPlan: res.coachPlan,
+              }
+            : null
+        );
+      }
+      setIsRescheduleModalOpen(false);
+      setActionMessage('Latihan berhasil diadaptasi oleh AI Coach!');
+      setTimeout(() => setActionMessage(null), 3500);
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal memproses penyesuaian';
+      setError(msg);
+    } finally {
+      setIsSubmittingReschedule(false);
+    }
+  };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-20 max-w-4xl mx-auto">
       {/* Top Header & Breadcrumb */}
       <div className="flex items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div>
@@ -92,549 +233,343 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
               <span>Overview</span>
             </Link>
             <span>/</span>
-            <span className="font-semibold text-zinc-900 dark:text-zinc-100">Coach</span>
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100">AI Coach</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
               AI Coach Intelligence
             </h1>
-            <span className="text-[9px] font-mono text-[#FC5200] bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 px-1.5 py-0.5 rounded font-bold">
-              {audit
-                ? `${audit.auditDetails.monday.dayName?.slice(0, 3) || 'Sen'} • ${audit.auditDetails.thursday.dayName?.slice(0, 3) || 'Kam'} • ${audit.auditDetails.saturday.dayName?.slice(0, 3) || 'Sab'}`
-                : 'Sen • Kam • Sab'}
+            <span className="text-[10px] font-mono text-[#FC5200] bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 px-2 py-0.5 rounded-full font-bold">
+              Antrean Adaptif Bebas Hari
             </span>
           </div>
         </div>
 
         <button
           onClick={handleRefresh}
-          disabled={isLoading}
-          className="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center gap-1.5 transition-colors disabled:opacity-50 shadow-xs cursor-pointer active:scale-95 shrink-0"
+          disabled={isLoading || isAdvancing}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white flex items-center gap-1.5 transition-all disabled:opacity-50 shadow-xs cursor-pointer active:scale-95 shrink-0"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">{isLoading ? 'Mengevaluasi...' : 'Evaluasi'}</span>
+          <span className="hidden sm:inline">{isLoading ? 'Mengevaluasi...' : 'Sync AI'}</span>
         </button>
       </div>
 
+      {/* Notifications */}
+      {actionMessage && (
+        <div className="text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl border border-emerald-200 dark:border-emerald-900/60 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span>{actionMessage}</span>
+        </div>
+      )}
+
       {error && (
-        <div className="text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-3 rounded-lg border border-rose-200 dark:border-rose-900/60 flex items-center gap-2">
+        <div className="text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900/60 flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* TOP OVERVIEW BANNER: Today's AI Coach Directive */}
-      <section id="today-directive">
-        <TodayCoachDirectiveBanner
-          coachPlan={insight?.coachPlan}
-          onRescheduled={(newPlan) => {
-            setInsight((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    coachPlan: newPlan,
-                    summary: newPlan.coachGreeting,
-                  }
-                : null
-            );
-            handleRefreshData();
-          }}
-          onStartWorkoutClick={() => setIsActivityModalOpen(true)}
-        />
-      </section>
+      {/* HERO SECTION: NEXT WORKOUT (Kartu Fokus Utama) */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e0e12] via-[#121217] to-[#1a1714] text-white border border-zinc-800 shadow-xl p-4 sm:p-6 space-y-4">
+        {/* Ambient Glow */}
+        <div className="absolute -top-16 -right-16 w-60 h-60 bg-[#FC5200]/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* SECTION 1: Evaluasi Kedisiplinan & Smart Skip Audit */}
-      <section className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#FC5200]"></div>
-            <h2 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight">
-              Audit Jadwal & Kedisiplinan
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {audit?.hasSkippedDays ? (
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50">
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Ada Sesi Terlewat • Penyesuaian Aktif</span>
+        <div className="relative z-10 space-y-4">
+          {/* Header Row */}
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FC5200] animate-pulse" />
+              <span className="text-[11px] font-mono font-bold tracking-wider text-orange-400 uppercase">
+                Next Up • Sesi Siap Eksekusi
               </span>
-            ) : (
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Jadwal On Track</span>
-              </span>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Status Tracker 3 Hari Rutin */}
-        {audit && (
-          <div className="space-y-2">
-            <span className="text-[11px] font-mono uppercase text-zinc-500 tracking-wider block">
-              Pemeriksaan Riwayat Sesi Minggu Berjalan (Database Sync)
+            <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-white/10 text-zinc-300 border border-white/10">
+              {activeWorkout.intensityBadge || 'Jadwal Aktif'}
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Slot 1: Senin (Default) / Adaptif */}
-              <div
-                className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
-                  audit.auditDetails.monday.status === 'completed'
-                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
-                    : audit.auditDetails.monday.status === 'rescheduled'
-                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
-                    : audit.auditDetails.monday.status === 'skipped'
-                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
-                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-xs font-mono uppercase block">
-                        {audit.auditDetails.monday.dayName || 'SENIN'}
-                      </span>
-                      {audit.auditDetails.monday.isShifted && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                          Def: {audit.auditDetails.monday.defaultDayName || 'Senin'}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
-                      {audit.auditDetails.monday.dateLabel}
-                    </span>
-                  </div>
-                  {audit.auditDetails.monday.status === 'completed' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
-                    </span>
-                  ) : audit.auditDetails.monday.status === 'rescheduled' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
-                    </span>
-                  ) : audit.auditDetails.monday.status === 'skipped' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: {plan?.schedule.monday.focus || 'Tempo / Speed Run'}
-                </div>
-              </div>
+          </div>
 
-              {/* Slot 2: Kamis (Default) / Adaptif */}
-              <div
-                className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
-                  audit.auditDetails.thursday.status === 'completed'
-                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
-                    : audit.auditDetails.thursday.status === 'rescheduled'
-                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
-                    : audit.auditDetails.thursday.status === 'skipped'
-                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
-                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-xs font-mono uppercase block">
-                        {audit.auditDetails.thursday.dayName || 'KAMIS'}
-                      </span>
-                      {audit.auditDetails.thursday.isShifted && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                          Def: {audit.auditDetails.thursday.defaultDayName || 'Kamis'}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
-                      {audit.auditDetails.thursday.dateLabel}
-                    </span>
-                  </div>
-                  {audit.auditDetails.thursday.status === 'completed' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
-                    </span>
-                  ) : audit.auditDetails.thursday.status === 'rescheduled' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
-                    </span>
-                  ) : audit.auditDetails.thursday.status === 'skipped' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: {plan?.schedule.thursday.focus || 'Interval / Mid-Week Endurance'}
-                </div>
-              </div>
-
-              {/* Slot 3: Sabtu (Default) / Adaptif */}
-              <div
-                className={`p-3.5 rounded-lg border text-xs flex flex-col justify-between ${
-                  audit.auditDetails.saturday.status === 'completed'
-                    ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50'
-                    : audit.auditDetails.saturday.status === 'rescheduled'
-                    ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
-                    : audit.auditDetails.saturday.status === 'skipped'
-                    ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50'
-                    : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-xs font-mono uppercase block">
-                        {audit.auditDetails.saturday.dayName || 'SABTU'}
-                      </span>
-                      {audit.auditDetails.saturday.isShifted && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                          Def: {audit.auditDetails.saturday.defaultDayName || 'Sabtu'}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">
-                      {audit.auditDetails.saturday.dateLabel}
-                    </span>
-                  </div>
-                  {audit.auditDetails.saturday.status === 'completed' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Tuntas
-                    </span>
-                  ) : audit.auditDetails.saturday.status === 'rescheduled' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                      <RotateCcw className="w-4 h-4 shrink-0" /> Dialihkan
-                    </span>
-                  ) : audit.auditDetails.saturday.status === 'skipped' ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                      <XCircle className="w-4 h-4 shrink-0" /> Terlewat
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
-                      <Clock className="w-3.5 h-3.5 shrink-0" /> Mendatang
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Target: {plan?.schedule.saturday.focus || 'Safe Progressive Long Run'}
-                </div>
-              </div>
+          {/* Core Target Display (Besar & Kontras) */}
+          <div className="space-y-1.5">
+            <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              <span>{activeWorkout.focus}</span>
+            </h2>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#FC5200]/20 border border-[#FC5200]/40 text-[#FC5200] font-mono font-bold text-sm sm:text-base">
+              <Activity className="w-4 h-4" />
+              <span>{activeWorkout.targetMetric}</span>
             </div>
           </div>
-        )}
 
-        {/* Coach Directive / Feedback */}
-        <div className="bg-zinc-50 dark:bg-[#18181b] border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3.5 space-y-1.5">
-          <span className="text-[9px] uppercase font-mono font-bold text-zinc-400 block tracking-wider">
-            Arahan Langsung Pelatih
-          </span>
-          <p className="text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-snug italic">
-            &ldquo;{plan?.coachGreeting || insight?.summary}&rdquo;
-          </p>
-          {audit?.crossTrainingNotice && (
-            <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold pt-0.5">
-              • {audit.crossTrainingNotice}
+          {/* Tactical Instruction (1-2 baris padat) */}
+          <div className="text-xs sm:text-sm text-zinc-300 bg-white/5 border border-white/5 rounded-xl p-3 leading-relaxed">
+            <p className="font-sans">
+              <strong className="text-white font-mono text-[11px] uppercase tracking-wider block mb-0.5">
+                Instruksi Pelatih:
+              </strong>
+              • {activeWorkout.details}
             </p>
-          )}
-          {audit?.activeAdjustmentNote && (
-            <p className="text-[11px] text-[#FC5200] font-semibold pt-0.5">
-              • {audit.activeAdjustmentNote}
-            </p>
-          )}
-        </div>
+          </div>
 
-        <div className="text-xs text-zinc-600 dark:text-zinc-400 p-2.5 rounded-lg bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-200/50 dark:border-zinc-800/50">
-          <span className="font-bold text-zinc-800 dark:text-zinc-200 font-mono text-[10px] uppercase tracking-wide mr-1.5">
-            Evaluasi Beban:
-          </span>
-          <span>{plan?.lastWeekAnalysis || insight?.strengths}</span>
+          {/* Adaptive Note Badge (Jika ada kelelahan/leg day) */}
+          {activeWorkout.adjustmentReason && (
+            <div className="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded-lg p-2.5 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>{activeWorkout.adjustmentReason}</span>
+            </div>
+          )}
+
+          {/* Action Button Strip */}
+          <div className="pt-2 flex flex-wrap items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setIsActivityModalOpen(true)}
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#FC5200] hover:bg-[#E04900] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer active:scale-95"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Mulai / Catat Lari</span>
+            </button>
+
+            <button
+              onClick={() => handleAdvanceQueue('complete')}
+              disabled={isAdvancing}
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              title="Tandai latihan ini sudah selesai dan gulir ke sesi berikutnya"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Tandai Selesai</span>
+            </button>
+
+            <button
+              onClick={() => handleAdvanceQueue('skip')}
+              disabled={isAdvancing}
+              className="px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              title="Lewati sesi ini ke menu berikutnya"
+            >
+              <FastForward className="w-3.5 h-3.5" />
+              <span>Lewati Sesi</span>
+            </button>
+
+            <button
+              onClick={() => setIsRescheduleModalOpen(true)}
+              className="px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 ml-auto"
+              title="Sesuaikan latihan karena hujan, capek, atau sibuk"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-orange-400" />
+              <span>Ada Kendala?</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* SECTION 2: Target Lari 3 Hari yang Dinamis & Ter-adjust */}
+      {/* SECTION 2: ANTREAN 2 SESI BERIKUTNYA (UPCOMING QUEUE) */}
       <section className="space-y-3">
         <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#FC5200]" />
+            <Layers className="w-4 h-4 text-[#FC5200]" />
             <h2 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight">
-              Program Lari Mingguan Adaptif
+              Antrean Sesi Selanjutnya
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-zinc-400">
-            3 Sesi Kunci
+          <span className="text-[10px] font-mono text-zinc-500">
+            2 Menu ke Depan
           </span>
         </div>
 
-        <div className="space-y-3">
-          {/* SENIN */}
-          <div
-            className={`bg-white dark:bg-[#121214] border rounded-xl p-3.5 sm:p-4 transition-colors shadow-2xs ${
-              plan?.schedule.monday.status === 'rescheduled'
-                ? 'border-sky-400/80 dark:border-sky-500/50'
-                : plan?.schedule.monday.isAdjusted
-                ? 'border-amber-400/60 dark:border-amber-500/40'
-                : 'border-zinc-200/80 dark:border-zinc-800/80'
-            }`}
-          >
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    {plan?.schedule.monday.dayName?.toUpperCase() || 'SENIN'}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {upcomingQueue.map((item, idx) => (
+            <div
+              key={idx}
+              className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-xs flex flex-col justify-between space-y-3 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                    Menu Antrean +{idx + 1}
                   </span>
-                  {plan?.schedule.monday.isShifted && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                      Def: {plan.schedule.monday.defaultDayName || 'Senin'}
-                    </span>
-                  )}
-                  {plan?.schedule.monday.status === 'rescheduled' ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
-                      <RotateCcw className="w-2.5 h-2.5" />
-                      Dialihkan
-                    </span>
-                  ) : plan?.schedule.monday.isAdjusted ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold">
-                      Disesuaikan
-                    </span>
-                  ) : null}
+                  <span className="text-[9px] font-mono font-semibold px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-950/40 text-[#FC5200] border border-orange-200/80 dark:border-orange-900/40 uppercase">
+                    {item.intensityBadge || 'Jadwal'}
+                  </span>
                 </div>
-                <span className="text-[9px] font-mono font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded border border-orange-200/80 dark:border-orange-900/40 uppercase">
-                  Speed & Laktat
+
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {item.focus}
+                </h3>
+
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                  • {item.details}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold">
+                  Target:
+                </span>
+                <span className="text-xs font-mono font-bold text-[#FC5200]">
+                  {item.targetMetric}
                 </span>
               </div>
-
-              <div className="flex items-start justify-between gap-2 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
-                    {plan?.schedule.monday.focus || 'Tempo / Speed Run'}
-                  </h3>
-                </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
-                  {plan?.schedule.monday.targetMetric}
-                </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
-                <p>• {plan?.schedule.monday.details}</p>
-                {plan?.schedule.monday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border break-words ${
-                    plan.schedule.monday.status === 'rescheduled'
-                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
-                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
-                  }`}>
-                    <strong>Catatan:</strong> {plan.schedule.monday.adjustmentReason}
-                  </div>
-                )}
-              </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 3: RINGKASAN PERFORMA 7 HARI TERAKHIR (ROLLING 7-DAY PERFORMANCE STRIP) */}
+      <section className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-1.5">
+            <Gauge className="w-3.5 h-3.5 text-[#FC5200]" />
+            <h2 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight">
+              Overview 7 Hari Terakhir
+            </h2>
+          </div>
+          <span className="text-[10px] font-mono text-zinc-400">
+            Rolling Window Aktif
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800">
+            <span className="text-[9px] uppercase font-mono text-zinc-400 block mb-0.5">
+              Jarak Total
+            </span>
+            <span className="text-base sm:text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {total7DayKm}{' '}
+              <span className="text-[10px] font-sans font-normal text-zinc-500">km</span>
+            </span>
           </div>
 
-          {/* KAMIS */}
-          <div
-            className={`bg-white dark:bg-[#121214] border rounded-xl p-3.5 sm:p-4 transition-colors shadow-2xs ${
-              plan?.schedule.thursday.status === 'rescheduled'
-                ? 'border-sky-400/80 dark:border-sky-500/50'
-                : plan?.schedule.thursday.isAdjusted
-                ? 'border-amber-400/80 dark:border-amber-500/50'
-                : 'border-zinc-200/80 dark:border-zinc-800/80'
-            }`}
-          >
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    {plan?.schedule.thursday.dayName?.toUpperCase() || 'KAMIS'}
-                  </span>
-                  {plan?.schedule.thursday.isShifted && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                      Def: {plan.schedule.thursday.defaultDayName || 'Kamis'}
-                    </span>
-                  )}
-                  {plan?.schedule.thursday.status === 'rescheduled' ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
-                      <RotateCcw className="w-2.5 h-2.5" />
-                      Dialihkan
-                    </span>
-                  ) : plan?.schedule.thursday.isAdjusted ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold">
-                      Disesuaikan
-                    </span>
-                  ) : null}
-                </div>
-                <span className="text-[9px] font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-200/80 dark:border-purple-900/40 uppercase">
-                  VO2 Max Booster
-                </span>
-              </div>
-
-              <div className="flex items-start justify-between gap-2 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
-                    {plan?.schedule.thursday.focus || 'Interval / Mid-Week Endurance'}
-                  </h3>
-                </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
-                  {plan?.schedule.thursday.targetMetric}
-                </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
-                <p>• {plan?.schedule.thursday.details}</p>
-                {plan?.schedule.thursday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border break-words ${
-                    plan.schedule.thursday.status === 'rescheduled'
-                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
-                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
-                  }`}>
-                    <strong>Catatan:</strong> {plan.schedule.thursday.adjustmentReason}
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800">
+            <span className="text-[9px] uppercase font-mono text-zinc-400 block mb-0.5">
+              Sesi Lari
+            </span>
+            <span className="text-base sm:text-xl font-bold font-mono text-[#FC5200]">
+              {total7DayRunsCount}{' '}
+              <span className="text-[10px] font-sans font-normal text-zinc-500">sesi</span>
+            </span>
           </div>
 
-          {/* SABTU */}
-          <div
-            className={`bg-white dark:bg-[#121214] border rounded-xl p-3.5 sm:p-4 transition-colors shadow-2xs ${
-              plan?.schedule.saturday.status === 'rescheduled'
-                ? 'border-sky-400/80 dark:border-sky-500/50'
-                : plan?.schedule.saturday.isAdjusted
-                ? 'border-amber-400/80 dark:border-amber-500/50'
-                : 'border-zinc-200/80 dark:border-zinc-800/80'
-            }`}
-          >
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                    {plan?.schedule.saturday.dayName?.toUpperCase() || 'SABTU'}
-                  </span>
-                  {plan?.schedule.saturday.isShifted && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold">
-                      Def: {plan.schedule.saturday.defaultDayName || 'Sabtu'}
-                    </span>
-                  )}
-                  {plan?.schedule.saturday.status === 'rescheduled' ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 font-bold flex items-center gap-1">
-                      <RotateCcw className="w-2.5 h-2.5" />
-                      Dialihkan
-                    </span>
-                  ) : plan?.schedule.saturday.isAdjusted ? (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold">
-                      Disesuaikan
-                    </span>
-                  ) : null}
-                </div>
-                <span className="text-[9px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200/80 dark:border-emerald-900/40 uppercase">
-                  Zone 2 Aerobic
-                </span>
-              </div>
-
-              <div className="flex items-start justify-between gap-2 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 break-words">
-                    {plan?.schedule.saturday.focus || 'Safe Progressive Long Run'}
-                  </h3>
-                </div>
-                <div className="px-2.5 py-1 rounded-lg bg-orange-50/80 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900/60 text-xs font-mono font-bold text-[#FC5200] shrink-0 max-w-[130px] truncate text-center">
-                  {plan?.schedule.saturday.targetMetric}
-                </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed space-y-1 break-words">
-                <p>• {plan?.schedule.saturday.details}</p>
-                {plan?.schedule.saturday.adjustmentReason && (
-                  <div className={`p-2 rounded text-[10px] border break-words ${
-                    plan.schedule.saturday.status === 'rescheduled'
-                      ? 'bg-sky-50/70 dark:bg-sky-950/30 border-sky-200/60 dark:border-sky-900/40 text-sky-800 dark:text-sky-300'
-                      : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-900/40 text-amber-800 dark:text-amber-300'
-                  }`}>
-                    <strong>Catatan:</strong> {plan.schedule.saturday.adjustmentReason}
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800">
+            <span className="text-[9px] uppercase font-mono text-zinc-400 block mb-0.5">
+              Rata-rata Pace
+            </span>
+            <span className="text-xs sm:text-base font-bold font-mono text-zinc-900 dark:text-zinc-100">
+              {avgPaceFormatted}
+            </span>
           </div>
         </div>
       </section>
 
-      {/* SECTION 3: Catatan Pemulihan & Nutrisi Atlet */}
-      <section className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-3">
-        <div className="flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-          <HeartPulse className="w-3.5 h-3.5 text-rose-500" />
-          <h2 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase font-mono tracking-tight">
-            Protokol Pemulihan & Nutrisi
-          </h2>
-        </div>
+      {/* AI RESCHEDULER MODAL (Penyesuaian Kendala Cepat) */}
+      <Modal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        title="Penyesuaian Sesi Adaptif AI"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Pilih kendala hari ini. AI Coach akan mereformulasi menu lari berikutnya agar Anda tetap aman dan berkembang.
+          </p>
 
-        <div className="grid grid-cols-1 gap-2 text-xs">
-          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800 flex items-start gap-2.5">
-            <Apple className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <span className="font-bold text-zinc-900 dark:text-zinc-100 text-[11px] block font-mono">
-                Nutrisi Pra & Pasca Lari
-              </span>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
-                • {plan?.recoveryAdvice.nutrition || 'Karbohidrat cepat serap 45 menit sebelum lari pagi dan cukupi hidrasi.'}
-              </p>
+          <div className="space-y-2">
+            <label className="text-[11px] font-mono uppercase font-bold text-zinc-500 block">
+              Pilih Kendala:
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {PRESET_OBSTACLES.map((obs) => {
+                const Icon = obs.icon;
+                const isSelected = selectedObstacle === obs.label;
+                return (
+                  <button
+                    key={obs.id}
+                    type="button"
+                    onClick={() => setSelectedObstacle(obs.label)}
+                    className={cn(
+                      'p-2.5 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer',
+                      isSelected
+                        ? 'border-[#FC5200] bg-orange-50/60 dark:bg-orange-950/30'
+                        : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300'
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        'w-4 h-4 shrink-0 mt-0.5',
+                        isSelected ? 'text-[#FC5200]' : 'text-zinc-500'
+                      )}
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        {obs.label}
+                      </div>
+                      <div className="text-[10px] text-zinc-500 leading-tight mt-0.5">
+                        {obs.desc}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800 flex items-start gap-2.5">
-            <Dumbbell className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <span className="font-bold text-zinc-900 dark:text-zinc-100 text-[11px] block font-mono">
-                Sinergi Gym & Lari
-              </span>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
-                • {plan?.recoveryAdvice.restAndGym || 'Hindari sesi leg day di gym 24 jam sebelum long run untuk mencegah kelelahan.'}
-              </p>
-            </div>
+          <div className="space-y-1">
+            <label className="text-[11px] font-mono uppercase font-bold text-zinc-500 block">
+              Catatan Tambahan (Opsional):
+            </label>
+            <input
+              type="text"
+              value={customNotes}
+              onChange={(e) => setCustomNotes(e.target.value)}
+              placeholder="Contoh: Lutut kanan agak ngilu saat ditekuk..."
+              className="w-full text-xs px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-[#FC5200]"
+            />
           </div>
 
-          <div className="p-3 rounded-lg bg-zinc-50 dark:bg-[#18181b] border border-zinc-100 dark:border-zinc-800 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1">
-              <span className="font-bold text-zinc-900 dark:text-zinc-100 text-[11px] block font-mono">
-                Target Protein Harian
-              </span>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
-                • {plan?.recoveryAdvice.proteinRecommendation || 'Pertahankan asupan protein minimal 1.6g/kg berat badan.'}
-              </p>
-            </div>
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800">
+            <button
+              type="button"
+              onClick={() => setIsRescheduleModalOpen(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleRescheduleSubmit}
+              disabled={isSubmittingReschedule}
+              className="px-4 py-2 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+            >
+              {isSubmittingReschedule ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menghitung...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Adaptasi Sesi Sekarang</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
+      </Modal>
 
-        <div className="pt-1 text-[10px] text-zinc-400 font-mono flex items-center justify-between">
-          <span>Sync: {insight ? formatDate(insight.createdAt) : '-'}</span>
-          <span>Gemini AI Engine</span>
-        </div>
-      </section>
-
-      {/* Quick Action Modals */}
+      {/* Manual Activity Log Modal */}
       <Modal
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
-        title="Catat Latihan Baru"
-        description="Masukkan data lari manual atau repetisi sesi gym atlet Anda"
-        maxWidth="lg"
+        title="Catat Aktivitas Olahraga"
       >
         <ManualActivityForm
+          isModal
           onSuccess={() => {
             setIsActivityModalOpen(false);
-            handleRefreshData();
+            handleAdvanceQueue('complete');
           }}
         />
       </Modal>
 
+      {/* Quick Modals for Food & Weight */}
       <Modal
         isOpen={isFoodModalOpen}
         onClose={() => setIsFoodModalOpen(false)}
@@ -645,7 +580,7 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
           isModal
           onScanSuccess={() => {
             setIsFoodModalOpen(false);
-            handleRefreshData();
+            startTransition(() => router.refresh());
           }}
         />
       </Modal>
@@ -659,12 +594,12 @@ export default function CoachClientView({ initialInsight }: CoachClientViewProps
         <LogWeightModalForm
           onSuccess={() => {
             setIsWeightModalOpen(false);
-            handleRefreshData();
+            startTransition(() => router.refresh());
           }}
         />
       </Modal>
 
-      {/* Mobile Bottom Navigation Bar */}
+      {/* Mobile Sticky Bottom Navigation */}
       <BottomNav
         onOpenActivityModal={() => setIsActivityModalOpen(true)}
         onOpenFoodModal={() => setIsFoodModalOpen(true)}

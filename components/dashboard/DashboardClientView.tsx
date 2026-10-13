@@ -96,23 +96,19 @@ export default function DashboardClientView({
       : latestActivityTimestamp;
 
   const refDate = new Date(refTime);
-  const currentDayOfWeek = getWibDayIndex(refDate); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
-  const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek;
 
-  // Awal minggu: Senin 00:00:00
-  const startOfWeek = new Date(refDate);
-  startOfWeek.setDate(refDate.getDate() + distanceToMonday);
-  startOfWeek.setHours(0, 0, 0, 0);
+  // Rolling 7-Day Window (H-6 s/d Hari Ini)
+  const startOf7Days = new Date(refDate);
+  startOf7Days.setDate(refDate.getDate() - 6);
+  startOf7Days.setHours(0, 0, 0, 0);
 
-  // Akhir minggu: Minggu 23:59:59.999
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
+  const endOf7Days = new Date(refDate);
+  endOf7Days.setHours(23, 59, 59, 999);
 
-  // A. This Week Data & Metrics (Senin s/d Minggu)
+  // A. Rolling 7-Day Data & Metrics
   const weekActivities = initialActivities.filter((act) => {
     const actTime = new Date(act.startTime).getTime();
-    return actTime >= startOfWeek.getTime() && actTime <= endOfWeek.getTime();
+    return actTime >= startOf7Days.getTime() && actTime <= endOf7Days.getTime();
   });
 
   const weekDistanceMeters = weekActivities.reduce(
@@ -182,10 +178,10 @@ export default function DashboardClientView({
 
   const latestWeight = initialWeightLogs[0]?.weightKg || 68.0;
 
-  // Date Range label: Senin s/d Minggu
+  // Date Range label: 7 Hari Terakhir
   const formatDateShort = (d: Date) =>
     d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-  const weekDateRange = `${formatDateShort(startOfWeek)} - ${formatDateShort(endOfWeek)}`;
+  const weekDateRange = `${formatDateShort(startOf7Days)} - ${formatDateShort(endOf7Days)}`;
 
   const handleRefresh = () => {
     router.refresh();
@@ -217,17 +213,17 @@ export default function DashboardClientView({
         />
       </section>
 
-      {/* 3. Top Stats Bar: Clean Strava Dual-Hierarchy (This Week Overview & All-Time Cumulative) */}
+      {/* 3. Top Stats Bar: Clean Strava Dual-Hierarchy (7-Day Overview & All-Time Cumulative) */}
       <section className="space-y-3.5">
         {/* Tier Header & Tab Segmen Switcher */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <span className="w-2 h-2 rounded-full bg-[#FC5200] shrink-0"></span>
             <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
-              {viewMode === 'week' ? 'Ringkasan Performa Minggu Ini' : 'Pencapaian Sepanjang Waktu'}
+              {viewMode === 'week' ? 'Ringkasan 7 Hari Terakhir' : 'Pencapaian Sepanjang Waktu'}
             </h2>
             <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-200/60 dark:border-zinc-700/60 shrink-0">
-              {viewMode === 'week' ? `Sen – Min (${weekDateRange})` : 'Kumulatif Akun'}
+              {viewMode === 'week' ? `7 Hari (${weekDateRange})` : 'Kumulatif Akun'}
             </span>
           </div>
 
@@ -244,9 +240,9 @@ export default function DashboardClientView({
               )}
             >
               <Calendar className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">This Week</span>
+              <span className="truncate">7 Hari Terakhir</span>
               <span className="text-[10px] px-1 py-0.2 bg-[#FC5200]/10 text-[#FC5200] rounded font-mono font-bold shrink-0 hidden min-[360px]:inline">
-                Pekan Ini
+                Rolling
               </span>
             </button>
 
