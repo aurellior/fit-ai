@@ -20,19 +20,15 @@ export const MOCK_ACTIVITIES: ActivityData[] = [
   },
   {
     id: 'act-2',
-    title: 'Upper Body Hypertrophy',
+    title: 'Tempo Threshold Run 6K',
     source: ActivitySource.MANUAL,
-    type: ActivityType.WEIGHT_TRAINING,
+    type: ActivityType.RUN,
     startTime: new Date(BASE_DATE.getTime() - 1000 * 60 * 60 * 28),
-    durationSec: 3300, // 55 mins
-    calories: 280,
-    notes: 'Target dada dan tricep. Menambah beban pada incline dumbbell press.',
-    gymSets: [
-      { exercise: 'Barbell Bench Press', sets: 4, reps: 8, weightKg: 75 },
-      { exercise: 'Incline Dumbbell Press', sets: 3, reps: 10, weightKg: 24 },
-      { exercise: 'Tricep Rope Pushdown', sets: 4, reps: 12, weightKg: 30 },
-      { exercise: 'Cable Chest Fly', sets: 3, reps: 15, weightKg: 15 },
-    ],
+    durationSec: 2160, // 36 mins
+    distanceMeters: 6000,
+    avgPaceSecPerKm: 360, // 6'00"
+    calories: 420,
+    notes: 'Lari tempo terkontrol di ambang laktat. Ritme nafas stabil 2-2.',
   },
   {
     id: 'act-3',
@@ -50,19 +46,15 @@ export const MOCK_ACTIVITIES: ActivityData[] = [
   },
   {
     id: 'act-4',
-    title: 'Leg Day & Core Strength',
+    title: 'Progressive Long Run 10K',
     source: ActivitySource.MANUAL,
-    type: ActivityType.WEIGHT_TRAINING,
+    type: ActivityType.RUN,
     startTime: new Date(BASE_DATE.getTime() - 1000 * 60 * 60 * 76),
-    durationSec: 3900, // 65 mins
-    calories: 390,
-    notes: 'Fokus paha depan dan glutes. Barbell Squat terasa solid.',
-    gymSets: [
-      { exercise: 'Barbell Back Squat', sets: 5, reps: 6, weightKg: 100 },
-      { exercise: 'Romanian Deadlift', sets: 4, reps: 8, weightKg: 85 },
-      { exercise: 'Bulgarian Split Squat', sets: 3, reps: 10, weightKg: 20 },
-      { exercise: 'Hanging Leg Raise', sets: 3, reps: 15, weightKg: 0 },
-    ],
+    durationSec: 3600, // 60 mins
+    distanceMeters: 10100,
+    avgPaceSecPerKm: 356, // 5'56"
+    calories: 680,
+    notes: 'Long run progresif: 7 km pertama di Zona 2, tutup 3 km terakhir di pace tempo.',
   },
   {
     id: 'act-5',
@@ -80,19 +72,15 @@ export const MOCK_ACTIVITIES: ActivityData[] = [
   },
   {
     id: 'act-6',
-    title: 'Pull Day — Back & Biceps Focus',
+    title: 'Easy Recovery Run 4K',
     source: ActivitySource.MANUAL,
-    type: ActivityType.WEIGHT_TRAINING,
+    type: ActivityType.RUN,
     startTime: new Date(BASE_DATE.getTime() - 1000 * 60 * 60 * 124),
-    durationSec: 3000, // 50 mins
-    calories: 270,
-    notes: 'Pull up 4 set bodyweight lalu lat pulldown progresif beban.',
-    gymSets: [
-      { exercise: 'Weighted Pull-Up', sets: 4, reps: 8, weightKg: 10 },
-      { exercise: 'Barbell Bent Over Row', sets: 4, reps: 10, weightKg: 65 },
-      { exercise: 'Seated Cable Row', sets: 3, reps: 12, weightKg: 55 },
-      { exercise: 'Incline Dumbbell Curl', sets: 3, reps: 12, weightKg: 14 },
-    ],
+    durationSec: 1560, // 26 mins
+    distanceMeters: 4000,
+    avgPaceSecPerKm: 390, // 6'30"
+    calories: 260,
+    notes: 'Lari santai pemulihan tanpa beban pace, fokus pada fleksibilitas kaki.',
   },
   {
     id: 'act-7',
@@ -153,18 +141,15 @@ export const MOCK_ACTIVITIES: ActivityData[] = [
   },
   {
     id: 'act-11',
-    title: 'Full Body Functional Conditioning',
+    title: 'Easy Aerobic Base Run 5K',
     source: ActivitySource.MANUAL,
-    type: ActivityType.WEIGHT_TRAINING,
+    type: ActivityType.RUN,
     startTime: new Date(BASE_DATE.getTime() - 1000 * 60 * 60 * 244),
-    durationSec: 3600,
-    calories: 420,
-    notes: 'Kettlebell swings dipadukan dengan dips dan box jumps.',
-    gymSets: [
-      { exercise: 'Kettlebell Swing', sets: 4, reps: 20, weightKg: 24 },
-      { exercise: 'Parallel Bar Dips', sets: 4, reps: 12, weightKg: 0 },
-      { exercise: 'Plyo Box Jump', sets: 3, reps: 10, weightKg: 0 },
-    ],
+    durationSec: 1800,
+    distanceMeters: 5000,
+    avgPaceSecPerKm: 360,
+    calories: 340,
+    notes: 'Lari santai sore hari fokus pada irama pernapasan.',
   },
   {
     id: 'act-12',
@@ -268,11 +253,11 @@ export const MOCK_WEIGHT_LOGS: WeightLogData[] = [
 export const MOCK_AI_INSIGHT: AiInsightData = {
   id: 'ins-1',
   summary:
-    'Volume latihan kardio dan latihan beban seimbang. Pace pada lari pagi menunjukkan efisiensi aerobik yang konsisten pada zona 2-3.',
+    'Volume lari mingguan seimbang. Pace pada lari pagi menunjukkan efisiensi aerobik yang konsisten pada zona 2-3.',
   strengths:
-    'Disiplin latihan beban secara terstruktur dan kemampuan mempertahankan cadence stabil pada sesi lari.',
+    'Konsistensi cadence stabil dan pacing merata di setiap sesi lari mingguan.',
   recommendations:
-    'Jaga asupan protein harian minimal 1.6g/kg berat badan dan pastikan tidur 7-8 jam untuk pemulihan jaringan otot.',
+    'Pertahankan hidrasi elektrolit dan pastikan waktu tidur cukup untuk pemulihan optimal.',
   periodStart: new Date(BASE_DATE.getTime() - 1000 * 60 * 60 * 24 * 7),
   periodEnd: BASE_DATE,
   createdAt: BASE_DATE,

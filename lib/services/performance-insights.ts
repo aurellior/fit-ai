@@ -42,23 +42,6 @@ interface ScheduleAuditResult {
 }
 
 /**
- * Memeriksa apakah suatu aktivitas melibatkan latihan beban kaki (Leg Day)
- */
-function checkIsLegDay(act: ActivityData): boolean {
-  if (act.type !== 'WEIGHT_TRAINING') return false;
-  const text = `${act.title || ''} ${act.notes || ''}`.toLowerCase();
-  const legKeywords = ['leg', 'kaki', 'tungkai', 'squat', 'lunge', 'deadlift', 'quad', 'calf', 'paha'];
-  const hasKeyword = legKeywords.some((kw) => text.includes(kw));
-  const hasGymSet =
-    Array.isArray(act.gymSets) &&
-    act.gymSets.some((s) => {
-      const ex = ((s as { exercise?: string }).exercise || '').toLowerCase();
-      return legKeywords.some((kw) => ex.includes(kw));
-    });
-  return hasKeyword || hasGymSet;
-}
-
-/**
  * Format ringkasan aktivitas selesai untuk disematkan ke kartu jadwal
  */
 function formatCompletedActivity(act: ActivityData, executedOnDay?: string) {
@@ -148,24 +131,19 @@ export function auditScheduleAndAdaptivePlan(
 
   const todayRun = todayActs.find((a) => a.type === 'RUN');
   const yesterdayRun = yesterdayActs.find((a) => a.type === 'RUN');
-  const yesterdayLegDay = yesterdayActs.find((a) => checkIsLegDay(a));
 
-  // Cek aktivitas non-lari dalam 48 jam terakhir untuk evaluasi fatik neuromuskular
+  // Cek aktivitas non-lari dalam 48 jam terakhir untuk evaluasi fatik kardio
   const fortyEightHoursAgo = new Date(now.getTime() - 48 * 3600 * 1000);
   const recentActivities = activities.filter((a) => new Date(a.startTime) >= fortyEightHoursAgo);
 
-  const recentLegDay = recentActivities.find((a) => checkIsLegDay(a));
   const recentHeavyRide = recentActivities.find(
     (a) => a.type === 'RIDE' && ((a.distanceMeters && a.distanceMeters >= 15000) || (a.durationSec && a.durationSec >= 2400))
   );
 
   let crossTrainingNotice: string | null = null;
-  if (recentLegDay) {
-    const legDayName = getWibDayName(recentLegDay.startTime);
-    crossTrainingNotice = `Terdeteksi sesi Latihan Beban Kaki / Leg Day (${legDayName}): Proteksi sendi diaktifkan, intensitas lari dialihkan ke ritme aerobik nyaman agar otot paha dan tendon aman.`;
-  } else if (recentHeavyRide) {
+  if (recentHeavyRide) {
     const rideDayName = getWibDayName(recentHeavyRide.startTime);
-    crossTrainingNotice = `Terdeteksi sesi Bersepeda intensif (${rideDayName}): Stimulasi kardio aerobik telah terserap, target lari diselaraskan secara seimbang.`;
+    crossTrainingNotice = `Sesi Bersepeda terdeteksi (${rideDayName}): Stimulasi kardio tercatat, target lari disesuaikan seimbang.`;
   }
 
   // Cek apakah ada sesi yang telah di-reschedule secara manual oleh user pada minggu ini
@@ -477,65 +455,53 @@ export function auditScheduleAndAdaptivePlan(
   // ATURAN RECOVERY 1: Jika atlet baru saja lari di hari Jumat, proteksi sesi Sabtu!
   if (fridayRun && saturdayStatus !== 'completed' && !isSaturdayRescheduled) {
     saturdayWorkout.isAdjusted = true;
-    saturdayWorkout.focus = 'Active Recovery & Mobilisasi (Long Run Geser ke Minggu)';
-    saturdayWorkout.targetMetric = '25-30 Menit Jalan Santai / Foam Rolling & Dinamis';
+    saturdayWorkout.focus = 'Active Recovery (Long Run Geser ke Minggu)';
+    saturdayWorkout.targetMetric = '25-30 Menit Jalan Santai / Foam Rolling';
     saturdayWorkout.details =
-      'Penyesuaian Jeda Istirahat (Recovery Window): Anda baru saja menyelesaikan lari hari Jumat. Berikan jeda 48 jam sebelum Long Run di hari MINGGU agar simpanan glikogen pulih dan sendi terhindar dari cedera akibat lari berturut-turut.';
+      'Jeda pemulihan 24-48 jam pasca lari Jumat. Long Run dialihkan ke hari Minggu agar glikogen dan sendi pulih maksimal.';
     saturdayWorkout.adjustmentReason =
-      'Lari dilakukan hari Jumat. Sesi Long Run dialihkan ke hari Minggu untuk memastikan jeda istirahat 48 jam.';
+      'Lari dilakukan Jumat. Long Run dialihkan ke Minggu untuk memastikan jeda istirahat aman.';
     activeAdjustmentNote =
-      'Sesi lari Jumat terdeteksi. Sesi Long Run dialihkan ke hari Minggu untuk menjaga pemulihan optimal.';
-  }
-
-  // ATURAN RECOVERY 2: Jika terdeteksi Leg Day dalam 24-36 jam terakhir
-  if (recentLegDay) {
-    if (currentDayOfWeek === 4 && thursdayStatus !== 'completed' && !isThursdayRescheduled) {
-      thursdayWorkout.isAdjusted = true;
-      thursdayWorkout.intensityBadge = 'Moderate';
-      thursdayWorkout.targetMetric = '4.0 km Santai di Zona 2 (Pace Conversational)';
-      thursdayWorkout.details =
-        'Penyesuaian Pasca Leg Day: Terdeteksi latihan beban kaki baru-baru ini. Intensitas interval diringankan ke lari pemulihan Zona 2 untuk melancarkan asam laktat tanpa menambah beban stres mikro-otot.';
-      thursdayWorkout.adjustmentReason = 'Disesuaikan karena latihan beban kaki (Leg Day) terdeteksi dalam 48 jam terakhir.';
-    }
+      'Lari Jumat terdeteksi. Sesi Long Run digeser ke hari Minggu untuk menjaga recovery.';
   }
 
   // ATURAN SMART SKIP 1: Jika awal minggu (Senin & Selasa) terlewat, dan Kamis belum selesai
   if (mondayStatus === 'skipped' && thursdayStatus !== 'completed' && !isThursdayRescheduled) {
     thursdayWorkout.isAdjusted = true;
-    thursdayWorkout.focus = 'Aerobic Interval & Cruise Tempo (Penyesuaian Adaptif)';
+    thursdayWorkout.focus = 'Aerobic Interval & Cruise Tempo';
     thursdayWorkout.targetMetric = '5.5 km • 4x 400m Interval + 1.5 km Cruise Tempo';
     thursdayWorkout.details =
-      'Penyesuaian karena sesi awal minggu terlewat: Pemanasan 1.5 km aerobik, 4 repetisi interval 400m cepat (Pace 6:50), dilanjutkan 1.5 km cruise tempo di pace 7:45/km. Mengganti stimulasi aerobik yang hilang secara aman tanpa membuat otot stres berlebihan.';
+      'Kompensasi awal minggu terlewat: Pemanasan 1.5 km, 4x 400m interval cepat, dan 1.5 km cruise tempo terkontrol.';
     thursdayWorkout.adjustmentReason =
-      'Sesi awal minggu terlewat. Kamis diadaptasi menggabungkan interval dengan cruise tempo agar stimulasi ambang laktat tetap tercapai.';
+      'Sesi awal minggu terlewat. Target Kamis memadukan interval dan cruise tempo terukur.';
     activeAdjustmentNote =
-      'Jadwal awal minggu terlewat. Rekomendasi Kamis telah disesuaikan dengan penambahan volume aerobik moderat yang aman.';
+      'Jadwal awal minggu terlewat. Rekomendasi Kamis disesuaikan dengan volume aerobik aman.';
   }
 
   // ATURAN SMART SKIP 2: Jika tengah minggu (Kamis & Jumat) terlewat, dan Sabtu belum selesai
   if (thursdayStatus === 'skipped' && saturdayStatus !== 'completed' && !isSaturdayRescheduled) {
     saturdayWorkout.isAdjusted = true;
-    saturdayWorkout.focus = 'Progressive Long Run (Penyesuaian Adaptif)';
+    saturdayWorkout.focus = 'Progressive Long Run';
     saturdayWorkout.targetMetric = '7.0 km • 5 km Zone 2 + 2 km Tempo Finish';
     saturdayWorkout.details =
-      'Penyesuaian karena sesi interval tengah minggu terlewat: Lari 5 km awal di Zone 2 stabil (Pace 8:20/km), lalu tutup 2 km terakhir dengan akselerasi Tempo Finish (Pace 7:30/km). Ini menyerap stimulasi anaerobik yang hilang tanpa memicu risiko cedera sendi.';
+      'Kompensasi sesi interval terlewat: Lari 5 km Zona 2 santai, tutup 2 km terakhir dengan akselerasi tempo terkontrol.';
     saturdayWorkout.adjustmentReason =
-      'Sesi interval tengah minggu terlewat. Target Sabtu diadaptasi menjadi Progressive Long Run agar stimulasi kardio dan ambang laktat tetap tercapai proporsional.';
+      'Sesi tengah minggu terlewat. Target Sabtu diubah menjadi Progressive Long Run.';
     activeAdjustmentNote =
-      'Jadwal tengah minggu terlewat. Rekomendasi Sabtu disesuaikan menjadi Progressive Long Run dengan akselerasi akhir yang aman.';
+      'Jadwal tengah minggu terlewat. Rekomendasi Sabtu disesuaikan menjadi Progressive Long Run.';
   }
 
   // ATURAN SMART SKIP 3: Jika Senin DAN Kamis terlewat
   if (mondayStatus === 'skipped' && thursdayStatus === 'skipped' && saturdayStatus !== 'completed' && !isSaturdayRescheduled) {
     saturdayWorkout.isAdjusted = true;
-    saturdayWorkout.focus = 'Reset & Recovery Long Run (Penyesuaian Aman)';
-    saturdayWorkout.targetMetric = '6.0 km - 6.5 km • Zona 2 Murni (Pace 8:30/km)';
+    saturdayWorkout.focus = 'Reset & Recovery Run';
+    saturdayWorkout.targetMetric = '6.0 km • Zona 2 Murni (Conversational Pace)';
     saturdayWorkout.details =
-      'Peringatan Pelatih: Jangan pernah mencoba "membayar utang" dua sesi yang terlewat sekaligus dengan lari 10+ km! Jaga jarak di 6.5 km Zona 2 murni untuk merefresh kembali ritme biomekanik kaki Anda tanpa risiko cedera tendon.';
+      'Reset ritme: Jaga jarak 6 km santai di Zona 2. Hindari rapel jarak berlebih demi keamanan sendi dan tendon.';
     saturdayWorkout.adjustmentReason =
-      'Dua sesi terlewat. DILARANG melipatgandakan jarak Sabtu. Lakukan lari santai untuk me-reset kesiapan tubuh menyongsong minggu baru.';
+      'Dua sesi terlewat. Lakukan lari santai untuk me-reset kesiapan tubuh.';
     activeAdjustmentNote =
-      'Dua jadwal terlewat minggu ini. Sabtu difokuskan pada lari Zona 2 aman untuk reset ritme tanpa risiko cedera.';
+      'Dua jadwal terlewat minggu ini. Sabtu difokuskan pada lari Zona 2 aman.';
   }
 
   // Prioritas Catatan Reschedule Manual atau Pergeseran Adaptif
@@ -734,17 +700,6 @@ export function auditScheduleAndAdaptivePlan(
       isRecovery: true,
       reason: 'Jeda istirahat 24-48 jam pasca lari kemarin.',
     };
-  } else if (yesterdayLegDay && (currentDayOfWeek === 4 || currentDayOfWeek === 1)) {
-    // 3. Kemarin Leg Day, hari ini jadwal anchor
-    todayDynamicDirective = {
-      dayName: todayWibName,
-      focus: 'Injury Guard: Aerobic Base (Zona 2)',
-      targetMetric: '3.5 km - 4.0 km Santai di Zona 2 (Pace Percakapan)',
-      details: `Proteksi Pasca Leg Day Kemarin: Otot paha sedang dalam fase perbaikan mikro. Hindari sprint cepat hari ini, prioritaskan lari santai untuk melancarkan sirkulasi tanpa menambah beban stres sendi.`,
-      badge: 'Injury Guard Scaled',
-      isRecovery: false,
-      reason: 'Sesi Leg Day terdeteksi kemarin.',
-    };
   } else if (currentDayOfWeek === 1) {
     // 4. Hari Senin (Anchor 1)
     todayDynamicDirective = {
@@ -888,13 +843,6 @@ export function auditScheduleAndAdaptivePlan(
     isAdjusted: false,
     status: 'upcoming',
   };
-
-  if (recentLegDay) {
-    activeWorkout.isAdjusted = true;
-    activeWorkout.adjustmentReason =
-      'Beban latihan beban kaki (Leg Day) terdeteksi dalam 36 jam terakhir. Sesi ini dapat diadaptasi dengan pemanasan ekstra atau tempo terkontrol.';
-    activeWorkout.intensityBadge = 'Recovery Guard';
-  }
 
   const nextIdx1 = (queueIndex + 1) % DEFAULT_ADAPTIVE_WORKOUT_CYCLE.length;
   const nextIdx2 = (queueIndex + 2) % DEFAULT_ADAPTIVE_WORKOUT_CYCLE.length;
@@ -1115,26 +1063,27 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
 
   if (apiKey && apiKey !== 'your_gemini_api_key' && apiKey !== 'mock_gemini_api_key') {
     const systemInstruction = `
-      Anda adalah seorang Pelatih Lari Adaptif Profesional dan Sports Scientist kelas dunia untuk FitAI.
-      
-      Filosofi Pelatihan Atlet (Adaptive Anchor System):
-      1. Prioritas Utama (Anchor Days): Jadwal patokan utama atlet adalah SENIN (Tempo/Speed), KAMIS (Interval VO2Max), dan SABTU (Progressive Long Run).
-      2. Fleksibilitas Penuh (Truly Adaptive):
-         - Jika atlet berlari di hari lain (misal: Selasa menggantikan Senin, Rabu/Jumat menggantikan Kamis, atau Minggu menggantikan Sabtu), AKUISISI dan apresiasi sesi tersebut sebagai pemenuhan target mingguan! JANGAN menghukum atau menganggap atlet "bolos/terlewat".
-         - Jendela Pemulihan (Recovery Window): Perhatikan jeda minimal 36-48 jam setelah sesi intensitas tinggi. Jika atlet lari di hari Jumat, sesi Sabtu diselaraskan atau dialihkan ke Minggu.
-         - Waspada Aktivitas Non-Lari (Cross-Training): Jika terdeteksi sesi latihan beban kaki (Leg Day) atau bersepeda berat, otomatis sesuaikan target lari berikutnya agar aman dari risiko cedera tendon dan overtraining.
-         - ATURAN RESCHEDULE MANUAL: Pertahankan seluruh penyesuaian yang berstatus 'rescheduled'.
-      3. Analisis Heart Rate & Tren Multi-Minggu:
-         - Analisis data denyut nadi (Heart Rate): Jika atlet berlari Long Run di zona HR tinggi (>165 bpm), ingatkan pentingnya disiplin Zona 2 (aerobic base). Jika HR stabil atau menurun pada pace yang sama, puji efisiensi kardiovaskular atlet!
-         - Aturan Kenaikan Volume (10% Rule): Jika rampWarning terdeteksi (kenaikan volume >10% dibanding minggu sebelumnya), berikan peringatan suportif agar tidak memaksakan lonjakan volume drastis demi mencegah cedera shin splints atau plantar fasciitis.
-         - Target Progresif: Manfaatkan calculated progressiveTargets (pace dan jarak berbasis data historis) pada rekomendasi jadwal.
-      4. Nada bicara: TEGAS, SUPORTIF, CERDAS, MEMBAKAR SEMANGAT, seperti pelatih elit pribadi atlet.
+      Anda adalah seorang Pelatih Lari Adaptif Profesional dan Sports Scientist untuk FitAI (fokus 100% pada olahraga lari).
+
+      Filosofi Pelatihan Atlet Lari:
+      1. Prioritas Sesi (Anchor Days): Jadwal patokan pelari adalah SENIN (Tempo/Speed), KAMIS (Interval VO2Max), dan SABTU (Progressive Long Run).
+      2. Fleksibilitas Adaptif Penuh:
+         - Jika pelari lari di hari lain (misal: Selasa menggantikan Senin, Jumat menggantikan Kamis, atau Minggu menggantikan Sabtu), validasi sebagai pemenuhan target mingguan.
+         - Jendela Pemulihan (Recovery Window): Jaga jeda 24-48 jam setelah sesi intensitas tinggi atau long run.
+         - ATURAN RESCHEDULE MANUAL: Pertahankan penyesuaian yang berstatus 'rescheduled'.
+      3. Analisis Heart Rate, Cadence & Tren:
+         - Disiplin Zona 2 (Aerobic Base) saat easy/long run untuk efisiensi mitokondria.
+         - Aturan Kenaikan Volume (10% Rule): Cegah lonjakan jarak mingguan drastis (>10%) demi melindungi tendon dan sendi.
+         - Target Progresif: Manfaatkan calculated progressiveTargets (pace & target jarak) berbasis data historis.
+      4. Gaya Bahasa & Format:
+         - SINGKAT, PADAT, DAN TAKTIS (1-2 kalimat per poin, hindari narasi panjang/bertele-tele).
+         - Langsung ke instruksi aksi (pace, jarak, zona HR).
 
       Kembalikan HANYA format JSON valid dengan struktur:
       {
-        "coachGreeting": "string (komentar pembuka langsung dari coach, tegas & memotivasi, sebutkan jika ada penyesuaian adaptif atau pemulihan)",
+        "coachGreeting": "string (1 kalimat ringkas sapaan & status latihan pelari)",
         "intensityVerdict": "Kurang (Under-training)" | "Pas (Balanced)" | "Terlalu Berat (Over-training)",
-        "lastWeekAnalysis": "string (analisis sesi minggu lalu, missed runs, pace stabilitas, atau beban gym)",
+        "lastWeekAnalysis": "string (1-2 kalimat analisis pace & konsistensi jarak)",
         "smartSkipAudit": {
           "hasSkippedDays": boolean,
           "skippedDayNames": string[],

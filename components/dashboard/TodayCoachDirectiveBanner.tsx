@@ -12,6 +12,7 @@ import {
   Play,
   Target,
   CheckCircle2,
+  ChevronRight,
 } from 'lucide-react';
 import { CoachPlanData, CoachWorkoutDay } from '@/types';
 import Modal from '@/components/ui/Modal';
@@ -171,30 +172,26 @@ export default function TodayCoachDirectiveBanner({
         <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="p-4 sm:p-5 relative z-10 space-y-4">
-          {/* 1. Profile / Greeting Row (Inspired by "Sara Wilson" top section) */}
-          <div className="flex items-center justify-between gap-2.5 pb-3.5 border-b border-white/10 min-w-0">
+          {/* 1. Clean Athletic Header */}
+          <div className="flex items-center justify-between gap-2.5 pb-3 border-b border-white/10 min-w-0">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FC5200] to-orange-400 flex items-center justify-center text-white font-black text-sm shadow-md">
-                  FP
-                </div>
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0c0c10]" />
+              <div className="w-8 h-8 rounded-xl bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Target className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-zinc-300 truncate">Halo, Atlet</span>
-                  <span className="text-[9px] font-mono font-bold text-[#FC5200] bg-orange-500/15 border border-orange-500/30 px-1.5 py-0.2 rounded uppercase shrink-0">
-                    PRO
-                  </span>
+                <div className="text-[10px] font-mono uppercase tracking-wider text-orange-400 font-bold">
+                  Sesi Lari Hari Ini
                 </div>
-                <h2 className="text-sm font-bold text-white tracking-tight truncate">FitPulse Intelligence</h2>
+                <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">
+                  Target Pelatih AI
+                </h2>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <div className="px-2 sm:px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-mono text-zinc-300 flex items-center gap-1 shrink-0">
+              <div className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] font-mono text-zinc-300 flex items-center gap-1 shrink-0">
                 <Calendar className="w-3 h-3 text-[#FC5200] shrink-0" />
-                <span className="truncate max-w-[120px]">{todayWibName}, {formatWibDateIndonesian().split(',')[0]}</span>
+                <span className="truncate">{todayWibName}, {formatWibDateIndonesian().split(',')[0]}</span>
               </div>
             </div>
           </div>
@@ -339,6 +336,17 @@ export default function TodayCoachDirectiveBanner({
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
             )}
+          </div>
+
+          {/* Quick link to AI Coach full queue */}
+          <div className="pt-0.5 text-center">
+            <Link
+              href="/ai-coach"
+              className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-[#FC5200] transition-colors"
+            >
+              <span>Lihat Antrean Menu & Tren Lengkap</span>
+              <ChevronRight className="w-3 h-3 text-[#FC5200]" />
+            </Link>
           </div>
         </div>
       </div>

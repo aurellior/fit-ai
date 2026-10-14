@@ -110,28 +110,25 @@ export default async function HomePage() {
       },
       {
         id: 'act-2',
-        title: 'Upper Body Hypertrophy',
+        title: 'Tempo Threshold Run 6K',
         source: ActivitySource.MANUAL,
-        type: ActivityType.WEIGHT_TRAINING,
+        type: ActivityType.RUN,
         startTime: MOCK_START_GYM,
-        durationSec: 3300,
-        calories: 280,
-        notes: 'Target dada dan tricep. Menambah beban pada incline bench press.',
-        gymSets: [
-          { exercise: 'Barbell Bench Press', sets: 4, reps: 8, weightKg: 75 },
-          { exercise: 'Incline Dumbbell Press', sets: 3, reps: 10, weightKg: 24 },
-          { exercise: 'Tricep Rope Pushdown', sets: 4, reps: 12, weightKg: 30 },
-        ],
+        durationSec: 2160,
+        distanceMeters: 6000,
+        avgPaceSecPerKm: 360,
+        calories: 410,
+        notes: 'Lari tempo di zona laktat. Ritme nafas stabil 2-2, cadence 172 spm.',
       },
     ];
     latestInsight = parseCoachPlanFromInsight({
       id: 'ins-1',
       summary:
-        'Volume latihan kardio dan latihan beban seimbang. Pace pada lari pagi menunjukkan efisiensi aerobik yang konsisten pada zona 2-3.',
+        'Volume lari mingguan seimbang. Ritme aerobik terjaga optimal pada zona 2-3.',
       strengths:
-        'Disiplin latihan beban secara terstruktur dan kemampuan mempertahankan cadence stabil pada sesi lari.',
+        'Konsistensi cadence stabil dan pacing merata di setiap kilometer.',
       recommendations:
-        'Jaga asupan protein harian minimal 1.6g/kg berat badan dan pastikan tidur 7-8 jam untuk pemulihan jaringan otot.',
+        'Pertahankan hidrasi elektrolit dan istirahat teratur untuk pemulihan otot.',
       periodStart: MOCK_START_GYM,
       periodEnd: BASE_MOCK_DATE,
       createdAt: BASE_MOCK_DATE,

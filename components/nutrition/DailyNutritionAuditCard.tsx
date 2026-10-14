@@ -14,10 +14,9 @@ import {
   Footprints,
   ShieldCheck,
   Zap,
-  Check,
   Info,
 } from 'lucide-react';
-import { getDailyNutritionAuditAction, logDailyStepsAction } from '@/actions/nutrition';
+import { getDailyNutritionAuditAction } from '@/actions/nutrition';
 
 interface DailyNutritionAuditCardProps {
   initialAudit: DailyNutritionAuditData;
@@ -33,25 +32,10 @@ export default function DailyNutritionAuditCard({
   const [audit, setAudit] = useState<DailyNutritionAuditData>(initialAudit);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // State untuk input langkah harian (Daily Steps)
-  const [stepInputValue, setStepInputValue] = useState<string>(
-    initialAudit.totalDailySteps && initialAudit.totalDailySteps > 0
-      ? String(initialAudit.totalDailySteps)
-      : ''
-  );
-  const [isSavingSteps, setIsSavingSteps] = useState(false);
-  const [saveStepSuccess, setSaveStepSuccess] = useState(false);
-  const [showStepForm, setShowStepForm] = useState(false);
-
   // Sync state cleanly when prop targetDate changes (e.g. from history pill select)
   if (prevDate !== initialAudit.date) {
     setPrevDate(initialAudit.date);
     setAudit(initialAudit);
-    setStepInputValue(
-      initialAudit.totalDailySteps && initialAudit.totalDailySteps > 0
-        ? String(initialAudit.totalDailySteps)
-        : ''
-    );
   }
 
   const handleRefreshAi = async () => {
@@ -59,50 +43,12 @@ export default function DailyNutritionAuditCard({
     try {
       const refreshed = await getDailyNutritionAuditAction(audit.date, true);
       setAudit(refreshed);
-      setStepInputValue(
-        refreshed.totalDailySteps && refreshed.totalDailySteps > 0
-          ? String(refreshed.totalDailySteps)
-          : ''
-      );
       if (onRefreshSuccess) onRefreshSuccess(refreshed);
     } catch (err) {
       console.error('Failed to refresh AI nutrition audit:', err);
     } finally {
       setIsRefreshing(false);
     }
-  };
-
-  const handleSaveSteps = async (stepsToSave?: number) => {
-    const rawVal = stepsToSave !== undefined ? stepsToSave : parseInt(stepInputValue, 10);
-    if (isNaN(rawVal) || rawVal < 0) return;
-
-    setIsSavingSteps(true);
-    try {
-      await logDailyStepsAction({
-        dateStr: audit.date,
-        stepCount: rawVal,
-        source: 'MANUAL',
-      });
-
-      // Refetch current day's audit with updated step deduction
-      const refreshed = await getDailyNutritionAuditAction(audit.date, false);
-      setAudit(refreshed);
-      setStepInputValue(rawVal > 0 ? String(rawVal) : '');
-      setSaveStepSuccess(true);
-      setTimeout(() => setSaveStepSuccess(false), 3000);
-
-      if (onRefreshSuccess) onRefreshSuccess(refreshed);
-    } catch (err) {
-      console.error('Failed to save daily steps:', err);
-    } finally {
-      setIsSavingSteps(false);
-    }
-  };
-
-  const handleQuickAddSteps = (added: number) => {
-    const current = parseInt(stepInputValue, 10) || 0;
-    const nextVal = current + added;
-    setStepInputValue(String(nextVal));
   };
 
   const getStatusBadge = (status: DailyNutritionAuditData['status']) => {
@@ -259,7 +205,7 @@ export default function DailyNutritionAuditCard({
                 <span>Latihan Terstruktur</span>
               </span>
               <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-orange-50 dark:bg-orange-950/50 text-[#FC5200] border border-orange-200 dark:border-orange-900/50">
-                Strava / Gym
+                Strava / Lari
               </span>
             </div>
             <div className="text-base font-bold font-mono text-zinc-900 dark:text-zinc-100 tabular-nums">
@@ -324,92 +270,6 @@ export default function DailyNutritionAuditCard({
               Kalori hidup dasar (24 kkal/kg/hari) untuk pemeliharaan organ & basal seluler.
             </div>
           </div>
-        </div>
-
-        {/* Input Langkah Harian Ala Strava (Interactive Widget) */}
-        <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowStepForm((prev) => !prev)}
-              className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-[#FC5200] dark:hover:text-[#FC5200] flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Footprints className="w-3.5 h-3.5 text-[#FC5200]" />
-              <span>
-                {audit.hasStepsLogged
-                  ? `Update Langkah Harian (${audit.totalDailySteps.toLocaleString('id-ID')} langkah)`
-                  : 'Catat Langkah Harian (Daily Steps)'}
-              </span>
-              <span className="text-[10px] text-zinc-400 font-normal">
-                {showStepForm ? '▲ Tutup' : '▼ Buka'}
-              </span>
-            </button>
-
-            {saveStepSuccess && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 animate-fadeIn">
-                <Check className="w-3.5 h-3.5" />
-                <span>Tersimpan & De-duplikasi Diterapkan</span>
-              </span>
-            )}
-          </div>
-
-          {showStepForm && (
-            <div className="mt-3 p-3 bg-white dark:bg-[#18181B] rounded-lg border border-zinc-200 dark:border-zinc-800 space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100000"
-                    placeholder="Contoh: 10500"
-                    value={stepInputValue}
-                    onChange={(e) => setStepInputValue(e.target.value)}
-                    className="w-full text-base sm:text-xs font-mono px-3 py-2.5 min-h-[44px] rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#FC5200]"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-mono pointer-events-none">
-                    langkah
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAddSteps(1000)}
-                    className="px-2.5 py-2 min-h-[36px] sm:min-h-0 text-xs sm:text-[10px] font-mono rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors"
-                  >
-                    +1.000
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickAddSteps(2500)}
-                    className="px-2.5 py-2 min-h-[36px] sm:min-h-0 text-xs sm:text-[10px] font-mono rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors"
-                  >
-                    +2.500
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStepInputValue('0')}
-                    className="px-2.5 py-2 min-h-[36px] sm:min-h-0 text-xs sm:text-[10px] font-mono rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 transition-colors"
-                  >
-                    Reset
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSaveSteps()}
-                    disabled={isSavingSteps}
-                    className="px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
-                  >
-                    {isSavingSteps ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Check className="w-3.5 h-3.5" />
-                    )}
-                    <span>Simpan</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

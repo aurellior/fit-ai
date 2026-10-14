@@ -4,9 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { formatDuration, formatDistance, formatPace, formatDate } from '@/lib/utils';
 import { ActivitySource } from '@prisma/client';
-import { Trash2, ArrowUpRight, Dumbbell, Activity, Bike, Footprints, ChevronRight } from 'lucide-react';
+import { Trash2, ArrowUpRight, Activity, Bike, Footprints, ChevronRight } from 'lucide-react';
 import { deleteActivity } from '@/actions/activity';
-import { ActivityData, GymSet } from '@/types';
+import { ActivityData } from '@/types';
 
 interface ActivityListProps {
   activities: ActivityData[];
@@ -35,10 +35,10 @@ export default function ActivityList({
       <div className="bg-white dark:bg-[#121214] border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-8 text-center">
         <Activity className="w-6 h-6 text-zinc-400 mx-auto mb-2" />
         <p className="text-zinc-800 dark:text-zinc-200 text-xs font-semibold">
-          Belum ada riwayat aktivitas yang tercatat
+          Belum ada riwayat lari yang tercatat
         </p>
         <p className="text-zinc-400 text-[11px] mt-0.5">
-          Tarik data dari Strava atau catat latihan manual untuk memulai pelacakan.
+          Sinkronkan Strava atau catat sesi lari manual untuk memulai pelacakan.
         </p>
       </div>
     );
@@ -46,8 +46,6 @@ export default function ActivityList({
 
   const getSportIcon = (type: string) => {
     switch (type) {
-      case 'WEIGHT_TRAINING':
-        return <Dumbbell className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
       case 'RIDE':
         return <Bike className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case 'WALK':
@@ -62,7 +60,6 @@ export default function ActivityList({
     <div className="space-y-2.5">
       {displayActivities.map((item) => {
         const isStrava = item.source === ActivitySource.STRAVA;
-        const sets: GymSet[] | null = Array.isArray(item.gymSets) ? item.gymSets : null;
 
         return (
           <div
@@ -155,33 +152,6 @@ export default function ActivityList({
                 </div>
               )}
             </div>
-
-            {/* Gym Set Tags Preview */}
-            {sets && sets.length > 0 && (
-              <div className="mt-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800/60">
-                <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider block mb-1">
-                  Set Latihan Beban {isOverview && sets.length > 2 ? `(${sets.length} gerakan)` : ''}
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {(isOverview ? sets.slice(0, 2) : sets).map((set, sIdx) => (
-                    <span
-                      key={sIdx}
-                      className="text-[11px] bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded border border-zinc-200/80 dark:border-zinc-800 font-mono"
-                    >
-                      {set.exercise}: {set.sets}x{set.reps} @ {set.weightKg}kg
-                    </span>
-                  ))}
-                  {isOverview && sets.length > 2 && (
-                    <Link
-                      href={`/activities/${item.id}`}
-                      className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 px-1 py-0.5"
-                    >
-                      +{sets.length - 2} lainnya
-                    </Link>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* Notes preview if not in overview */}
             {!isOverview && item.notes && (

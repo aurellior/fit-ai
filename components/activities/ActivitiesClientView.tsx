@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ActivityData, GymSet } from '@/types';
+import { ActivityData } from '@/types';
 import { ActivitySource, ActivityType } from '@prisma/client';
 import {
   formatDuration,
@@ -13,7 +13,6 @@ import {
 } from '@/lib/utils';
 import {
   Activity,
-  Dumbbell,
   Bike,
   Footprints,
   Search,
@@ -62,7 +61,6 @@ export default function ActivitiesClientView({
     // Type filter
     if (selectedType !== 'ALL') {
       if (selectedType === 'RUN' && item.type !== ActivityType.RUN) return false;
-      if (selectedType === 'WEIGHT_TRAINING' && item.type !== ActivityType.WEIGHT_TRAINING) return false;
       if (selectedType === 'RIDE' && item.type !== ActivityType.RIDE) return false;
       if (selectedType === 'HIKE_WALK' && item.type !== ActivityType.HIKE && item.type !== ActivityType.WALK) return false;
     }
@@ -75,10 +73,7 @@ export default function ActivitiesClientView({
       const q = searchQuery.toLowerCase();
       const matchTitle = item.title.toLowerCase().includes(q);
       const matchNotes = item.notes?.toLowerCase().includes(q) || false;
-      const matchGym =
-        Array.isArray(item.gymSets) &&
-        item.gymSets.some((g: GymSet) => g.exercise.toLowerCase().includes(q));
-      if (!matchTitle && !matchNotes && !matchGym) return false;
+      if (!matchTitle && !matchNotes) return false;
     }
 
     return true;
@@ -129,9 +124,11 @@ export default function ActivitiesClientView({
     }
   };
 
-  const runCount = initialActivities.filter((a) => a.type === ActivityType.RUN).length;
-  const gymCount = initialActivities.filter((a) => a.type === ActivityType.WEIGHT_TRAINING).length;
-  const rideCount = initialActivities.filter((a) => a.type === ActivityType.RIDE).length;
+  const runActivities = initialActivities.filter((a) => a.type === ActivityType.RUN);
+  const runCount = runActivities.length;
+  const totalRunMeters = runActivities.reduce((acc, a) => acc + (a.distanceMeters || 0), 0);
+  const totalRunKm = (totalRunMeters / 1000).toFixed(1);
+  const totalDurationSec = runActivities.reduce((acc, a) => acc + (a.durationSec || 0), 0);
 
   return (
     <div className="space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
@@ -142,44 +139,43 @@ export default function ActivitiesClientView({
             Riwayat Aktivitas
           </h1>
           <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
-            {initialActivities.length} sesi latihan tercatat
+            {runCount} sesi lari tercatat
           </p>
         </div>
 
         <button
           onClick={() => setIsActivityModalOpen(true)}
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-98 shrink-0"
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#FC5200] hover:bg-[#E04900] text-white transition-colors flex items-center gap-1.5 shadow-xs active:scale-98 shrink-0 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>+ Latihan</span>
+          <span>+ Sesi Lari</span>
         </button>
       </div>
 
-      {/* 2. Top Summary Stat Badges */}
+      {/* 2. Top Summary Stat Badges (Running Pure-Play) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
-          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Total Aktivitas</span>
-          <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5">
-            {initialActivities.length} <span className="text-xs font-normal text-zinc-500">sesi</span>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
-          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Sesi Lari</span>
+          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Total Sesi Lari</span>
           <div className="text-lg font-bold font-mono text-[#FC5200] mt-0.5">
-            {runCount} <span className="text-xs font-normal text-zinc-500">kali</span>
+            {runCount} <span className="text-xs font-normal text-zinc-500">sesi</span>
           </div>
         </div>
         <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
-          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Latihan Beban (Gym)</span>
-          <div className="text-lg font-bold font-mono text-purple-600 dark:text-purple-400 mt-0.5">
-            {gymCount} <span className="text-xs font-normal text-zinc-500">kali</span>
+          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Jarak Terakumulasi</span>
+          <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5">
+            {totalRunKm} <span className="text-xs font-normal text-zinc-500">km</span>
           </div>
         </div>
         <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
-          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Gowes & Outdoor</span>
-          <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-            {rideCount + (initialActivities.length - runCount - gymCount - rideCount)}{' '}
-            <span className="text-xs font-normal text-zinc-500">sesi</span>
+          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Total Durasi Lari</span>
+          <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5">
+            {formatDuration(totalDurationSec)}
+          </div>
+        </div>
+        <div className="bg-white dark:bg-[#121214] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-3.5">
+          <span className="text-[10px] uppercase font-mono text-zinc-400 font-semibold block">Total Log</span>
+          <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100 mt-0.5">
+            {initialActivities.length} <span className="text-xs font-normal text-zinc-500">aktivitas</span>
           </div>
         </div>
       </div>
@@ -197,7 +193,7 @@ export default function ActivitiesClientView({
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              placeholder="Cari nama aktivitas, catatan rute, atau gerakan gym..."
+              placeholder="Cari nama sesi lari, rute, atau catatan..."
               className="w-full text-base sm:text-sm pl-9 pr-3.5 py-2.5 min-h-[44px] rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FC5200] focus:border-[#FC5200] transition-colors"
             />
           </div>
@@ -242,17 +238,6 @@ export default function ActivitiesClientView({
             <span>Lari ({runCount})</span>
           </button>
           <button
-            onClick={() => handleTypeChange('WEIGHT_TRAINING')}
-            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-              selectedType === 'WEIGHT_TRAINING'
-                ? 'bg-purple-600 text-white'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            <Dumbbell className="w-3 h-3" />
-            <span>Gym / Beban ({gymCount})</span>
-          </button>
-          <button
             onClick={() => handleTypeChange('RIDE')}
             className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
               selectedType === 'RIDE'
@@ -261,7 +246,7 @@ export default function ActivitiesClientView({
             }`}
           >
             <Bike className="w-3 h-3" />
-            <span>Sepeda ({rideCount})</span>
+            <span>Sepeda</span>
           </button>
           <button
             onClick={() => handleTypeChange('HIKE_WALK')}
@@ -272,7 +257,7 @@ export default function ActivitiesClientView({
             }`}
           >
             <Footprints className="w-3 h-3" />
-            <span>Hike & Jalan</span>
+            <span>Jalan / Hike</span>
           </button>
         </div>
       </div>
@@ -302,8 +287,6 @@ export default function ActivitiesClientView({
         ) : (
           paginatedList.map((item) => {
             const isStrava = item.source === ActivitySource.STRAVA;
-            const sets: GymSet[] | null = Array.isArray(item.gymSets) ? item.gymSets : null;
-
             return (
               <div
                 key={item.id}
@@ -402,25 +385,6 @@ export default function ActivitiesClientView({
                     </div>
                   )}
                 </div>
-
-                {/* Gym Sets detail tags */}
-                {sets && sets.length > 0 && (
-                  <div className="mt-3.5 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1.5 font-mono">
-                      Rincian Gerakan Latihan Beban ({sets.length} gerakan)
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {sets.map((set, sIdx) => (
-                        <span
-                          key={sIdx}
-                          className="text-[11px] bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 px-2.5 py-1 rounded-md border border-zinc-200 dark:border-zinc-800 font-mono"
-                        >
-                          {set.exercise}: <strong>{set.sets}x{set.reps}</strong> @ {set.weightKg}kg
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Athlete notes */}
                 {item.notes && (

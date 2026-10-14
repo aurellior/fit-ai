@@ -56,7 +56,7 @@ export default function BottomNav({
 
   const isOverview = pathname === '/' || pathname === '/dashboard';
   const isActivities = pathname.startsWith('/activities');
-  const isCoach = pathname.startsWith('/coach');
+  const isCoach = pathname.startsWith('/coach') || pathname.startsWith('/ai-coach');
   const isNutrition = pathname.startsWith('/nutrition');
 
   const handleAction = (callback: () => void) => {
@@ -80,7 +80,7 @@ export default function BottomNav({
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#FC5200]" />
             <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-300 font-mono">
-              Aksi Cepat Atlet
+              Aksi Cepat
             </span>
           </div>
           <button
@@ -98,14 +98,14 @@ export default function BottomNav({
             className="flex items-center gap-3.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/50 text-left transition-all active:scale-98 cursor-pointer"
           >
             <div className="w-10 h-10 rounded-xl bg-[#FC5200] text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Dumbbell className="w-5 h-5" />
+              <Activity className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                Catat Latihan (Lari & Gym)
+                Catat Lari Manual
               </div>
               <div className="text-[11px] text-zinc-500 truncate">
-                Input jarak, pace lari, atau repetisi beban
+                Input jarak, durasi, dan catatan lari
               </div>
             </div>
           </button>

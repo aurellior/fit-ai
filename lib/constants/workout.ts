@@ -17,7 +17,7 @@ export const PRESET_OBSTACLES: PresetObstacle[] = [
   {
     id: 'fatigue',
     label: 'Kelelahan / DOMS Ekstrem',
-    desc: 'Otot belum pulih dari sesi lari/gym sebelumnya',
+    desc: 'Otot belum pulih dari sesi lari sebelumnya',
     icon: BatteryLow,
   },
   {
@@ -55,10 +55,10 @@ export const DEFAULT_WEEKLY_SCHEDULES: Record<number, DefaultScheduleDay> = {
   },
   2: {
     dayName: 'Selasa',
-    focus: 'Gym Hypertrophy & Cross Training',
-    targetMetric: '45-60 menit Resistance Training • Fokus Core & Lower Body',
-    details: 'Squats, lunges, dan calf raises untuk memperkuat stabilitas sendi saat lari, ditutup stretching dinamis.',
-    badge: 'Cross-Training',
+    focus: 'Easy Recovery Run & Mobilitas',
+    targetMetric: '3.0 - 4.0 km • Pace Santai Zona 2 (Conversational)',
+    details: 'Lari santai pemulihan tanpa beban kecepatan untuk memperlancar sirkulasi darah dan pemulihan sendi.',
+    badge: 'Easy Run',
     isKey: false,
   },
   3: {

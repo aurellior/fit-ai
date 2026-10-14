@@ -84,6 +84,18 @@ export default function CoachClientView({
     status: 'upcoming',
   };
 
+  // Prefill otomatis untuk modal catat lari berbasis sesi aktif
+  let activeDistKm: number | undefined;
+  if (activeWorkout.targetMetric) {
+    const match = activeWorkout.targetMetric.match(/([\d.]+)\s*km/i);
+    if (match) activeDistKm = parseFloat(match[1]);
+  }
+  const workoutPrefillData = {
+    title: `Sesi Lari: ${activeWorkout.focus}`,
+    distanceKm: activeDistKm,
+    notes: activeWorkout.details ? `Target: ${activeWorkout.details}` : undefined,
+  };
+
   // Antrean sesi ke depan
   const upcomingQueue: CoachWorkoutDay[] = plan?.upcomingQueue || [
     {
@@ -243,10 +255,10 @@ export default function CoachClientView({
 
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase font-mono">
-              AI Coach Intelligence
+              AI Running Coach
             </h1>
             <span className="text-[10px] font-mono text-[#FC5200] bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 px-2 py-0.5 rounded-full font-bold">
-              Antrean Adaptif Bebas Hari
+              Antrean Lari Adaptif
             </span>
           </div>
         </div>
@@ -287,7 +299,7 @@ export default function CoachClientView({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#FC5200] animate-pulse" />
               <span className="text-[11px] font-mono font-bold tracking-wider text-orange-400 uppercase">
-                Next Up • Sesi Siap Eksekusi
+                Sesi Lari Siap Eksekusi
               </span>
             </div>
 
@@ -676,10 +688,11 @@ export default function CoachClientView({
       <Modal
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
-        title="Catat Aktivitas Olahraga"
+        title="Catat Sesi Lari"
       >
         <ManualActivityForm
           isModal
+          initialData={workoutPrefillData}
           onSuccess={() => {
             setIsActivityModalOpen(false);
             handleAdvanceQueue('complete');

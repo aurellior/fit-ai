@@ -18,8 +18,8 @@ export default function Navbar() {
             <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">
               FitPulse<span className="text-[#FC5200]">AI</span>
             </span>
-            <span className="text-[9px] font-mono font-bold text-[#FC5200] bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded border border-orange-200/80 dark:border-orange-900/60 uppercase tracking-wider">
-              PRO
+            <span className="text-[9px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200/60 dark:border-zinc-700/60 uppercase tracking-wider">
+              RUN
             </span>
           </div>
         </Link>

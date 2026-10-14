@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import StravaConnectButton from '@/components/dashboard/StravaConnectButton';
-import WeeklyAiInsight from '@/components/dashboard/WeeklyAiInsight';
 import ActivityList from '@/components/dashboard/ActivityList';
 import NutritionSummary from '@/components/dashboard/NutritionSummary';
 import DashboardCharts from '@/components/dashboard/DashboardCharts';
@@ -79,6 +78,32 @@ export default function DashboardClientView({
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+  const [activityModalPrefill, setActivityModalPrefill] = useState<{
+    title?: string;
+    distanceKm?: number;
+    durationMinutes?: number;
+    notes?: string;
+  } | undefined>(undefined);
+
+  const handleStartWorkoutDirective = () => {
+    const active = weeklyInsight?.coachPlan?.activeWorkout || weeklyInsight?.coachPlan?.todayDynamicDirective;
+    let prefillDist: number | undefined;
+    if (active?.targetMetric) {
+      const match = active.targetMetric.match(/([\d.]+)\s*km/i);
+      if (match) prefillDist = parseFloat(match[1]);
+    }
+    setActivityModalPrefill({
+      title: active?.focus ? `Sesi Lari: ${active.focus}` : 'Sesi Lari Rutin',
+      distanceKm: prefillDist,
+      notes: active?.details ? `Target Coach: ${active.details}` : undefined,
+    });
+    setIsActivityModalOpen(true);
+  };
+
+  const handleOpenGeneralActivityModal = () => {
+    setActivityModalPrefill(undefined);
+    setIsActivityModalOpen(true);
+  };
 
   // Dual-hierarchy view mode: 'week' (This Week - Default) | 'all' (All-Time Cumulative)
   const [viewMode, setViewMode] = useState<'week' | 'all'>('week');
@@ -136,18 +161,14 @@ export default function DashboardClientView({
   const goalProgressPercent = Math.min(100, Math.round((currentWeekKmNum / weeklyGoalKm) * 100));
   const remainingKm = Math.max(0, Number((weeklyGoalKm - currentWeekKmNum).toFixed(1)));
 
-  // Sports breakdown this week
-  const runCount = weekActivities.filter((a) => a.type === 'RUN').length;
-  const rideCount = weekActivities.filter((a) => a.type === 'RIDE').length;
-  const gymCount = weekActivities.filter((a) => a.type === 'WEIGHT_TRAINING').length;
-  const otherCount = weekActivities.length - (runCount + rideCount + gymCount);
-
-  const breakdownParts: string[] = [];
-  if (runCount > 0) breakdownParts.push(`${runCount} Lari`);
-  if (rideCount > 0) breakdownParts.push(`${rideCount} Gowes`);
-  if (gymCount > 0) breakdownParts.push(`${gymCount} Gym/Beban`);
-  if (otherCount > 0) breakdownParts.push(`${otherCount} Lainnya`);
-  const sportsBreakdown = breakdownParts.length > 0 ? breakdownParts.join(' • ') : 'Belum ada sesi';
+  // Sports breakdown this week (Running focus)
+  const runActivitiesWeek = weekActivities.filter((a) => a.type === 'RUN');
+  const runCount = runActivitiesWeek.length;
+  const otherCount = weekActivities.length - runCount;
+  const sportsBreakdown =
+    runCount > 0
+      ? `${runCount} Sesi Lari (${weekDistanceKm} km)${otherCount > 0 ? ` • ${otherCount} Lainnya` : ''}`
+      : 'Belum ada lari pekan ini';
 
   // B. All-Time Cumulative Data & Milestones
   const allDistanceMeters = initialActivities.reduce(
@@ -194,7 +215,7 @@ export default function DashboardClientView({
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[#FC5200] animate-pulse"></span>
           <span className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase">
-            FitPulse Athlete Engine
+            FitPulse Run
           </span>
         </div>
         <StravaConnectButton
@@ -209,7 +230,7 @@ export default function DashboardClientView({
         <TodayCoachDirectiveBanner
           coachPlan={weeklyInsight?.coachPlan}
           onRescheduled={handleWorkoutRescheduled}
-          onStartWorkoutClick={() => setIsActivityModalOpen(true)}
+          onStartWorkoutClick={handleStartWorkoutDirective}
         />
       </section>
 
@@ -450,15 +471,12 @@ export default function DashboardClientView({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                        Total Akumulasi & Milestones Karir
+                        Statistik Akumulasi All-Time
                       </span>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
-                        {allCount} Aktivitas
+                        {allCount} Sesi
                       </span>
                     </div>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
-                      Catatan kumulatif sejak pertama kali terhubung dengan Strava & FitAI
-                    </p>
                   </div>
                 </div>
 
@@ -583,12 +601,7 @@ export default function DashboardClientView({
         />
       </section>
 
-      {/* 4. Weekly AI Performance Intelligence */}
-      <section id="insights">
-        <WeeklyAiInsight initialInsight={weeklyInsight} />
-      </section>
-
-      {/* 6. Feed Ringkas Overview: Sports & Nutrition Vertically Flowing */}
+      {/* 4. Feed Ringkas Overview: Steps, Nutrition & Running Logs */}
       <div className="space-y-4">
         {/* Step Check-In Card */}
         <DailyStepCheckInCard
@@ -642,15 +655,16 @@ export default function DashboardClientView({
         />
       </div>
 
-      {/* 7. Action Modals (Pristine, clean overlays) */}
+      {/* 5. Action Modals (Pristine, clean overlays) */}
       <Modal
         isOpen={isActivityModalOpen}
         onClose={() => setIsActivityModalOpen(false)}
-        title="Catat Aktivitas Latihan"
+        title="Catat Sesi Lari"
         maxWidth="lg"
       >
         <ManualActivityForm
           isModal
+          initialData={activityModalPrefill}
           onSuccess={() => {
             setIsActivityModalOpen(false);
             handleRefresh();
@@ -687,9 +701,9 @@ export default function DashboardClientView({
         />
       </Modal>
 
-      {/* 8. Thumb-friendly Mobile Bottom Navigation Bar & FAB Speed Dial */}
+      {/* 6. Thumb-friendly Mobile Bottom Navigation Bar & FAB Speed Dial */}
       <BottomNav
-        onOpenActivityModal={() => setIsActivityModalOpen(true)}
+        onOpenActivityModal={handleOpenGeneralActivityModal}
         onOpenFoodModal={() => setIsFoodModalOpen(true)}
         onOpenWeightModal={() => setIsWeightModalOpen(true)}
       />
