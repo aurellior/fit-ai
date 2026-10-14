@@ -71,6 +71,8 @@ model Activity {
   avgPaceSecPerKm  Float?          // Average pace in sec/km
   elevationGainM   Float?          // Elevation gain in meters
   calories         Int?
+  avgHeartRate     Float?          // Average heart rate (bpm) from Strava
+  maxHeartRate     Float?          // Max heart rate (bpm) from Strava
 
   // Strava specific
   stravaActivityId BigInt?         @unique

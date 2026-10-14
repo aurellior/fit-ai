@@ -40,6 +40,8 @@ export interface ActivityData {
   avgPaceSecPerKm?: number | null;
   elevationGainM?: number | null;
   calories?: number | null;
+  avgHeartRate?: number | null;
+  maxHeartRate?: number | null;
   stravaActivityId?: string | null;
   summaryPolyline?: string | null;
   notes?: string | null;
@@ -150,6 +152,8 @@ export interface CoachPlanData {
   activeWorkout?: CoachWorkoutDay;
   upcomingQueue?: CoachWorkoutDay[];
   queueIndex?: number;
+  progressiveTargets?: ProgressiveTargets;
+  performanceTrend?: PerformanceTrend;
 }
 
 export interface AiInsightData {
@@ -184,6 +188,52 @@ export interface StravaActivityStepSummary {
   durationSec: number;
   stepsAbsorbed: number;
   isStrava: boolean;
+}
+
+// ==========================================
+// Performance Trend & Progressive Targets
+// ==========================================
+
+export interface WeeklySnapshot {
+  weekLabel: string; // e.g. "Minggu 1 (7-13 Okt)"
+  weekStart: string; // ISO date
+  totalRunDistanceKm: number;
+  totalRunCount: number;
+  avgPaceSecPerKm: number | null;
+  avgHeartRate: number | null;
+  totalElevationGainM: number;
+  totalCalories: number;
+}
+
+export interface PerformanceTrend {
+  weeks: WeeklySnapshot[];
+  paceTrendDirection: 'improving' | 'stable' | 'declining';
+  paceDeltaSecPerKm: number; // negative = improving
+  volumeTrendDirection: 'increasing' | 'stable' | 'decreasing';
+  volumeDeltaPercent: number;
+  avgHrTrend: 'decreasing' | 'stable' | 'increasing' | null;
+  weeklyVolumeRampPercent: number; // current vs previous week %
+  rampWarning: boolean; // true if >10% ramp-up
+  summary: string; // human-readable trend summary
+}
+
+export interface ProgressiveTargets {
+  tempoPaceRange: string; // e.g. "6:50 - 7:05/km"
+  tempoPaceSecPerKmLow: number;
+  tempoPaceSecPerKmHigh: number;
+  tempoDistanceKm: number;
+  intervalPaceRange: string;
+  intervalPaceSecPerKmLow: number;
+  intervalPaceSecPerKmHigh: number;
+  longRunPaceRange: string;
+  longRunPaceSecPerKmLow: number;
+  longRunPaceSecPerKmHigh: number;
+  longRunDistanceKm: number;
+  maxHrEstimate: number | null;
+  zone2HrRange: string | null; // e.g. "130-150 bpm"
+  zone4HrRange: string | null; // e.g. "160-175 bpm"
+  basedOnWeeks: number;
+  isDefault: boolean; // true if no historical data available
 }
 
 export interface DailyNutritionAuditData {

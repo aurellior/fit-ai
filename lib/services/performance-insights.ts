@@ -9,6 +9,8 @@ import {
   CoachWorkoutDay,
   SmartSkipAudit,
   ScheduledDayStatus,
+  ProgressiveTargets,
+  PerformanceTrend,
 } from '@/types';
 
 import {
@@ -19,6 +21,11 @@ import {
   isSameWibDate,
 } from '@/lib/timezone';
 import { DEFAULT_WEEKLY_SCHEDULES, DEFAULT_ADAPTIVE_WORKOUT_CYCLE } from '@/lib/constants/workout';
+import {
+  calculateWeeklySnapshots,
+  analyzePerformanceTrend,
+  calculateProgressiveTargets,
+} from '@/lib/services/performance-trends';
 
 interface ScheduleAuditResult {
   smartSkipAudit: SmartSkipAudit;
@@ -73,7 +80,8 @@ function formatCompletedActivity(act: ActivityData, executedOnDay?: string) {
  */
 export function auditScheduleAndAdaptivePlan(
   activities: ActivityData[],
-  existingPlan?: CoachPlanData | null
+  existingPlan?: CoachPlanData | null,
+  progressiveTargets?: ProgressiveTargets | null
 ): ScheduleAuditResult {
   const now = new Date();
   const currentDayOfWeek = getWibDayIndex(now); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
@@ -378,6 +386,34 @@ export function auditScheduleAndAdaptivePlan(
   const hasSkippedDays =
     skippedDayNames.length > 0 || isMondayRescheduled || isThursdayRescheduled || isSaturdayRescheduled;
 
+  // Helper: format pace untuk display
+  const fmtPace = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return `${m}'${s.toString().padStart(2, '0')}"/km`;
+  };
+
+  // Target progresif atau default
+  const pt = progressiveTargets;
+  const tempoTarget = pt && !pt.isDefault
+    ? `${pt.tempoDistanceKm.toFixed(1)} km • Pace ${pt.tempoPaceRange}`
+    : '4.5 km - 5.0 km • Pace 7:15 - 7:30/km';
+  const tempoDetails = pt && !pt.isDefault
+    ? `1 km pemanasan santai, ${(pt.tempoDistanceKm - 2).toFixed(1)} km Tempo Run di ${pt.tempoPaceRange}, ditutup 1 km pendinginan jalan aktif.${pt.zone4HrRange ? ` Target HR: ${pt.zone4HrRange}.` : ''}`
+    : '1 km pemanasan santai (Pace 8:30), 2.5 km Tempo Run terkunci di Pace 7:15-7:30/km, ditutup 1 km pendinginan jalan aktif.';
+  const intervalTarget = pt && !pt.isDefault
+    ? `5x 400m @ ${pt.intervalPaceRange} (Rest 90s)`
+    : '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)';
+  const intervalDetails = pt && !pt.isDefault
+    ? `1 km jogging ringan dinamis. 5 set lari 400m cepat (${pt.intervalPaceRange}) dengan istirahat jalan 90 detik tiap set.${pt.zone4HrRange ? ` Target HR zona tempo: ${pt.zone4HrRange}.` : ''}`
+    : '1 km jogging ringan dinamis. 5 set lari 400m cepat dengan istirahat jalan 90 detik tiap set. Jangan duduk saat jeda rest.';
+  const longRunTarget = pt && !pt.isDefault
+    ? `${pt.longRunDistanceKm.toFixed(1)} km • Pace ${pt.longRunPaceRange}`
+    : '6.5 km - 7.0 km • Pace 8:15 - 8:40/km';
+  const longRunDetails = pt && !pt.isDefault
+    ? `Lari jarak jauh murni di Zona 2 (conversational pace, ${pt.longRunPaceRange}). Kenaikan jarak terkontrol agar aman.${pt.zone2HrRange ? ` Target HR: ${pt.zone2HrRange}.` : ''}`
+    : 'Lari jarak jauh murni di Zona 2 (conversational pace). Kenaikan jarak terkontrol agar aman dari risiko cedera sendi dan tulang kering.';
+
   // Bangun Workout Days dasar (dengan preservasi data reschedule dan nama hari adaptif)
   const mondayWorkout: CoachWorkoutDay = {
     dayName: mondaySlotDayName,
@@ -387,10 +423,10 @@ export function auditScheduleAndAdaptivePlan(
     originalFocus: 'Tempo / Speed Run',
     targetMetric: isMondayRescheduled
       ? existingPlan!.schedule.monday.targetMetric
-      : '4.5 km - 5.0 km • Pace 7:15 - 7:30/km',
+      : tempoTarget,
     details: isMondayRescheduled
       ? existingPlan!.schedule.monday.details
-      : '1 km pemanasan santai (Pace 8:30), 2.5 km Tempo Run terkunci di Pace 7:15-7:30/km, ditutup 1 km pendinginan jalan aktif.',
+      : tempoDetails,
     intensityBadge: 'High',
     status: mondayStatus,
     isAdjusted: mondayIsAdjusted || (isMondayRescheduled ? true : false),
@@ -406,10 +442,10 @@ export function auditScheduleAndAdaptivePlan(
     originalFocus: 'Interval / Mid-Week Endurance',
     targetMetric: isThursdayRescheduled
       ? existingPlan!.schedule.thursday.targetMetric
-      : '5x 400m @ Pace 6:45 - 7:00/km (Rest 90s)',
+      : intervalTarget,
     details: isThursdayRescheduled
       ? existingPlan!.schedule.thursday.details
-      : '1 km jogging ringan dinamis. 5 set lari 400m cepat dengan istirahat jalan 90 detik tiap set. Jangan duduk saat jeda rest.',
+      : intervalDetails,
     intensityBadge: 'High',
     status: thursdayStatus,
     isAdjusted: thursdayIsAdjusted || (isThursdayRescheduled ? true : false),
@@ -425,10 +461,10 @@ export function auditScheduleAndAdaptivePlan(
     originalFocus: 'Safe Progressive Long Run',
     targetMetric: isSaturdayRescheduled
       ? existingPlan!.schedule.saturday.targetMetric
-      : '6.5 km - 7.0 km • Pace 8:15 - 8:40/km',
+      : longRunTarget,
     details: isSaturdayRescheduled
       ? existingPlan!.schedule.saturday.details
-      : 'Lari jarak jauh murni di Zona 2 (conversational pace). Kenaikan jarak terkontrol agar aman dari risiko cedera sendi dan tulang kering.',
+      : longRunDetails,
     intensityBadge: 'Endurance',
     status: saturdayStatus,
     isAdjusted: saturdayIsAdjusted || (isSaturdayRescheduled ? true : false),
@@ -923,7 +959,10 @@ export function parseCoachPlanFromInsight(
 
   // Jika activities disediakan atau coachPlan belum lengkap, lakukan audit adaptif dinamis
   if (activities.length > 0 || !coachPlan || !coachPlan.smartSkipAudit) {
-    const auditRes = auditScheduleAndAdaptivePlan(activities, coachPlan);
+    const snapshots = calculateWeeklySnapshots(activities, 6);
+    const trend = analyzePerformanceTrend(snapshots);
+    const progTargets = calculateProgressiveTargets(activities, 6);
+    const auditRes = auditScheduleAndAdaptivePlan(activities, coachPlan, progTargets);
     if (!coachPlan) {
       coachPlan = {
         coachGreeting: insight.summary || 'Fokus pada konsistensi jadwal lari rutin Anda minggu ini.',
@@ -945,6 +984,8 @@ export function parseCoachPlanFromInsight(
         activeWorkout: auditRes.activeWorkout,
         upcomingQueue: auditRes.upcomingQueue,
         queueIndex: auditRes.queueIndex,
+        progressiveTargets: progTargets,
+        performanceTrend: trend,
       };
     } else {
       // Sinkronkan audit jadwal dan arahan hari ini dengan aktivitas riil terbaru
@@ -955,6 +996,8 @@ export function parseCoachPlanFromInsight(
       coachPlan.activeWorkout = auditRes.activeWorkout;
       coachPlan.upcomingQueue = auditRes.upcomingQueue;
       coachPlan.queueIndex = auditRes.queueIndex;
+      coachPlan.progressiveTargets = progTargets;
+      coachPlan.performanceTrend = trend;
     }
   }
 
@@ -965,8 +1008,8 @@ export function parseCoachPlanFromInsight(
 }
 
 export async function generateWeeklyPerformanceInsight(userId: string): Promise<AiInsightData> {
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 14); // Ambil 14 hari terakhir untuk audit skip dan fatik
+  const sixWeeksAgo = new Date();
+  sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42); // Ambil 42 hari (6 minggu) untuk tren multi-minggu & progressive targets
 
   let activities: ActivityData[] = [];
   let weightLogs: WeightLogData[] = [];
@@ -978,14 +1021,14 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       prisma.activity.findMany({
         where: {
           userId,
-          startTime: { gte: oneWeekAgo },
+          startTime: { gte: sixWeeksAgo },
         },
         orderBy: { startTime: 'asc' },
       }),
       prisma.weightLog.findMany({
         where: {
           userId,
-          loggedAt: { gte: oneWeekAgo },
+          loggedAt: { gte: sixWeeksAgo },
         },
         orderBy: { loggedAt: 'asc' },
       }),
@@ -1010,8 +1053,13 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     console.warn('Prisma DB query fallback in insights service:', dbErr);
   }
 
-  // Hitung audit jadwal dan penyesuaian cerdas (Truly Adaptive Anchor Engine)
-  const auditResult = auditScheduleAndAdaptivePlan(activities, existingPlan);
+  // Hitung tren performa 4-6 minggu & target progresif berbasis data
+  const weeklySnapshots = calculateWeeklySnapshots(activities, 6);
+  const performanceTrend = analyzePerformanceTrend(weeklySnapshots);
+  const progressiveTargets = calculateProgressiveTargets(activities, 6);
+
+  // Hitung audit jadwal dan penyesuaian cerdas (Truly Adaptive Anchor Engine) dengan target progresif
+  const auditResult = auditScheduleAndAdaptivePlan(activities, existingPlan, progressiveTargets);
 
   const promptData = {
     anchorDays: [
@@ -1023,7 +1071,27 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     nextWorkoutRecommendation: auditResult.nextWorkoutDay,
     adaptiveWorkouts: auditResult.schedule,
     todayDynamicDirective: auditResult.todayDynamicDirective,
-    totalWorkoutsLast14Days: activities.length,
+    performanceTrend: {
+      summary: performanceTrend.summary,
+      paceTrendDirection: performanceTrend.paceTrendDirection,
+      paceDeltaSecPerKm: performanceTrend.paceDeltaSecPerKm,
+      volumeTrendDirection: performanceTrend.volumeTrendDirection,
+      volumeDeltaPercent: performanceTrend.volumeDeltaPercent,
+      avgHrTrend: performanceTrend.avgHrTrend,
+      weeklyVolumeRampPercent: performanceTrend.weeklyVolumeRampPercent,
+      rampWarning: performanceTrend.rampWarning,
+    },
+    progressiveTargets: {
+      tempoPaceRange: progressiveTargets.tempoPaceRange,
+      tempoDistanceKm: progressiveTargets.tempoDistanceKm,
+      intervalPaceRange: progressiveTargets.intervalPaceRange,
+      longRunPaceRange: progressiveTargets.longRunPaceRange,
+      longRunDistanceKm: progressiveTargets.longRunDistanceKm,
+      zone2HrRange: progressiveTargets.zone2HrRange,
+      zone4HrRange: progressiveTargets.zone4HrRange,
+      isDefault: progressiveTargets.isDefault,
+    },
+    totalWorkoutsLast42Days: activities.length,
     recordedActivities: activities.map((a) => ({
       title: a.title,
       type: a.type,
@@ -1032,6 +1100,10 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
       durationMinutes: Math.round(a.durationSec / 60),
       distanceKm: a.distanceMeters ? (a.distanceMeters / 1000).toFixed(2) : null,
       avgPaceSecPerKm: a.avgPaceSecPerKm,
+      avgHeartRate: a.avgHeartRate || null,
+      maxHeartRate: a.maxHeartRate || null,
+      elevationGainM: a.elevationGainM || 0,
+      calories: a.calories || null,
       gymSets: a.gymSets,
       notes: a.notes,
     })),
@@ -1052,7 +1124,11 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
          - Jendela Pemulihan (Recovery Window): Perhatikan jeda minimal 36-48 jam setelah sesi intensitas tinggi. Jika atlet lari di hari Jumat, sesi Sabtu diselaraskan atau dialihkan ke Minggu.
          - Waspada Aktivitas Non-Lari (Cross-Training): Jika terdeteksi sesi latihan beban kaki (Leg Day) atau bersepeda berat, otomatis sesuaikan target lari berikutnya agar aman dari risiko cedera tendon dan overtraining.
          - ATURAN RESCHEDULE MANUAL: Pertahankan seluruh penyesuaian yang berstatus 'rescheduled'.
-      3. Nada bicara: TEGAS, SUPORTIF, CERDAS, MEMBAKAR SEMANGAT, seperti pelatih elit pribadi atlet.
+      3. Analisis Heart Rate & Tren Multi-Minggu:
+         - Analisis data denyut nadi (Heart Rate): Jika atlet berlari Long Run di zona HR tinggi (>165 bpm), ingatkan pentingnya disiplin Zona 2 (aerobic base). Jika HR stabil atau menurun pada pace yang sama, puji efisiensi kardiovaskular atlet!
+         - Aturan Kenaikan Volume (10% Rule): Jika rampWarning terdeteksi (kenaikan volume >10% dibanding minggu sebelumnya), berikan peringatan suportif agar tidak memaksakan lonjakan volume drastis demi mencegah cedera shin splints atau plantar fasciitis.
+         - Target Progresif: Manfaatkan calculated progressiveTargets (pace dan jarak berbasis data historis) pada rekomendasi jadwal.
+      4. Nada bicara: TEGAS, SUPORTIF, CERDAS, MEMBAKAR SEMANGAT, seperti pelatih elit pribadi atlet.
 
       Kembalikan HANYA format JSON valid dengan struktur:
       {
@@ -1238,6 +1314,8 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
     activePlan.activeWorkout = auditResult.activeWorkout;
     activePlan.upcomingQueue = auditResult.upcomingQueue;
     activePlan.queueIndex = auditResult.queueIndex;
+    activePlan.progressiveTargets = progressiveTargets;
+    activePlan.performanceTrend = performanceTrend;
   }
 
   const rawRecommendations = JSON.stringify(activePlan);
@@ -1247,7 +1325,7 @@ export async function generateWeeklyPerformanceInsight(userId: string): Promise<
   const insightRecord = {
     id: 'ins_' + Date.now(),
     userId,
-    periodStart: oneWeekAgo,
+    periodStart: sixWeeksAgo,
     periodEnd: new Date(),
     summary,
     strengths,

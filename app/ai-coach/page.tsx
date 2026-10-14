@@ -5,6 +5,7 @@ import {
   generateWeeklyPerformanceInsight,
   parseCoachPlanFromInsight,
 } from '@/lib/services/performance-insights';
+import { syncStravaActivities } from '@/lib/services/strava';
 import CoachClientView from '@/components/coach/CoachClientView';
 import { AiInsightData, UserProfile, ActivityData } from '@/types';
 
@@ -30,6 +31,29 @@ export default async function AiCoachPage() {
       avatarUrl: dbUser.avatarUrl,
     };
 
+    // Cek apakah akun Strava terhubung dan apakah data sudah stale (> 1 jam)
+    const stravaToken = await prisma.stravaToken.findUnique({
+      where: { userId: user.id },
+      select: { updatedAt: true },
+    });
+
+    let didAutoSync = false;
+    if (stravaToken) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      if (stravaToken.updatedAt < oneHourAgo) {
+        try {
+          const syncRes = await syncStravaActivities(user.id);
+          await prisma.stravaToken.update({
+            where: { userId: user.id },
+            data: { updatedAt: new Date() },
+          });
+          didAutoSync = syncRes.syncedCount > 0;
+        } catch (syncErr) {
+          console.warn('Auto-sync Strava on AI Coach page load fallback:', syncErr);
+        }
+      }
+    }
+
     const [latestInsight, rawActivities] = await Promise.all([
       prisma.aiInsight.findFirst({
         where: { userId: user.id },
@@ -38,7 +62,7 @@ export default async function AiCoachPage() {
       prisma.activity.findMany({
         where: { userId: user.id },
         orderBy: { startTime: 'desc' },
-        take: 20,
+        take: 100, // Ambil hingga 100 aktivitas untuk analisis tren multi-minggu (4-6 minggu)
       }),
     ]);
 
@@ -48,7 +72,7 @@ export default async function AiCoachPage() {
       gymSets: (act.gymSets as unknown as import('@/types').GymSet[]) || null,
     }));
 
-    if (latestInsight) {
+    if (latestInsight && !didAutoSync) {
       insight = parseCoachPlanFromInsight(latestInsight, activities);
     } else {
       insight = await generateWeeklyPerformanceInsight(user.id);

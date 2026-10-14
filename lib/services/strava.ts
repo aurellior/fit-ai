@@ -31,6 +31,9 @@ export interface StravaApiActivity {
   };
   calories?: number;
   average_speed?: number; // m/s
+  average_heartrate?: number; // bpm
+  max_heartrate?: number; // bpm
+  has_heartrate?: boolean;
 }
 
 const STRAVA_CLIENT_ID = process.env.STRAVA_CLIENT_ID || '';
@@ -257,12 +260,24 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
   });
   const userWeightKg = latestWeight?.weightKg || 68;
 
-  const stravaActivities = await fetchAthleteActivities(userId, 1, 30);
-  if (stravaActivities.length === 0) {
+  const stravaActivities = await fetchAthleteActivities(userId, 1, 50);
+
+  // Fetch page 2 for better historical coverage (up to 100 activities)
+  let page2Activities: StravaApiActivity[] = [];
+  if (stravaActivities.length >= 50) {
+    try {
+      page2Activities = await fetchAthleteActivities(userId, 2, 50);
+    } catch {
+      // Page 2 fetch is best-effort, don't fail the entire sync
+    }
+  }
+  const allStravaActivities = [...stravaActivities, ...page2Activities];
+
+  if (allStravaActivities.length === 0) {
     return { syncedCount: 0, backfilledCount: 0 };
   }
 
-  const upsertOps = stravaActivities.map((item) => {
+  const upsertOps = allStravaActivities.map((item) => {
     const activityIdBigInt = BigInt(item.id);
     const durationSec = item.moving_time || item.elapsed_time;
     let avgPaceSecPerKm: number | null = null;
@@ -285,6 +300,10 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
             weightKg: userWeightKg,
           });
 
+    // Heart rate data dari Strava (null jika tidak tersedia)
+    const avgHeartRate = item.average_heartrate && item.average_heartrate > 0 ? item.average_heartrate : null;
+    const maxHeartRate = item.max_heartrate && item.max_heartrate > 0 ? item.max_heartrate : null;
+
     return prisma.activity.upsert({
       where: {
         stravaActivityId: activityIdBigInt,
@@ -299,6 +318,8 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
         elevationGainM: item.total_elevation_gain,
         summaryPolyline: item.map?.summary_polyline || null,
         calories: finalCalories,
+        avgHeartRate,
+        maxHeartRate,
       },
       create: {
         userId,
@@ -313,6 +334,8 @@ export async function syncStravaActivities(userId: string): Promise<{ syncedCoun
         elevationGainM: item.total_elevation_gain,
         summaryPolyline: item.map?.summary_polyline || null,
         calories: finalCalories,
+        avgHeartRate,
+        maxHeartRate,
       },
     });
   });
