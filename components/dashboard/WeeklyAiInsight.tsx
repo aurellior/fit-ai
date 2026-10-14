@@ -7,10 +7,7 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle2,
-  XCircle,
-  Clock,
   SlidersHorizontal,
-  RotateCcw,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { AiInsightData } from '@/types';

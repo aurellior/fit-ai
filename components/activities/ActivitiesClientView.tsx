@@ -112,8 +112,6 @@ export default function ActivitiesClientView({
 
   const getSportIcon = (type: string) => {
     switch (type) {
-      case 'WEIGHT_TRAINING':
-        return <Dumbbell className="w-4 h-4 text-purple-600 dark:text-purple-400" />;
       case 'RIDE':
         return <Bike className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case 'WALK':
