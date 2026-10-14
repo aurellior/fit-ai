@@ -11,7 +11,6 @@ import {
   Camera,
   Utensils,
   Plus,
-  Dumbbell,
   Scale,
   X,
 } from 'lucide-react';

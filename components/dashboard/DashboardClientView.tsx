@@ -37,7 +37,6 @@ import { cn, formatDuration } from '@/lib/utils';
 import DailyNutritionAuditCard from '@/components/nutrition/DailyNutritionAuditCard';
 import DailyStepCheckInCard from '@/components/dashboard/DailyStepCheckInCard';
 import TodayCoachDirectiveBanner from '@/components/dashboard/TodayCoachDirectiveBanner';
-import { getWibDayIndex } from '@/lib/timezone';
 
 interface DashboardClientViewProps {
   user: UserProfile | null;
